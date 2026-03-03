@@ -1996,7 +1996,8 @@ function AboutPage({ navigate }) {
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:'18px'}}>
             {[{e:'🏅',t:'Quality First',d:'Every component — from clasp to stone — is selected for longevity. Our pieces outlast trends.'},
               {e:'🌿',t:'Ethically Sourced',d:"All gemstones are conflict-free. We work only with suppliers who respect the land and the people who work it."},
-              {e:'🤝',t:'Community Driven',d:"Urban Jewells grew from the women who wore it. Every WhatsApp message is read and replied to personally."}
+              {e:'🤝',t:'Community Driven',d:"Urban Jewells grew from the women who wore it. Every WhatsApp message is read and replied to personally."},
+              {e:'♻️',t:'Sustainable Practices',d:'We minimise waste, favour eco-conscious materials, and continuously improve our production footprint.'}
             ].map(({e,t,d})=>(
               <div key={t} className="glass-card" style={{padding:'32px',textAlign:'center'}}>
                 <span style={{fontSize:'32px',display:'block',marginBottom:'16px'}}>{e}</span>
