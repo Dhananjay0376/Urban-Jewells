@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
 import * as THREE from "three";
+import { isSanityConfigured, loadCatalogFromSanity } from "./src/lib/sanityCatalog";
 
 // ═══════════════════════════════════════════════════════════════
 //  GLOBAL STYLES  — Dark Luxury Editorial
@@ -555,12 +556,12 @@ const PRODUCTS = [
   {id:4,name:"Wildflower Stud Earrings",slug:"wildflower-stud-earrings",price:875,category:"earring",collection:"summer-glow",shortDescription:"Daisy-shaped studs in gold with a pressed flower resin centre. A garden you wear every day.",materials:["Gold Fill","Botanical Resin","Sterling Silver Posts"],sizes:["One Size"],images:["https://res.cloudinary.com/dxw1yg7if/image/upload/v1772513384/earrings_vbzp8b.jpg","https://picsum.photos/seed/uj4b/600/600"],inStock:true,isFeatured:false,isNew:true,isSale:false,rating:4.6,reviewCount:18,tags:["new","botanical"]},
   {id:5,name:"Midnight Crescent Necklace",slug:"midnight-crescent-necklace",price:1650,category:"necklace",collection:"minimalist-edit",shortDescription:"An oxidised silver chain bearing a slim crescent moon pendant. Understated, deeply personal, made for everyday.",materials:["Oxidised Sterling Silver"],sizes:["40cm","45cm"],images:["https://res.cloudinary.com/dxw1yg7if/image/upload/v1772513384/set1_jlqqzp.jpg","https://picsum.photos/seed/uj5b/600/600"],inStock:true,isFeatured:true,isNew:false,isSale:false,rating:4.9,reviewCount:55,tags:["bestseller","minimalist"]},
   {id:6,name:"Terracotta Stack Ring Set",slug:"terracotta-stack-ring-set",price:1100,originalPrice:1450,category:"set",collection:"wild-earth",shortDescription:"Polished gold, matte rose, and oxidised bronze — three bands designed to stack beautifully or wear alone.",materials:["Gold Fill","Rose Gold Plate","Bronze"],sizes:["XS","S","M","L","XL"],images:["https://picsum.photos/seed/uj6/600/600","https://picsum.photos/seed/uj6b/600/600"],inStock:true,isFeatured:false,isNew:false,isSale:true,rating:4.5,reviewCount:22,tags:["sale","set"]},
-  {id:7,name:"Sundew Anklet",slug:"sundew-anklet",price:680,category:"anklet",collection:"summer-glow",shortDescription:"Gossamer gold-fill chain with sunstone and crystal droplets. Summer translated into jewellery form.",materials:["Gold Fill","Sunstone","Crystal"],sizes:["S","M","L"],images:["https://picsum.photos/seed/uj7/600/600","https://picsum.photos/seed/uj7b/600/600"],inStock:true,isFeatured:true,isNew:false,isSale:false,rating:4.8,reviewCount:29,tags:["summer","dainty"]},
+  {id:7,name:"Sundew Anklet",slug:"sundew-anklet",price:680,category:"anklet",collection:"summer-glow",shortDescription:"Gossamer gold-fill chain with sunstone and crystal droplets. Summer translated into jewellery form.",materials:["Gold Fill","Sunstone","Crystal"],sizes:["S","M","L"],images:["https://res.cloudinary.com/dxw1yg7if/image/upload/v1774365679/anklet_vte7ky.webp","https://res.cloudinary.com/dxw1yg7if/image/upload/v1774365724/anklet_pic2_uowl7f.webp"],inStock:true,isFeatured:true,isNew:false,isSale:false,rating:4.8,reviewCount:29,tags:["summer","dainty"]},
   {id:8,name:"Architect Line Earrings",slug:"architect-line-earrings",price:1250,category:"earring",collection:"minimalist-edit",shortDescription:"Long architectural bar drops in brushed silver. Geometric, modern, utterly unfussy.",materials:["Brushed Sterling Silver"],sizes:["One Size"],images:["https://picsum.photos/seed/uj8/600/600","https://picsum.photos/seed/uj8b/600/600"],inStock:true,isFeatured:false,isNew:true,isSale:false,rating:4.7,reviewCount:14,tags:["new","geometric"]},
-  {id:9,name:"Ember Collar Necklace",slug:"ember-collar-necklace",price:2800,category:"necklace",collection:"urban-luxe",shortDescription:"A wide-set tennis collar of graduating warm topaz stones in 18K gold. Made for evenings when presence is everything.",materials:["18K Gold Plate","Synthetic Topaz","Brass"],sizes:["40cm","42cm"],images:["https://picsum.photos/seed/uj9/600/600","https://picsum.photos/seed/uj9b/600/600"],inStock:true,isFeatured:true,isNew:false,isSale:false,rating:5.0,reviewCount:11,tags:["luxury","evening"]},
+  {id:9,name:"Ember Collar Necklace",slug:"ember-collar-necklace",price:2800,category:"necklace",collection:"urban-luxe",shortDescription:"A wide-set tennis collar of graduating warm topaz stones in 18K gold. Made for evenings when presence is everything.",materials:["18K Gold Plate","Synthetic Topaz","Brass"],sizes:["40cm","42cm"],images:["https://res.cloudinary.com/dxw1yg7if/image/upload/v1774365564/Neclace_wxhvof.webp","https://picsum.photos/seed/uj9b/600/600"],inStock:true,isFeatured:true,isNew:false,isSale:false,rating:5.0,reviewCount:11,tags:["luxury","evening"]},
   {id:10,name:"Garden Path Bracelet",slug:"garden-path-bracelet",price:950,originalPrice:1200,category:"bracelet",collection:"wild-earth",shortDescription:"Hand-strung malachite, prehnite and peridot on a gold-fill chain. A walk through a misty garden on your wrist.",materials:["Gold Fill","Malachite","Prehnite","Peridot"],sizes:["S","M","L"],images:["https://picsum.photos/seed/uj10/600/600","https://picsum.photos/seed/uj10b/600/600"],inStock:true,isFeatured:false,isNew:false,isSale:true,rating:4.6,reviewCount:36,tags:["sale","natural"]},
   {id:11,name:"Solstice Hoop Set",slug:"solstice-hoop-set",price:1380,category:"set",collection:"classic-elegance",shortDescription:"Three pairs of graduated gold hoops — small, medium, large — the only hoops you'll ever need.",materials:["Gold Fill"],sizes:["One Size"],images:["https://picsum.photos/seed/uj11/600/600","https://picsum.photos/seed/uj11b/600/600"],inStock:true,isFeatured:false,isNew:false,isSale:false,rating:4.8,reviewCount:48,tags:["set","gold"]},
-  {id:12,name:"Rain Chain Anklet",slug:"rain-chain-anklet",price:720,category:"anklet",collection:"minimalist-edit",shortDescription:"Ultra-fine sterling silver chain with a single freshwater pearl drop. Delicate as rain, timeless as tides.",materials:["Sterling Silver","Freshwater Pearl"],sizes:["S","M","L"],images:["https://picsum.photos/seed/uj12/600/600","https://picsum.photos/seed/uj12b/600/600"],inStock:true,isFeatured:false,isNew:true,isSale:false,rating:4.7,reviewCount:9,tags:["new","pearl"]},
+  {id:12,name:"Rain Chain Anklet",slug:"rain-chain-anklet",price:720,category:"anklet",collection:"minimalist-edit",shortDescription:"Ultra-fine sterling silver chain with a single freshwater pearl drop. Delicate as rain, timeless as tides.",materials:["Sterling Silver","Freshwater Pearl"],sizes:["S","M","L"],images:["https://res.cloudinary.com/dxw1yg7if/image/upload/v1774365814/anklet2_lhtxie.webp","https://res.cloudinary.com/dxw1yg7if/image/upload/v1774365867/anklet2_pic_2_mejain.webp"],inStock:true,isFeatured:false,isNew:true,isSale:false,rating:4.7,reviewCount:9,tags:["new","pearl"]},
 ];
 
 const COLLECTIONS = [
@@ -572,12 +573,12 @@ const COLLECTIONS = [
 ];
 
 const CATEGORIES = [
-  {id:"ring",name:"Rings",slug:"ring",icon:"💍",coverImage:"https://picsum.photos/seed/cat1/600/400"},
-  {id:"necklace",name:"Necklaces",slug:"necklace",icon:"📿",coverImage:"https://picsum.photos/seed/cat2/600/400"},
-  {id:"bracelet",name:"Bracelets",slug:"bracelet",icon:"⛓️",coverImage:"https://picsum.photos/seed/cat3/600/400"},
-  {id:"earring",name:"Earrings",slug:"earring",icon:"✨",coverImage:"https://picsum.photos/seed/cat4/600/400"},
-  {id:"anklet",name:"Anklets",slug:"anklet",icon:"🌿",coverImage:"https://picsum.photos/seed/cat5/600/400"},
-  {id:"set",name:"Gift Sets",slug:"set",icon:"🎁",coverImage:"https://picsum.photos/seed/cat6/600/400"},
+  {id:"ring",name:"Rings",slug:"ring",icon:"",coverImage:"https://picsum.photos/seed/cat1/600/400"},
+  {id:"necklace",name:"Necklaces",slug:"necklace",icon:"",coverImage:"https://picsum.photos/seed/cat2/600/400"},
+  {id:"bracelet",name:"Bracelets",slug:"bracelet",icon:"",coverImage:"https://picsum.photos/seed/cat3/600/400"},
+  {id:"earring",name:"Earrings",slug:"earring",icon:"",coverImage:"https://picsum.photos/seed/cat4/600/400"},
+  {id:"anklet",name:"Anklets",slug:"anklet",icon:"",coverImage:"https://picsum.photos/seed/cat5/600/400"},
+  {id:"set",name:"Gift Sets",slug:"set",icon:"",coverImage:"https://picsum.photos/seed/cat6/600/400"},
 ];
 
 const TESTIMONIALS = [
@@ -606,6 +607,10 @@ const CURRENCY_CODE = 'INR';
 const formatPrice = n => `${CURRENCY_CODE} ${Number(n).toLocaleString('en-IN')}`;
 const formatDiscount = (o,c) => Math.round(((o-c)/o)*100);
 const genRef = () => `UJ-${Date.now().toString(36).toUpperCase()}`;
+const withCollectionCounts = (collections, products) => collections.map(collection => ({
+  ...collection,
+  productCount: collection.productCount || products.filter(product => product.collection === collection.slug).length,
+}));
 
 // ═══════════════════════════════════════════════════════════════
 //  APP CONTEXT
@@ -619,6 +624,48 @@ function AppProvider({ children }) {
   const [cartOpen, setCartOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [searchOpen, setSearchOpen] = useState(false);
+  const cmsEnabled = isSanityConfigured();
+  const [catalog, setCatalog] = useState(() => ({
+    products: PRODUCTS,
+    collections: withCollectionCounts(COLLECTIONS, PRODUCTS),
+    categories: CATEGORIES,
+    loading: cmsEnabled,
+    source: 'local',
+    error: null,
+  }));
+
+  useEffect(() => {
+    if (!cmsEnabled) return undefined;
+
+    let cancelled = false;
+
+    loadCatalogFromSanity()
+      .then(remoteCatalog => {
+        if (cancelled || !remoteCatalog) return;
+
+        const products = remoteCatalog.products.length ? remoteCatalog.products : PRODUCTS;
+        const collections = remoteCatalog.collections.length ? remoteCatalog.collections : COLLECTIONS;
+        const categories = remoteCatalog.categories.length ? remoteCatalog.categories : CATEGORIES;
+
+        setCatalog({
+          products,
+          collections: withCollectionCounts(collections, products),
+          categories,
+          loading: false,
+          source: 'sanity',
+          error: null,
+        });
+      })
+      .catch(error => {
+        console.error('Failed to load catalog from Sanity:', error);
+        if (cancelled) return;
+        setCatalog(prev => ({ ...prev, loading: false, error: error.message || 'Failed to load catalog' }));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cmsEnabled]);
 
   const toast = useCallback((msg, type="success") => {
     const id = Date.now();
@@ -653,7 +700,7 @@ function AppProvider({ children }) {
   const cartCount = cart.reduce((s,i) => s + i.quantity, 0);
 
   return (
-    <Ctx.Provider value={{cart,setCart,cartOpen,setCartOpen,addToCart,removeFromCart,updateQty,cartTotal,cartCount,wishlist,toggleWishlist,toasts,setToasts,toast,searchOpen,setSearchOpen}}>
+    <Ctx.Provider value={{cart,setCart,cartOpen,setCartOpen,addToCart,removeFromCart,updateQty,cartTotal,cartCount,wishlist,toggleWishlist,toasts,setToasts,toast,searchOpen,setSearchOpen,products:catalog.products,collections:catalog.collections,categories:catalog.categories,catalogLoading:catalog.loading,catalogSource:catalog.source,catalogError:catalog.error,cmsEnabled}}>
       {children}
     </Ctx.Provider>
   );
@@ -695,7 +742,7 @@ function Logo({ variant="dark", size="md", onClick }) {
 //  HEADER
 // ═══════════════════════════════════════════════════════════════
 function Header({ navigate, page }) {
-  const {cartCount, setCartOpen, wishlist, setSearchOpen} = useApp();
+  const {cartCount, setCartOpen, wishlist, setSearchOpen, categories} = useApp();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
@@ -738,7 +785,7 @@ function Header({ navigate, page }) {
                 <button onClick={()=>navigate('categories')} className={`nav-lnk ${page===p?'active':''}`} style={{textTransform:'capitalize',cursor:'pointer'}}>Categories</button>
                 {catOpen && (
                   <div style={{position:'absolute',top:'100%',left:0,marginTop:'6px',background:'rgba(5,8,5,0.98)',border:'1px solid rgba(168,230,207,.06)',padding:'6px',borderRadius:'6px',boxShadow:'0 8px 30px rgba(0,0,0,.5)'}}>
-                    {CATEGORIES.slice(0,6).map((c)=> (
+                    {categories.slice(0,6).map((c)=> (
                       <button key={c.slug} onClick={()=>navigate('category',{slug:c.slug})} style={{display:'block',background:'none',border:'none',color:'rgba(250,250,245,.8)',padding:'8px 12px',textAlign:'left',minWidth:'180px',cursor:'pointer',fontFamily:"'DM Mono',monospace",fontSize:'12px'}}>
                         {c.name}
                       </button>
@@ -796,7 +843,7 @@ function Header({ navigate, page }) {
                   </button>
                   {mobileCatsOpen && (
                     <div style={{display:'flex',flexDirection:'column',gap:'6px',paddingLeft:'12px',marginTop:'8px'}}>
-                      {CATEGORIES.slice(0,6).map(c=> (
+                      {categories.slice(0,6).map(c=> (
                         <button key={c.slug} onClick={()=>{navigate('category',{slug:c.slug});setMobileOpen(false);}} style={{background:'none',border:'none',color:'rgba(250,250,245,.8)',textAlign:'left',fontFamily:"'DM Mono',monospace",fontSize:'18px',padding:'6px 0'}}>{c.name}</button>
                       ))}
                     </div>
@@ -1085,7 +1132,7 @@ function BackToTop() {
 //  SEARCH MODAL
 // ═══════════════════════════════════════════════════════════════
 function SearchModal({ navigate }) {
-  const {searchOpen, setSearchOpen} = useApp();
+  const {searchOpen, setSearchOpen, products} = useApp();
   const [q, setQ] = useState('');
   const inputRef = useRef(null);
   useEffect(() => { if (searchOpen) { setQ(''); setTimeout(()=>inputRef.current?.focus(),60); } }, [searchOpen]);
@@ -1097,8 +1144,8 @@ function SearchModal({ navigate }) {
   const results = useMemo(() => {
     if (!q.trim()) return [];
     const lq = q.toLowerCase();
-    return PRODUCTS.filter(p=>[p.name,p.shortDescription,p.category,...(p.tags||[])].some(f=>f?.toLowerCase().includes(lq))).slice(0,6);
-  }, [q]);
+    return products.filter(p=>[p.name,p.shortDescription,p.category,...(p.tags||[])].some(f=>f?.toLowerCase().includes(lq))).slice(0,6);
+  }, [products, q]);
   if (!searchOpen) return null;
   return (
     <div style={{position:'fixed',inset:0,background:'rgba(5,8,5,0.97)',zIndex:1200,display:'flex',flexDirection:'column',alignItems:'center',padding:'100px 24px 40px',animation:'fadeIn .2s ease',backdropFilter:'blur(8px)'}} onClick={e=>{if(e.target===e.currentTarget)setSearchOpen(false);}}>
@@ -1224,7 +1271,8 @@ function WelcomeBanner() {
 }
 
 function FeaturedProducts({ navigate }) {
-  const featured = PRODUCTS.filter(p=>p.isFeatured).slice(0,6);
+  const {products} = useApp();
+  const featured = products.filter(p=>p.isFeatured).slice(0,6);
   return (
     <section style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink2)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
@@ -1248,6 +1296,7 @@ function FeaturedProducts({ navigate }) {
 }
 
 function CollectionsBand({ navigate }) {
+  const {collections} = useApp();
   return (
     <section style={{padding:'clamp(52px,7vw,80px) 0',overflow:'hidden',background:'var(--ink)',position:'relative'}}>
       {/* Section header */}
@@ -1263,7 +1312,7 @@ function CollectionsBand({ navigate }) {
 
       {/* Horizontal scroll */}
       <div style={{display:'flex',gap:'clamp(8px,1.3vw,12px)',overflowX:'auto',padding:'0 clamp(18px,4vw,48px)',scrollbarWidth:'none',msOverflowStyle:'none'}}>
-        {COLLECTIONS.map((col,i)=>(
+        {collections.map((col,i)=>(
           <div key={col.id} className="fade-up" style={{animationDelay:`${i*.08}s`,width:'clamp(150px,22vw,205px)',maxWidth:'205px',borderRadius:'12px',overflow:'hidden',position:'relative',aspectRatio:'2/3',cursor:'none',flex:'0 0 auto',border:'1px solid rgba(168,230,207,.06)',transition:'all .4s cubic-bezier(.16,1,.3,1)'}}
             onClick={()=>navigate('collection-detail',{slug:col.slug})}
             onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.2)';e.currentTarget.style.transform='translateY(-8px)';e.currentTarget.style.boxShadow='0 24px 60px rgba(0,0,0,.7), var(--glow-mint)';e.currentTarget.querySelector('.col-reveal').style.opacity='1';e.currentTarget.querySelector('.col-reveal').style.transform='translateY(0)';e.currentTarget.querySelector('.col-img').style.transform='scale(1.07)';}}
@@ -1287,6 +1336,7 @@ function CollectionsBand({ navigate }) {
 }
 
 function ShopByCategory({ navigate }) {
+  const {categories} = useApp();
   return (
     <section style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink2)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
@@ -1295,7 +1345,7 @@ function ShopByCategory({ navigate }) {
           <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,52px)',color:'var(--cream)'}}>Shop by Category</h2>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(clamp(165px,43vw,260px),1fr))',gap:'clamp(10px,2vw,16px)'}}>
-          {CATEGORIES.map((cat,i)=>(
+          {categories.map((cat,i)=>(
             <div key={cat.id} className="fade-up" style={{animationDelay:`${i*.06}s`,borderRadius:'10px',overflow:'hidden',aspectRatio:'3/2',cursor:'none',position:'relative',border:'1px solid rgba(168,230,207,.06)',transition:'all .35s cubic-bezier(.16,1,.3,1)'}}
               onClick={()=>navigate('category',{slug:cat.slug})}
               onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.2)';e.currentTarget.style.transform='scale(1.02)';e.currentTarget.style.boxShadow='0 16px 48px rgba(0,0,0,.6), var(--glow-mint)';e.currentTarget.querySelector('.cat-img').style.transform='scale(1.08)';}}
@@ -1321,17 +1371,18 @@ function ShopByCategory({ navigate }) {
 }
 
 function AllProductsGrid({ navigate }) {
+  const {products, categories} = useApp();
   const [active, setActive] = useState('all');
   const [sort, setSort] = useState('popular');
   const [vis, setVis] = useState(8);
   const filtered = useMemo(() => {
-    let arr = active==='all' ? PRODUCTS : PRODUCTS.filter(p=>p.category===active);
+    let arr = active==='all' ? products : products.filter(p=>p.category===active);
     if (sort==='price-low') arr = [...arr].sort((a,b)=>a.price-b.price);
     else if (sort==='price-high') arr = [...arr].sort((a,b)=>b.price-a.price);
     else arr = [...arr].sort((a,b)=>b.reviewCount-a.reviewCount);
     return arr;
-  }, [active, sort]);
-  const cats = ['all',...CATEGORIES.map(c=>c.id)];
+  }, [active, products, sort]);
+  const cats = ['all',...categories.map(c=>c.id)];
   return (
     <section style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
@@ -1464,6 +1515,7 @@ function HomePage({ navigate }) {
 }
 
 function CategoriesPage({ navigate }) {
+  const {categories} = useApp();
   return (
     <div style={{background:'var(--ink)'}}>
       <div style={{height:'320px',position:'relative',overflow:'hidden'}}>
@@ -1475,7 +1527,7 @@ function CategoriesPage({ navigate }) {
       </div>
       <div style={{maxWidth:'1100px',margin:'0 auto',padding:'48px'}}>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:'18px'}}>
-          {CATEGORIES.map(cat => (
+          {categories.map(cat => (
             <button key={cat.slug} onClick={()=>navigate('category',{slug:cat.slug})} style={{display:'flex',flexDirection:'column',alignItems:'flex-start',gap:'8px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(168,230,207,.04)',padding:'18px',borderRadius:'8px',cursor:'none'}}>
               <div style={{fontSize:'28px'}}>{cat.icon}</div>
               <div style={{textAlign:'left'}}>
@@ -1494,6 +1546,7 @@ function CategoriesPage({ navigate }) {
 //  COLLECTIONS PAGE
 // ═══════════════════════════════════════════════════════════════
 function CollectionsPage({ navigate }) {
+  const {collections} = useApp();
   return (
     <div style={{background:'var(--ink)'}}>
       <div style={{minHeight:'50vh',display:'flex',alignItems:'flex-end',padding:'100px 48px 60px',background:'linear-gradient(to bottom,var(--ink),var(--ink2))',position:'relative',overflow:'hidden'}}>
@@ -1507,7 +1560,7 @@ function CollectionsPage({ navigate }) {
       </div>
       <div style={{padding:'60px 48px 80px',maxWidth:'1300px',margin:'0 auto'}}>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(380px,1fr))',gap:'22px'}}>
-          {COLLECTIONS.map((col,i)=>(
+          {collections.map((col,i)=>(
             <div key={col.id} className="fade-up" style={{animationDelay:`${i*.09}s`,position:'relative',borderRadius:'12px',overflow:'hidden',aspectRatio:'3/4',cursor:'none',border:'1px solid rgba(168,230,207,.06)',transition:'all .4s cubic-bezier(.16,1,.3,1)'}}
               onClick={()=>navigate('collection-detail',{slug:col.slug})}
               onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.22)';e.currentTarget.style.boxShadow='0 28px 70px rgba(0,0,0,.8), var(--glow-mint)';e.currentTarget.querySelector('.clink').style.opacity='1';e.currentTarget.querySelector('.clink').style.transform='translateY(0)';e.currentTarget.querySelector('.cimg').style.transform='scale(1.06)';}}
@@ -1535,8 +1588,9 @@ function CollectionsPage({ navigate }) {
 //  COLLECTION DETAIL
 // ═══════════════════════════════════════════════════════════════
 function CollectionDetail({ slug, navigate }) {
-  const col = COLLECTIONS.find(c=>c.slug===slug);
-  const prods = PRODUCTS.filter(p=>p.collection===slug);
+  const {collections, products} = useApp();
+  const col = collections.find(c=>c.slug===slug);
+  const prods = products.filter(p=>p.collection===slug);
   const [sort, setSort] = useState('popular');
   if (!col) return <NotFoundPage navigate={navigate}/>;
   const sorted = sort==='price-low'?[...prods].sort((a,b)=>a.price-b.price):sort==='price-high'?[...prods].sort((a,b)=>b.price-a.price):[...prods].sort((a,b)=>b.reviewCount-a.reviewCount);
@@ -1577,8 +1631,9 @@ function CollectionDetail({ slug, navigate }) {
 //  CATEGORY PAGE
 // ═══════════════════════════════════════════════════════════════
 function CategoryPage({ slug, navigate }) {
-  const cat = CATEGORIES.find(c=>c.slug===slug);
-  const prods = PRODUCTS.filter(p=>p.category===slug);
+  const {categories, products} = useApp();
+  const cat = categories.find(c=>c.slug===slug);
+  const prods = products.filter(p=>p.category===slug);
   const [sort, setSort] = useState('popular');
   if (!cat) return <NotFoundPage navigate={navigate}/>;
   const sorted = sort==='price-low'?[...prods].sort((a,b)=>a.price-b.price):sort==='price-high'?[...prods].sort((a,b)=>b.price-a.price):[...prods].sort((a,b)=>b.reviewCount-a.reviewCount);
@@ -1614,13 +1669,13 @@ function CategoryPage({ slug, navigate }) {
 //  PRODUCT PAGE
 // ═══════════════════════════════════════════════════════════════
 function ProductPage({ slug, navigate }) {
-  const {addToCart, toggleWishlist, wishlist} = useApp();
-  const product = PRODUCTS.find(p=>p.slug===slug);
+  const {addToCart, toggleWishlist, wishlist, products} = useApp();
+  const product = products.find(p=>p.slug===slug);
   const [img, setImg] = useState(0);
   const [size, setSize] = useState(null);
   const [qty, setQty] = useState(1);
   const [acc, setAcc] = useState(null);
-  const related = PRODUCTS.filter(p=>p.category===product?.category&&p.slug!==slug).slice(0,4);
+  const related = products.filter(p=>p.category===product?.category&&p.slug!==slug).slice(0,4);
   const inWish = wishlist.some(i=>i.id===product?.id);
   if (!product) return <NotFoundPage navigate={navigate}/>;
   return (
