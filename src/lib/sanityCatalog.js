@@ -1,12 +1,15 @@
 const SANITY_PROJECT_ID = import.meta.env.VITE_SANITY_PROJECT_ID;
 const SANITY_DATASET = import.meta.env.VITE_SANITY_DATASET;
 const SANITY_API_VERSION = import.meta.env.VITE_SANITY_API_VERSION || "2025-02-19";
-const SANITY_USE_CDN = import.meta.env.VITE_SANITY_USE_CDN !== "false";
+const SANITY_USE_CDN = import.meta.env.DEV ? false : import.meta.env.VITE_SANITY_USE_CDN !== "false";
 
 export const isSanityConfigured = () => Boolean(SANITY_PROJECT_ID && SANITY_DATASET);
 
 const buildUrl = (query) => {
-  const base = `https://${SANITY_PROJECT_ID}.api.sanity.io/v${SANITY_API_VERSION}/data/query/${SANITY_DATASET}`;
+  const host = SANITY_USE_CDN
+    ? `${SANITY_PROJECT_ID}.apicdn.sanity.io`
+    : `${SANITY_PROJECT_ID}.api.sanity.io`;
+  const base = `https://${host}/v${SANITY_API_VERSION}/data/query/${SANITY_DATASET}`;
   const params = new URLSearchParams({
     query,
     perspective: "published",
@@ -107,7 +110,9 @@ export async function loadCatalogFromSanity() {
     return null;
   }
 
-  const response = await fetch(buildUrl(catalogQuery));
+  const response = await fetch(buildUrl(catalogQuery), {
+    cache: import.meta.env.DEV ? 'no-store' : 'default',
+  });
   if (!response.ok) {
     throw new Error(`Sanity catalog request failed with ${response.status}`);
   }

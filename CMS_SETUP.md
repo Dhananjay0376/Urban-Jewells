@@ -76,3 +76,27 @@ Once your Sanity project is ready, the product workflow becomes:
 3. Refresh the storefront.
 
 No code edit is needed for catalog updates after that.
+
+## Import Existing Catalog
+
+To generate an import file from the current hardcoded catalog:
+
+```bash
+npm run cms:generate-import
+```
+
+This creates:
+
+- `sanity-import/catalog.ndjson`
+
+To import it into your dataset:
+
+```bash
+.\node_modules\.bin\sanity.cmd dataset import .\sanity-import\catalog.ndjson production --replace
+```
+
+If some remote images fail during import, retry with:
+
+```bash
+.\node_modules\.bin\sanity.cmd dataset import .\sanity-import\catalog.ndjson production --replace --allow-failing-assets
+```

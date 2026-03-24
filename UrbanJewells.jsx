@@ -634,38 +634,53 @@ function AppProvider({ children }) {
     error: null,
   }));
 
+  const refreshCatalog = useCallback(async () => {
+    const remoteCatalog = await loadCatalogFromSanity();
+    if (!remoteCatalog) return;
+
+    const products = remoteCatalog.products.length ? remoteCatalog.products : PRODUCTS;
+    const collections = remoteCatalog.collections.length ? remoteCatalog.collections : COLLECTIONS;
+    const categories = remoteCatalog.categories.length ? remoteCatalog.categories : CATEGORIES;
+
+    setCatalog({
+      products,
+      collections: withCollectionCounts(collections, products),
+      categories,
+      loading: false,
+      source: 'sanity',
+      error: null,
+    });
+  }, []);
+
   useEffect(() => {
     if (!cmsEnabled) return undefined;
 
     let cancelled = false;
-
-    loadCatalogFromSanity()
-      .then(remoteCatalog => {
-        if (cancelled || !remoteCatalog) return;
-
-        const products = remoteCatalog.products.length ? remoteCatalog.products : PRODUCTS;
-        const collections = remoteCatalog.collections.length ? remoteCatalog.collections : COLLECTIONS;
-        const categories = remoteCatalog.categories.length ? remoteCatalog.categories : CATEGORIES;
-
-        setCatalog({
-          products,
-          collections: withCollectionCounts(collections, products),
-          categories,
-          loading: false,
-          source: 'sanity',
-          error: null,
-        });
-      })
-      .catch(error => {
+    const safeRefresh = async () => {
+      try {
+        await refreshCatalog();
+      } catch (error) {
         console.error('Failed to load catalog from Sanity:', error);
         if (cancelled) return;
-        setCatalog(prev => ({ ...prev, loading: false, error: error.message || 'Failed to load catalog' }));
-      });
+        setCatalog(prev => ({ ...prev, loading: false, source: 'local', error: error.message || 'Failed to load catalog' }));
+      }
+    };
+
+    safeRefresh();
+
+    const onFocus = () => {
+      safeRefresh();
+    };
+
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
 
     return () => {
       cancelled = true;
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
     };
-  }, [cmsEnabled]);
+  }, [cmsEnabled, refreshCatalog]);
 
   const toast = useCallback((msg, type="success") => {
     const id = Date.now();

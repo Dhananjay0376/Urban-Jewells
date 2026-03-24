@@ -8,7 +8,8 @@
     "preview": "vite preview",
     "cms:dev": "sanity dev",
     "cms:build": "sanity build",
-    "cms:deploy": "sanity deploy"
+    "cms:deploy": "sanity deploy",
+    "cms:generate-import": "node ./scripts/generateSanityImport.mjs"
   },
   "dependencies": {
     "cloudinary": "^2.9.0",
