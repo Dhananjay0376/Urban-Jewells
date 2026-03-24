@@ -554,22 +554,22 @@ const EMPTY_COLLECTIONS = [];
 const EMPTY_CATEGORIES = [];
 
 const TESTIMONIALS = [
-  {id:1,name:"Priya Sharma",location:"Mumbai, India",rating:5,text:"Rivals pieces I've bought from European boutiques. The stone catches light in the most magical way â€” I receive compliments every single day.",product:"Celestial Solitaire Ring"},
-  {id:2,name:"Amara Dlamini",location:"Johannesburg, SA",rating:5,text:"The Forest Dew Necklace arrived in the most beautiful packaging. Three chains, infinite combinations â€” I wear them to the boardroom and to bed.",product:"Forest Dew Necklace"},
-  {id:3,name:"Kavitha Nair",location:"Chennai, India",rating:5,text:"My Radiant Cuff stops conversations in their tracks. The plating is thick, the finish is immaculate. This isn't fast jewellery â€” it's art.",product:"Radiant Cuff Bracelet"},
-  {id:4,name:"Lindiwe Mokoena",location:"Pretoria, SA",rating:5,text:"The WhatsApp ordering experience is so human and warm. And the Midnight Crescent is exactly as described â€” understated, perfect, unforgettable.",product:"Midnight Crescent"},
+  {id:1,name:"Priya Sharma",location:"Mumbai, India",rating:5,text:"Rivals pieces I've bought from European boutiques. The stone catches light in the most magical way - I receive compliments every single day.",product:"Celestial Solitaire Ring"},
+  {id:2,name:"Amara Dlamini",location:"Johannesburg, SA",rating:5,text:"The Forest Dew Necklace arrived in the most beautiful packaging. Three chains, infinite combinations - I wear them to the boardroom and to bed.",product:"Forest Dew Necklace"},
+  {id:3,name:"Kavitha Nair",location:"Chennai, India",rating:5,text:"My Radiant Cuff stops conversations in their tracks. The plating is thick, the finish is immaculate. This isn't fast jewellery - it's art.",product:"Radiant Cuff Bracelet"},
+  {id:4,name:"Lindiwe Mokoena",location:"Pretoria, SA",rating:5,text:"The WhatsApp ordering experience is so human and warm. And the Midnight Crescent is exactly as described - understated, perfect, unforgettable.",product:"Midnight Crescent"},
   {id:5,name:"Ananya Singh",location:"Delhi, India",rating:5,text:"Gorgeous pieces, fast dispatch, and the most thoughtful unboxing I've experienced. Urban Jewells understands that the experience is the product.",product:"Garden Path Bracelet"},
-  {id:6,name:"Thandi Mkhize",location:"Durban, SA",rating:5,text:"I gave the Solstice Hoops to myself for my 30th. I have zero regrets. They go with everything â€” three pairs, one price, endless possibilities.",product:"Solstice Hoop Set"},
+  {id:6,name:"Thandi Mkhize",location:"Durban, SA",rating:5,text:"I gave the Solstice Hoops to myself for my 30th. I have zero regrets. They go with everything - three pairs, one price, endless possibilities.",product:"Solstice Hoop Set"},
   {id:7,name:"Deepika Reddy",location:"Hyderabad, India",rating:5,text:"The Sundew Anklet is the most delicate, radiant piece I own. Every step catches the light. It's like wearing a little piece of summer.",product:"Sundew Anklet"},
 ];
 
 const FAQS = [
   {q:"How does the ordering process work?",a:"Browse, select, and checkout. We'll confirm your order via WhatsApp within a few hours, share payment details, and dispatch once confirmed. Simple, personal, scam-free."},
-  {q:"What payment methods do you accept?",a:"We accept UPI, bank transfer, and various digital wallets â€” all shared securely via WhatsApp after your order is placed. No unsecured card portals."},
-  {q:"How long does delivery take?",a:"Standard delivery across India: 5â€“8 business days. Express (select pincodes): 2â€“3 business days. International: 8â€“15 business days. All orders include a tracking number."},
+  {q:"What payment methods do you accept?",a:"We accept UPI, bank transfer, and various digital wallets - all shared securely via WhatsApp after your order is placed. No unsecured card portals."},
+  {q:"How long does delivery take?",a:"Standard delivery across India: 5-8 business days. Express (select pincodes): 2-3 business days. International: 8-15 business days. All orders include a tracking number."},
   {q:"Are your materials ethically sourced?",a:"Absolutely. All gemstones are conflict-free. Our metal suppliers follow environmental best practices. We inspect every batch."},
   {q:"How do I care for my pieces?",a:"Store each piece individually in the provided pouch. Avoid perfume, chlorine, and lotions. Clean gently with a soft dry cloth. With proper care, your Urban Jewells piece will last years."},
-  {q:"What is your returns policy?",a:"14-day returns on unworn items in original packaging. Reach us via WhatsApp or email â€” we guide you through every step and refund within 5 business days."},
+  {q:"What is your returns policy?",a:"14-day returns on unworn items in original packaging. Reach us via WhatsApp or email - we guide you through every step and refund within 5 business days."},
   {q:"Can I request a custom piece?",a:"Yes. Send us a photo, description, or just a feeling via WhatsApp. Our designers will respond with a quote and timeline within 48 hours."},
   {q:"Do you offer gift wrapping?",a:"Every Urban Jewells order ships in signature packaging that's already gift-ready. If you'd like a personalised note or special ribbon, just mention it in your order notes."},
 ];
@@ -668,7 +668,7 @@ function AppProvider({ children }) {
       return [...prev, {...product, size, quantity:qty, cartKey:key}];
     });
     setCartOpen(true);
-    toast(`${product.name} added âœ“`);
+    toast(`${product.name} added OK`);
   }, [toast]);
 
   const removeFromCart = useCallback(key => setCart(p => p.filter(i => i.cartKey !== key)), []);
@@ -680,7 +680,7 @@ function AppProvider({ children }) {
   const toggleWishlist = useCallback(product => {
     const has = wishlist.some(i => i.id === product.id);
     if (has) { setWishlist(p => p.filter(i => i.id !== product.id)); toast("Removed from wishlist"); }
-    else { setWishlist(p => [...p, product]); toast("Added to wishlist â™¥"); }
+    else { setWishlist(p => [...p, product]); toast("Added to wishlist <3"); }
   }, [wishlist, toast]);
 
   const cartTotal = cart.reduce((s,i) => s + i.price * i.quantity, 0);
@@ -720,7 +720,7 @@ function Logo({ variant="dark", size="md", onClick }) {
         <circle cx="17" cy="9" r="1.5" fill="white" opacity=".7"/>
       </g>
       <text x="44" y="26" fontFamily="Cormorant Garamond,Georgia,serif" fontWeight="300" fontSize="20" fill={tc} letterSpacing=".08em" dominantBaseline="middle">Urban Jewells</text>
-      <text x="44" y="42" fontFamily="DM Mono,monospace" fontWeight="400" fontSize="5.5" fill={gc} letterSpacing=".35em" dominantBaseline="middle" opacity=".75">INDIA Â· EST. 2019</text>
+      <text x="44" y="42" fontFamily="DM Mono,monospace" fontWeight="400" fontSize="5.5" fill={gc} letterSpacing=".35em" dominantBaseline="middle" opacity=".75">INDIA - EST. 2019</text>
     </svg>
   );
 }
@@ -914,8 +914,8 @@ function Footer({ navigate }) {
         </div>
         <div className="shimmer-line" style={{marginBottom:'28px'}}/>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'12px'}}>
-          <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(250,250,245,.2)'}}>Â© 2025 Urban Jewells Â· All rights reserved</p>
-          <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(250,250,245,.2)'}}>Made with â™¥ in India</p>
+          <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(250,250,245,.2)'}}>(c) 2025 Urban Jewells - All rights reserved</p>
+          <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(250,250,245,.2)'}}>Made with love in India</p>
         </div>
       </div>
     </footer>
@@ -1080,7 +1080,7 @@ function Toasts() {
           borderColor: t.type==='error' ? 'rgba(248,113,113,.3)' : 'rgba(168,230,207,.2)',
           boxShadow:'0 8px 32px rgba(0,0,0,.5)',animation:'toastIn .3s cubic-bezier(.16,1,.3,1)',
         }}>
-          <span style={{fontSize:'15px'}}>{t.type==='error'?'âš ':'âœ“'}</span>
+          <span style={{fontSize:'15px'}}>{t.type==='error'?'!':'OK'}</span>
           <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.8)',flex:1}}>{t.msg}</span>
           <button aria-label="Dismiss" onClick={()=>setToasts(p=>p.filter(x=>x.id!==t.id))} style={{background:'none',border:'none',cursor:'none',color:'rgba(250,250,245,.25)'}}><XIcon/></button>
         </div>
@@ -1141,7 +1141,7 @@ function SearchModal({ navigate }) {
         <p className="label-tag" style={{marginBottom:'20px',textAlign:'center',letterSpacing:'.3em'}}>SEARCH OUR COLLECTION</p>
         <div style={{position:'relative'}}>
           <input ref={inputRef} value={q} onChange={e=>setQ(e.target.value)}
-            placeholder="Search jewelleryâ€¦"
+            placeholder="Search jewellery..."
             style={{width:'100%',background:'rgba(255,255,255,.04)',border:'none',borderBottom:'1px solid rgba(168,230,207,.3)',borderRadius:'0',padding:'16px 4px',fontFamily:"'Cormorant Garamond',serif",fontSize:'28px',color:'var(--cream)',outline:'none',letterSpacing:'.04em'}}/>
           <div style={{position:'absolute',bottom:0,left:0,width:q?'100%':'0',height:'2px',background:'linear-gradient(90deg,var(--mint),var(--gold))',transition:'width .4s cubic-bezier(.16,1,.3,1)'}}/>
         </div>
@@ -1186,7 +1186,7 @@ function HeroSection({ navigate }) {
         <div>
           <div className="fade-up-1" style={{display:'inline-flex',alignItems:'center',gap:'8px',marginBottom:'32px',padding:'6px 14px',border:'1px solid rgba(168,230,207,.15)',borderRadius:'2px',background:'rgba(168,230,207,.04)'}}>
             <span style={{width:'6px',height:'6px',borderRadius:'50%',background:'var(--mint)',boxShadow:'0 0 8px var(--mint)',display:'inline-block'}}/>
-            <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',letterSpacing:'.22em'}}>PREMIUM HANDCRAFTED JEWELLERY Â· INDIA</span>
+            <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',letterSpacing:'.22em'}}>PREMIUM HANDCRAFTED JEWELLERY - INDIA</span>
           </div>
 
           <div className="fade-up-2" style={{overflow:'hidden',marginBottom:'4px'}}>
@@ -1199,7 +1199,7 @@ function HeroSection({ navigate }) {
           <div className="fade-up-4" style={{width:'48px',height:'1px',background:'linear-gradient(90deg,var(--mint),transparent)',marginBottom:'24px'}}/>
 
           <p className="fade-up-4" style={{fontFamily:"'DM Sans',sans-serif",fontSize:'16px',color:'rgba(250,250,245,.5)',lineHeight:'1.85',maxWidth:'420px',marginBottom:'40px'}}>
-            Every piece in our collection is handcrafted with intention â€” from the first sketch to the final polish. Wear jewellery that tells your story.
+            Every piece in our collection is handcrafted with intention - from the first sketch to the final polish. Wear jewellery that tells your story.
           </p>
 
           <div className="fade-up-5" style={{display:'flex',gap:'14px',flexWrap:'wrap'}}>
@@ -1208,7 +1208,7 @@ function HeroSection({ navigate }) {
           </div>
 
           <div className="fade-up-6" style={{display:'flex',gap:'32px',marginTop:'56px',paddingTop:'32px',borderTop:'1px solid rgba(168,230,207,.06)'}}>
-            {[{n:'400+',l:'Unique Designs'},{n:'12K+',l:'Happy Customers'},{n:'5â˜…',l:'Average Rating'}].map(({n,l})=>(
+            {[{n:'400+',l:'Unique Designs'},{n:'12K+',l:'Happy Customers'},{n:'5*',l:'Average Rating'}].map(({n,l})=>(
               <div key={l}>
                 <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'28px',color:'var(--gold)',lineHeight:'1'}}>{n}</p>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',letterSpacing:'.1em',marginTop:'4px'}}>{l}</p>
@@ -1228,7 +1228,7 @@ function HeroSection({ navigate }) {
             <div className="float-slow fade-up-3" style={{width:'200px',height:'200px',borderRadius:'50%',background:'radial-gradient(circle,var(--mint),var(--dg))',opacity:.7,boxShadow:'var(--glow-mint)'}}/>
           )}
           {/* Decorative labels */}
-          <div style={{position:'absolute',top:'15%',right:'-5%',fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'rgba(168,230,207,.4)',letterSpacing:'.18em',writingMode:'vertical-lr',pointerEvents:'none'}}>STERLING Â· GOLD Â· CRYSTAL</div>
+          <div style={{position:'absolute',top:'15%',right:'-5%',fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'rgba(168,230,207,.4)',letterSpacing:'.18em',writingMode:'vertical-lr',pointerEvents:'none'}}>STERLING - GOLD - CRYSTAL</div>
         </div>
       </div>
 
@@ -1250,7 +1250,7 @@ function WelcomeBanner() {
         <h2 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(36px,5vw,58px)',color:'var(--cream)',marginBottom:'24px',lineHeight:'1.1'}}>Urban Jewells</h2>
         <div style={{width:'60px',height:'1px',background:'linear-gradient(90deg,transparent,var(--mint),transparent)',margin:'0 auto 28px'}}/>
         <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:'16px',color:'rgba(250,250,245,.45)',lineHeight:'1.9'}}>
-          We believe jewellery is never just decoration â€” it's a language. Every ring, necklace, and bracelet we create speaks of intention, of craft, of the woman who wears it.
+          We believe jewellery is never just decoration - it's a language. Every ring, necklace, and bracelet we create speaks of intention, of craft, of the woman who wears it.
         </p>
       </div>
     </section>
@@ -1268,7 +1268,7 @@ function FeaturedProducts({ navigate }) {
             <p className="label-tag" style={{marginBottom:'10px'}}>HANDPICKED FOR YOU</p>
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,52px)',color:'var(--cream)'}}>Featured Pieces</h2>
           </div>
-          <button className="btn-ghost-luxury" style={{fontSize:'11px',letterSpacing:'.12em',padding:'11px 22px'}} onClick={()=>navigate('collections')}>VIEW ALL â†’</button>
+          <button className="btn-ghost-luxury" style={{fontSize:'11px',letterSpacing:'.12em',padding:'11px 22px'}} onClick={()=>navigate('collections')}>VIEW ALL -&gt;</button>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(clamp(170px,42vw,270px),1fr))',gap:'clamp(12px,2vw,20px)'}}>
           {featured.map((p,i)=>(
@@ -1293,7 +1293,7 @@ function CollectionsBand({ navigate }) {
             <p className="label-tag" style={{marginBottom:'10px'}}>FIVE WORLDS</p>
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,52px)',color:'var(--cream)'}}>Our Collections</h2>
           </div>
-          <button className="btn-ghost-luxury" style={{fontSize:'11px',letterSpacing:'.12em',padding:'11px 22px'}} onClick={()=>navigate('collections')}>ALL COLLECTIONS â†’</button>
+          <button className="btn-ghost-luxury" style={{fontSize:'11px',letterSpacing:'.12em',padding:'11px 22px'}} onClick={()=>navigate('collections')}>ALL COLLECTIONS -&gt;</button>
         </div>
       </div>
 
@@ -1397,8 +1397,8 @@ function AllProductsGrid({ navigate }) {
               fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',
               background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.5)',outline:'none',cursor:'none'}}>
             <option value="popular">MOST POPULAR</option>
-            <option value="price-low">PRICE: LOW â†’ HIGH</option>
-            <option value="price-high">PRICE: HIGH â†’ LOW</option>
+            <option value="price-low">PRICE: LOW -&gt; HIGH</option>
+            <option value="price-high">PRICE: HIGH -&gt; LOW</option>
           </select>
         </div>
 
@@ -1417,7 +1417,7 @@ function AllProductsGrid({ navigate }) {
         {vis<filtered.length&&(
           <div style={{textAlign:'center',marginTop:'44px'}}>
             <button className="btn-ghost-luxury" style={{padding:'14px 40px',fontSize:'11px',letterSpacing:'.14em'}} onClick={()=>setVis(v=>v+8)}>
-              LOAD MORE â€” {filtered.length-vis} REMAINING
+              LOAD MORE - {filtered.length-vis} REMAINING
             </button>
           </div>
         )}
@@ -1450,7 +1450,7 @@ function TestimonialsSection() {
                 <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',fontWeight:'500',color:'rgba(250,250,245,.8)'}}>{t.name}</p>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)'}}>{t.location}</p>
               </div>
-              <span style={{marginLeft:'auto',fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',background:'rgba(168,230,207,.08)',padding:'3px 8px',borderRadius:'2px',border:'1px solid rgba(168,230,207,.15)',letterSpacing:'.1em'}}>âœ“ VERIFIED</span>
+              <span style={{marginLeft:'auto',fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',background:'rgba(168,230,207,.08)',padding:'3px 8px',borderRadius:'2px',border:'1px solid rgba(168,230,207,.15)',letterSpacing:'.1em'}}>OK VERIFIED</span>
             </div>
           </div>
         ))}
@@ -1474,7 +1474,7 @@ function ContactTeaser({ navigate }) {
         </p>
         <button className="btn-gold" onClick={()=>navigate('contact')} style={{padding:'17px 44px',fontSize:'13px',letterSpacing:'.1em'}}>CONTACT US</button>
         <div style={{display:'flex',justifyContent:'center',gap:'48px',marginTop:'56px'}}>
-          {[{icon:'ðŸ“±',l:'WhatsApp'},{icon:'ðŸ“§',l:'Email Us'},{icon:'ðŸ“¸',l:'@urbanjewells'}].map(({icon,l})=>(
+          {[{icon:'Phone',l:'WhatsApp'},{icon:'Email',l:'Email Us'},{icon:'IG',l:'@urbanjewells'}].map(({icon,l})=>(
             <div key={l} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'8px'}}>
               <span style={{fontSize:'22px'}}>{icon}</span>
               <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.25)',letterSpacing:'.12em'}}>{l}</span>
@@ -1588,7 +1588,7 @@ function CollectionDetail({ slug, navigate }) {
         <img src={col.coverImage} alt={col.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
         <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,1) 0%,rgba(5,8,5,.5) 50%,transparent 100%)'}}/>
         <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'44px 48px'}}>
-          <button onClick={()=>navigate('collections')} style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',background:'none',border:'none',cursor:'none',letterSpacing:'.12em',marginBottom:'14px',display:'flex',alignItems:'center',gap:'6px',transition:'color .2s'}} onMouseEnter={e=>e.currentTarget.style.color='var(--mint)'} onMouseLeave={e=>e.currentTarget.style.color='rgba(250,250,245,.3)'}>â† COLLECTIONS</button>
+          <button onClick={()=>navigate('collections')} style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',background:'none',border:'none',cursor:'none',letterSpacing:'.12em',marginBottom:'14px',display:'flex',alignItems:'center',gap:'6px',transition:'color .2s'}} onMouseEnter={e=>e.currentTarget.style.color='var(--mint)'} onMouseLeave={e=>e.currentTarget.style.color='rgba(250,250,245,.3)'}>&lt;- COLLECTIONS</button>
           <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',letterSpacing:'.2em',marginBottom:'8px'}}>{col.mood}</p>
           <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(42px,6vw,72px)',color:'var(--cream)',lineHeight:'1'}}>{col.name}</h1>
         </div>
@@ -1597,13 +1597,13 @@ function CollectionDetail({ slug, navigate }) {
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'32px',flexWrap:'wrap',gap:'12px'}}>
           <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(250,250,245,.25)'}}>{prods.length} pieces</p>
           <select value={sort} onChange={e=>setSort(e.target.value)} style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'9px 12px',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.5)',outline:'none',cursor:'none'}}>
-            <option value="popular">MOST POPULAR</option><option value="price-low">PRICE: LOW â†’ HIGH</option><option value="price-high">PRICE: HIGH â†’ LOW</option>
+            <option value="popular">MOST POPULAR</option><option value="price-low">PRICE: LOW -&gt; HIGH</option><option value="price-high">PRICE: HIGH -&gt; LOW</option>
           </select>
         </div>
         {prods.length===0 ? (
           <div style={{textAlign:'center',padding:'80px 0'}}>
             <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'28px',color:'rgba(250,250,245,.5)'}}>No pieces in this collection yet.</p>
-            <button className="btn-ghost-luxury" style={{marginTop:'24px',fontSize:'11px',letterSpacing:'.12em'}} onClick={()=>navigate('collections')}>â† BACK</button>
+            <button className="btn-ghost-luxury" style={{marginTop:'24px',fontSize:'11px',letterSpacing:'.12em'}} onClick={()=>navigate('collections')}>&lt;- BACK</button>
           </div>
         ) : (
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:'18px'}}>
@@ -1643,7 +1643,7 @@ function CategoryPage({ slug, navigate }) {
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'28px',flexWrap:'wrap',gap:'12px'}}>
           <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(250,250,245,.25)'}}>{prods.length} {cat.name.toLowerCase()}</p>
           <select value={sort} onChange={e=>setSort(e.target.value)} style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'9px 12px',fontFamily:"'DM Mono',monospace",fontSize:'10px',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.5)',outline:'none',cursor:'none'}}>
-            <option value="popular">MOST POPULAR</option><option value="price-low">PRICE: LOW â†’ HIGH</option><option value="price-high">PRICE: HIGH â†’ LOW</option>
+            <option value="popular">MOST POPULAR</option><option value="price-low">PRICE: LOW -&gt; HIGH</option><option value="price-high">PRICE: HIGH -&gt; LOW</option>
           </select>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:'18px'}}>
@@ -1675,7 +1675,7 @@ function ProductPage({ slug, navigate }) {
         <div style={{display:'flex',gap:'8px',alignItems:'center',marginBottom:'40px'}}>
           {[{l:'Home',p:()=>navigate('home')},{l:product.category,p:()=>navigate('category',{slug:product.category})},{l:product.name,p:null}].map((item,i)=>(
             <span key={i} style={{display:'flex',alignItems:'center',gap:'8px'}}>
-              {i>0&&<span style={{color:'rgba(250,250,245,.15)',fontSize:'12px'}}>â€º</span>}
+              {i>0&&<span style={{color:'rgba(250,250,245,.15)',fontSize:'12px'}}>&gt;</span>}
               {item.p ? (
                 <button onClick={item.p} style={{background:'none',border:'none',cursor:'none',fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(250,250,245,.25)',letterSpacing:'.08em',textTransform:'capitalize',transition:'color .15s'}} onMouseEnter={e=>e.target.style.color='var(--mint)'} onMouseLeave={e=>e.target.style.color='rgba(250,250,245,.25)'}>{item.l}</button>
               ) : <span style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(250,250,245,.45)',letterSpacing:'.08em'}}>{item.l}</span>}
@@ -1763,7 +1763,7 @@ function ProductPage({ slug, navigate }) {
                 ADD TO CART
               </button>
               <button className="btn-ghost-luxury" style={{width:'100%',justifyContent:'center',padding:'14px',fontSize:'12px',letterSpacing:'.1em'}} onClick={()=>toggleWishlist(product)}>
-                {inWish?'âœ“ IN WISHLIST':'â™¡  ADD TO WISHLIST'}
+                {inWish?'OK IN WISHLIST':'<3 ADD TO WISHLIST'}
               </button>
             </div>
 
@@ -1779,7 +1779,7 @@ function ProductPage({ slug, navigate }) {
             {/* Accordion */}
             {[{t:'Full Description',c:'This piece is finished to exacting standards, ensuring lasting beauty with everyday wear. Each Urban Jewells piece arrives in signature packaging, ready to gift or treasure.'},
               {t:'Materials & Care',c:`Materials: ${product.materials.join(', ')}. Store in the provided pouch. Avoid perfume, chlorine, and lotions. Clean gently with a soft dry cloth after wearing.`},
-              {t:'Shipping & Returns',c:'Standard delivery 5â€“8 business days across India. Express available on select pincodes. Returns within 14 days on unworn items â€” contact via WhatsApp to initiate.'}
+              {t:'Shipping & Returns',c:'Standard delivery 5-8 business days across India. Express available on select pincodes. Returns within 14 days on unworn items - contact via WhatsApp to initiate.'}
             ].map(({t,c})=>(
               <div key={t} style={{borderBottom:'1px solid rgba(168,230,207,.06)'}}>
                 <button onClick={()=>setAcc(acc===t?null:t)}
@@ -1991,14 +1991,14 @@ function CartPage({ navigate }) {
                 <FormField label="Province / State"       name="province"  placeholder="Maharashtra" req={true}       {...fieldProps}/>
                 <FormField label="Postal Code"            name="postalCode" placeholder="400001"                       {...fieldProps}/>
                 <FormField label="Country"                name="country"   placeholder="India"                         {...fieldProps}/>
-                <FormField label="Order Notes (opt.)"     name="notes"     placeholder="Any special instructionsâ€¦" span={2} req={false} ta {...fieldProps}/>
+                <FormField label="Order Notes (opt.)"     name="notes"     placeholder="Any special instructions..." span={2} req={false} ta {...fieldProps}/>
               </div>
               <button className="btn-luxury" disabled={submitting}
                 onClick={handleSubmit}
                 style={{width:'100%',justifyContent:'center',padding:'17px',fontSize:'13px',letterSpacing:'.1em',marginTop:'6px',opacity:submitting ? 0.6 : 1,cursor:submitting ? 'not-allowed' : 'none'}}>
                 {submitting ? (
-                  <><span className="animate-spin" style={{display:'inline-block',width:'16px',height:'16px',border:'2px solid rgba(250,250,245,.25)',borderTop:'2px solid var(--cream)',borderRadius:'50%'}}/>  PROCESSINGâ€¦</>
-                ) : 'PLACE ORDER â†’'}
+                  <><span className="animate-spin" style={{display:'inline-block',width:'16px',height:'16px',border:'2px solid rgba(250,250,245,.25)',borderTop:'2px solid var(--cream)',borderRadius:'50%'}}/>  PROCESSING...</>
+                ) : 'PLACE ORDER ->'}
               </button>
             </div>
           </div>
@@ -2037,7 +2037,7 @@ function ThankYouPage({ orderRef, email, navigate }) {
           CONFIRM ON WHATSAPP
         </a>
         <div style={{display:'flex',flexDirection:'column',gap:'8px',alignItems:'center'}}>
-          <button onClick={()=>navigate('home')} style={{background:'none',border:'none',cursor:'none',fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(168,230,207,.4)',letterSpacing:'.12em',transition:'color .2s'}} onMouseEnter={e=>e.target.style.color='var(--mint)'} onMouseLeave={e=>e.target.style.color='rgba(168,230,207,.4)'}>CONTINUE SHOPPING â†’</button>
+          <button onClick={()=>navigate('home')} style={{background:'none',border:'none',cursor:'none',fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(168,230,207,.4)',letterSpacing:'.12em',transition:'color .2s'}} onMouseEnter={e=>e.target.style.color='var(--mint)'} onMouseLeave={e=>e.target.style.color='rgba(168,230,207,.4)'}>CONTINUE SHOPPING -&gt;</button>
           {email&&<p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.15)'}}>Confirmation sent to {email}</p>}
         </div>
       </div>
@@ -2050,10 +2050,10 @@ function ThankYouPage({ orderRef, email, navigate }) {
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function AboutPage({ navigate }) {
   const team = [
-    {name:"Sudhir Krishan Narula",role:"Founder",bio:"With a passion for design and detail, Sudhir founded Urban Jewells to redefine artificial jewellery â€” merging refined aesthetics with bold, contemporary expression.",init:"SK", img:"https://res.cloudinary.com/dxw1yg7if/image/upload/v1772515066/IMG_9975_cypxxi.jpg"},
+    {name:"Sudhir Krishan Narula",role:"Founder",bio:"With a passion for design and detail, Sudhir founded Urban Jewells to redefine artificial jewellery - merging refined aesthetics with bold, contemporary expression.",init:"SK", img:"https://res.cloudinary.com/dxw1yg7if/image/upload/v1772515066/IMG_9975_cypxxi.jpg"},
     {name:"Meera Narula",role:"CEO",bio:"With a background in business and a passion for craftsmanship, Meera steers the brand's vision and ensures every piece reflects luxury with integrity.",init:"MN", img:"https://res.cloudinary.com/dxw1yg7if/image/upload/v1772521076/Maa_xrolun.jpg"},
-    {name:"Paarth Narula",role:"Chief Executive",bio:"Overseas operations and customer experienceâ€”Paarth makes sure every order is handled with care from the studio to your doorstep.",init:"PN", img:"https://res.cloudinary.com/dxw1yg7if/image/upload/v1772521653/Paarth_Bhaiya_hwc1qa.jpg"},
-    {name:"Dhananjay Narula",role:"Developer",bio:"Fullâ€‘stack developer and tech enthusiast who built this website and keeps our digital shop running smoothly.",init:"DN", img:"https://res.cloudinary.com/dxw1yg7if/image/upload/v1772521159/photo_6116175361453264265_y_ka8fie.jpg"},
+    {name:"Paarth Narula",role:"Chief Executive",bio:"Overseas operations and customer experience - Paarth makes sure every order is handled with care from the studio to your doorstep.",init:"PN", img:"https://res.cloudinary.com/dxw1yg7if/image/upload/v1772521653/Paarth_Bhaiya_hwc1qa.jpg"},
+    {name:"Dhananjay Narula",role:"Developer",bio:"Full-stack developer and tech enthusiast who built this website and keeps our digital shop running smoothly.",init:"DN", img:"https://res.cloudinary.com/dxw1yg7if/image/upload/v1772521159/photo_6116175361453264265_y_ka8fie.jpg"},
   ];
   return (
     <div style={{background:'var(--ink)'}}>
@@ -2079,10 +2079,10 @@ function AboutPage({ navigate }) {
             </div>
           </div>
           <div>
-            <p className="label-tag" style={{marginBottom:'16px'}}>SINCE 2019 Â· INDIA</p>
+            <p className="label-tag" style={{marginBottom:'16px'}}>SINCE 2019 - INDIA</p>
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,48px)',color:'var(--cream)',marginBottom:'28px',lineHeight:'1.1'}}>Where Craft Meets Intention</h2>
-            {["Urban Jewells was born from the vision of Sudhir Krishan Narula, who believed jewellery should be more than ornamentation â€” it should be identity, intention, and quiet power.",
-              "What began as a passion for refined craftsmanship soon evolved into a brand rooted in purpose. Inspired by timeless artistry and modern sophistication, Sudhir set out to create pieces that feel personal, powerful, and enduring â€” jewellery designed not just to be worn, but to be experienced.",
+            {["Urban Jewells was born from the vision of Sudhir Krishan Narula, who believed jewellery should be more than ornamentation - it should be identity, intention, and quiet power.",
+              "What began as a passion for refined craftsmanship soon evolved into a brand rooted in purpose. Inspired by timeless artistry and modern sophistication, Sudhir set out to create pieces that feel personal, powerful, and enduring - jewellery designed not just to be worn, but to be experienced.",
               "Every Urban Jewells creation reflects that philosophy: uncompromising quality, meaningful design, and a buying experience built on trust, not transactions.",
               "We believe jewellery is a language worn closest to the skin. When you wear Urban Jewells, you wear a piece of that belief."].map((t,i)=>(
               <p key={i} style={{fontFamily:"'DM Sans',sans-serif",fontSize:'15px',color:'rgba(250,250,245,.42)',lineHeight:'1.9',marginBottom:'18px'}}>{t}</p>
@@ -2099,10 +2099,10 @@ function AboutPage({ navigate }) {
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,50px)',color:'var(--cream)'}}>Our Mission</h2>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:'18px'}}>
-            {[{e:'ðŸ…',t:'Quality First',d:'Every component â€” from clasp to stone â€” is selected for longevity. Our pieces outlast trends.'},
-              {e:'ðŸŒ¿',t:'Ethically Sourced',d:"All gemstones are conflict-free. We work only with suppliers who respect the land and the people who work it."},
-              {e:'ðŸ¤',t:'Community Driven',d:"Urban Jewells grew from the women who wore it. Every WhatsApp message is read and replied to personally."},
-              {e:'â™»ï¸',t:'Sustainable Practices',d:'We minimise waste, favour eco-conscious materials, and continuously improve our production footprint.'}
+            {[{e:'[Award]',t:'Quality First',d:'Every component - from clasp to stone - is selected for longevity. Our pieces outlast trends.'},
+              {e:'[Leaf]',t:'Ethically Sourced',d:"All gemstones are conflict-free. We work only with suppliers who respect the land and the people who work it."},
+              {e:'[Community]',t:'Community Driven',d:"Urban Jewells grew from the women who wore it. Every WhatsApp message is read and replied to personally."},
+              {e:'[Recycle]',t:'Sustainable Practices',d:'We minimise waste, favour eco-conscious materials, and continuously improve our production footprint.'}
             ].map(({e,t,d})=>(
               <div key={t} className="glass-card" style={{padding:'32px',textAlign:'center'}}>
                 <span style={{fontSize:'32px',display:'block',marginBottom:'16px'}}>{e}</span>
@@ -2195,7 +2195,7 @@ function ContactPage() {
           <div>
             {status==='success'&&(
               <div style={{background:'rgba(168,230,207,.08)',border:'1px solid rgba(168,230,207,.2)',borderRadius:'6px',padding:'14px 18px',marginBottom:'24px',display:'flex',alignItems:'center',gap:'10px'}}>
-                <span style={{color:'var(--mint)'}}>âœ“</span>
+                <span style={{color:'var(--mint)'}}>OK</span>
                 <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.6)'}}>Message sent! We'll reply within 24 hours.</span>
               </div>
             )}
@@ -2217,12 +2217,12 @@ function ContactPage() {
               </div>
               <div>
                 <label htmlFor="message" style={{display:'block',fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',textTransform:'uppercase',letterSpacing:'.12em',marginBottom:'8px'}}>Message *</label>
-                <textarea id="message" rows={5} placeholder="Tell us what's on your mindâ€¦" value={form.message} onChange={e=>setForm(p=>({...p,message:e.target.value}))} className="dark-field" style={{resize:'vertical'}}/>
+                <textarea id="message" rows={5} placeholder="Tell us what's on your mind..." value={form.message} onChange={e=>setForm(p=>({...p,message:e.target.value}))} className="dark-field" style={{resize:'vertical'}}/>
                 {errors.message&&<p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'#F87171',marginTop:'4px'}}>{errors.message}</p>}
               </div>
               <button className="btn-luxury" disabled={sub} style={{alignSelf:'flex-start',padding:'14px 32px',fontSize:'12px',letterSpacing:'.12em',opacity:sub ? 0.65 : 1}}
                 onClick={handleSubmit}>
-                {sub?<><span className="animate-spin" style={{display:'inline-block',width:'14px',height:'14px',border:'2px solid rgba(250,250,245,.25)',borderTop:'2px solid var(--cream)',borderRadius:'50%'}}/>  SENDING</>:'SEND MESSAGE â†’'}
+                {sub?<><span className="animate-spin" style={{display:'inline-block',width:'14px',height:'14px',border:'2px solid rgba(250,250,245,.25)',borderTop:'2px solid var(--cream)',borderRadius:'50%'}}/>  SENDING</>:'SEND MESSAGE -&gt;'}
               </button>
             </div>
           </div>
@@ -2231,7 +2231,7 @@ function ContactPage() {
           <div>
             <div className="glass-card" style={{padding:'32px',marginBottom:'20px'}}>
               <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'24px',color:'var(--cream)',marginBottom:'22px'}}>Contact Info</h3>
-              {[{e:'ðŸ“±',t:'WhatsApp',v:'+91 73512 57315',a:'https://wa.me/917351257315'},{e:'ðŸ“§',t:'Email',v:'hello@urbanjewells.in',a:'mailto:hello@urbanjewells.in'},{e:'ðŸ“¸',t:'Instagram',v:'@urbanjewells',a:'https://instagram.com'}].map(({e,t,v,a})=>(
+              {[{e:'[Phone]',t:'WhatsApp',v:'+91 73512 57315',a:'https://wa.me/917351257315'},{e:'[Email]',t:'Email',v:'hello@urbanjewells.in',a:'mailto:hello@urbanjewells.in'},{e:'[Instagram]',t:'Instagram',v:'@urbanjewells',a:'https://instagram.com'}].map(({e,t,v,a})=>(
                 <a key={t} href={a} target="_blank" rel="noopener noreferrer" style={{display:'flex',alignItems:'center',gap:'14px',padding:'14px 0',borderBottom:'1px solid rgba(168,230,207,.06)',textDecoration:'none',transition:'opacity .15s'}} onMouseEnter={el=>el.currentTarget.style.opacity='.8'} onMouseLeave={el=>el.currentTarget.style.opacity='1'}>
                   <span style={{fontSize:'20px'}}>{e}</span>
                   <div>
@@ -2240,7 +2240,7 @@ function ContactPage() {
                   </div>
                 </a>
               ))}
-              <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.2)',marginTop:'16px',letterSpacing:'.06em'}}>Monâ€“Sat, 9amâ€“6pm IST Â· 2â€“4hr WhatsApp reply</p>
+              <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.2)',marginTop:'16px',letterSpacing:'.06em'}}>Mon-Sat, 9am-6pm IST - 2-4hr WhatsApp reply</p>
             </div>
           </div>
         </div>
@@ -2380,7 +2380,7 @@ function WishlistPage({ navigate }) {
             {/* Bottom actions */}
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', paddingTop:'24px', borderTop:'1px solid rgba(168,230,207,.06)', flexWrap:'wrap', gap:'16px' }}>
               <button className="btn-ghost-luxury" style={{ fontSize:'11px', letterSpacing:'.12em', padding:'12px 24px' }} onClick={() => navigate('collections')}>
-                â† CONTINUE SHOPPING
+                &lt;- CONTINUE SHOPPING
               </button>
               <button className="btn-luxury" style={{ fontSize:'11px', letterSpacing:'.12em', padding:'12px 28px' }}
                 onClick={() => { wishlist.forEach(p => addToCart(p, null, 1)); navigate('cart'); }}>
@@ -2410,7 +2410,7 @@ function NotFoundPage({ navigate }) {
       <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(28px,4vw,42px)',color:'rgba(250,250,245,.65)',marginBottom:'12px',position:'relative',zIndex:1}}>Page Not Found</h2>
       <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'15px',color:'rgba(250,250,245,.3)',marginBottom:'36px',position:'relative',zIndex:1}}>This jewel seems to have gone missing from our collection.</p>
       <div style={{display:'flex',gap:'12px',flexWrap:'wrap',justifyContent:'center',position:'relative',zIndex:1}}>
-        <button className="btn-luxury" style={{fontSize:'12px',letterSpacing:'.12em'}} onClick={()=>navigate('home')}>â† HOME</button>
+        <button className="btn-luxury" style={{fontSize:'12px',letterSpacing:'.12em'}} onClick={()=>navigate('home')}>&lt;- HOME</button>
         <button className="btn-ghost-luxury" style={{fontSize:'12px',letterSpacing:'.12em'}} onClick={()=>navigate('collections')}>COLLECTIONS</button>
         <button className="btn-ghost-luxury" style={{fontSize:'12px',letterSpacing:'.12em'}} onClick={()=>navigate('contact')}>CONTACT</button>
       </div>
@@ -2562,7 +2562,7 @@ function PrivacyPolicy({ navigate }) {
           <div style={{background:'rgba(168,230,207,.04)',border:'1px solid rgba(168,230,207,.1)',borderRadius:'8px',padding:'24px',marginBottom:'24px'}}>
             <p style={{marginBottom:'12px'}}><strong>Email:</strong> hello@urbanjewells.in</p>
             <p style={{marginBottom:'12px'}}><strong>WhatsApp:</strong> +91 73512 57315</p>
-            <p style={{marginBottom:'0'}}><strong>Hours:</strong> Mondayâ€“Saturday, 9amâ€“6pm IST</p>
+            <p style={{marginBottom:'0'}}><strong>Hours:</strong> Monday-Saturday, 9am-6pm IST</p>
           </div>
 
           {/* Section 12 */}
@@ -2574,10 +2574,10 @@ function PrivacyPolicy({ navigate }) {
           {/* Footer section */}
           <div style={{marginTop:'56px',paddingTop:'28px',borderTop:'1px solid rgba(168,230,207,.06)',textAlign:'center'}}>
             <p style={{fontSize:'13px',color:'rgba(250,250,245,.25)',marginBottom:'20px'}}>
-              Â© 2026 Urban Jewells. All rights reserved.
+              (c) 2026 Urban Jewells. All rights reserved.
             </p>
             <button onClick={()=>navigate('home')} style={{background:'none',border:'none',cursor:'none',fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(168,230,207,.4)',letterSpacing:'.12em',transition:'color .2s',textDecoration:'none'}} onMouseEnter={e=>e.target.style.color='var(--mint)'} onMouseLeave={e=>e.target.style.color='rgba(168,230,207,.4)'}>
-              â† BACK HOME
+              &lt;- BACK HOME
             </button>
           </div>
         </div>
@@ -2607,26 +2607,26 @@ function ShippingPage({ navigate }) {
 
           <div style={{background:'rgba(168,230,207,.04)',border:'1px solid rgba(168,230,207,.1)',borderRadius:'8px',padding:'24px',marginBottom:'32px'}}>
             <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'22px',color:'var(--mint)',marginBottom:'16px'}}>Standard Shipping (India)</h3>
-            <p style={{marginBottom:'12px'}}><strong>Delivery Time:</strong> 5â€“8 business days</p>
-            <p style={{marginBottom:'0'}}><strong>Cost:</strong> FREE on orders over â‚¹500 | â‚¹99 for orders under â‚¹500</p>
+            <p style={{marginBottom:'12px'}}><strong>Delivery Time:</strong> 5-8 business days</p>
+            <p style={{marginBottom:'0'}}><strong>Cost:</strong> FREE on orders over INR 500 | INR 99 for orders under INR 500</p>
           </div>
 
           <div style={{background:'rgba(168,230,207,.04)',border:'1px solid rgba(168,230,207,.1)',borderRadius:'8px',padding:'24px',marginBottom:'32px'}}>
             <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'22px',color:'var(--mint)',marginBottom:'16px'}}>Express Shipping (Select Metros)</h3>
-            <p style={{marginBottom:'12px'}}><strong>Delivery Time:</strong> 2â€“3 business days</p>
-            <p style={{marginBottom:'0'}}><strong>Cost:</strong> â‚¹249 (available for select pincodes)</p>
+            <p style={{marginBottom:'12px'}}><strong>Delivery Time:</strong> 2-3 business days</p>
+            <p style={{marginBottom:'0'}}><strong>Cost:</strong> INR 249 (available for select pincodes)</p>
           </div>
 
           <div style={{background:'rgba(168,230,207,.04)',border:'1px solid rgba(168,230,207,.1)',borderRadius:'8px',padding:'24px',marginBottom:'32px'}}>
             <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'22px',color:'var(--mint)',marginBottom:'16px'}}>International Shipping</h3>
-            <p style={{marginBottom:'12px'}}><strong>Delivery Time:</strong> 8â€“15 business days</p>
+            <p style={{marginBottom:'12px'}}><strong>Delivery Time:</strong> 8-15 business days</p>
             <p style={{marginBottom:'0'}}><strong>Cost:</strong> Calculated at checkout based on destination</p>
           </div>
 
           <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'28px',color:'var(--cream)',marginTop:'48px',marginBottom:'18px'}}>Order Processing</h2>
           <p style={{marginBottom:'16px'}}>Once you place an order:
             <ol style={{marginTop:'8px',marginLeft:'24px',marginBottom:'24px'}}>
-              <li style={{marginBottom:'8px'}}>We'll confirm your order via WhatsApp within 2â€“4 hours</li>
+              <li style={{marginBottom:'8px'}}>We'll confirm your order via WhatsApp within 2-4 hours</li>
               <li style={{marginBottom:'8px'}}>We'll share payment details securely</li>
               <li style={{marginBottom:'8px'}}>Once payment is received, we prepare your order for dispatch</li>
               <li style={{marginBottom:'8px'}}>You'll receive a tracking number via WhatsApp</li>
@@ -2638,7 +2638,7 @@ function ShippingPage({ navigate }) {
           <p style={{marginBottom:'24px'}}>All orders include a tracking number. You can use this to track your shipment in real-time through our courier partner's portal. We'll also send you tracking updates via WhatsApp.</p>
 
           <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'28px',color:'var(--cream)',marginTop:'48px',marginBottom:'18px'}}>Packaging</h2>
-          <p style={{marginBottom:'24px'}}>Every Urban Jewells piece arrives in our signature packaging â€” thoughtfully designed and gift-ready. Your order includes:
+          <p style={{marginBottom:'24px'}}>Every Urban Jewells piece arrives in our signature packaging - thoughtfully designed and gift-ready. Your order includes:
             <ul style={{marginTop:'8px',marginLeft:'24px'}}>
               <li>Premium gift box with branded wrapping</li>
               <li>Care instruction card</li>
@@ -2664,7 +2664,7 @@ function ShippingPage({ navigate }) {
 
           <div style={{marginTop:'56px',paddingTop:'28px',borderTop:'1px solid rgba(168,230,207,.06)',textAlign:'center'}}>
             <button onClick={()=>navigate('home')} style={{background:'none',border:'none',cursor:'none',fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(168,230,207,.4)',letterSpacing:'.12em',transition:'color .2s'}} onMouseEnter={e=>e.target.style.color='var(--mint)'} onMouseLeave={e=>e.target.style.color='rgba(168,230,207,.4)'}>
-              â† BACK HOME
+              &lt;- BACK HOME
             </button>
           </div>
         </div>
@@ -2757,7 +2757,7 @@ function ReturnsPage({ navigate }) {
 
           <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'28px',color:'var(--mint)',marginTop:'40px',marginBottom:'18px'}}>Our Commitment to Quality</h2>
           <p style={{marginBottom:'24px'}}>
-            While we do not accept returns, we are committed to ensuring every piece meets our exacting standards before it ships. Each item undergoes rigorous quality checks. If there is any defect or concern, we will catch it before dispatch. Your satisfaction with the craftsmanship and quality of your Urban Jewells piece is guaranteedâ€”but only if it arrives as intended.
+            While we do not accept returns, we are committed to ensuring every piece meets our exacting standards before it ships. Each item undergoes rigorous quality checks. If there is any defect or concern, we will catch it before dispatch. Your satisfaction with the craftsmanship and quality of your Urban Jewells piece is guaranteed - but only if it arrives as intended.
           </p>
 
           <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'28px',color:'var(--mint)',marginTop:'40px',marginBottom:'18px'}}>Defect Reporting Process</h2>
@@ -2768,7 +2768,7 @@ function ReturnsPage({ navigate }) {
             <ol style={{marginTop:'8px',marginLeft:'24px',marginBottom:'0'}}>
               <li style={{marginBottom:'10px'}}>Contact us <strong>within 48 hours of delivery</strong> via WhatsApp or email</li>
               <li style={{marginBottom:'10px'}}>Provide video of opening the parcel and the defects item inside it</li>
-              <li style={{marginBottom:'10px'}}>Provide 3â€“4 clear, detailed photos showing the defect</li>
+              <li style={{marginBottom:'10px'}}>Provide 3-4 clear, detailed photos showing the defect</li>
               <li style={{marginBottom:'10px'}}>We will assess the damage and verify it's a manufacturing defect</li>
               <li style={{marginBottom:'10px'}}>If approved, we will send a replacement at no cost</li>
               <li>A prepaid return label will be provided for the damaged item</li>
@@ -2784,7 +2784,7 @@ function ReturnsPage({ navigate }) {
               <li style={{marginBottom:'10px'}}>Report the issue immediately with your order number and tracking ID</li>
               <li style={{marginBottom:'10px'}}>We will file a claim with the courier on your behalf</li>
               <li style={{marginBottom:'10px'}}>Once the carrier settles the claim, we will provide a replacement or full refund</li>
-              <li>This process can take 30â€“60 days depending on the courier</li>
+              <li>This process can take 30-60 days depending on the courier</li>
             </ul>
           </p>
 
@@ -2807,7 +2807,7 @@ function ReturnsPage({ navigate }) {
 
           <div style={{background:'rgba(30,58,15,.15)',border:'1px solid rgba(168,230,207,.12)',borderRadius:'8px',padding:'28px',marginBottom:'48px'}}>
             <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'18px',color:'var(--mint)',marginTop:'0',marginBottom:'10px'}}>
-              âœ“ We're Here to Help
+              OK We're Here to Help
             </p>
             <p style={{marginBottom:'0'}}>
               If you're unsure about any aspect of a product before ordering, our team is happy to help. We offer detailed consultations via WhatsApp to ensure you're 100% confident in your purchase before you commit.
@@ -2816,7 +2816,7 @@ function ReturnsPage({ navigate }) {
 
           <div style={{marginTop:'56px',paddingTop:'28px',borderTop:'1px solid rgba(168,230,207,.06)',textAlign:'center'}}>
             <button onClick={()=>navigate('home')} style={{background:'none',border:'none',cursor:'none',fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(168,230,207,.4)',letterSpacing:'.12em',transition:'color .2s'}} onMouseEnter={e=>e.target.style.color='var(--mint)'} onMouseLeave={e=>e.target.style.color='rgba(168,230,207,.4)'}>
-              â† BACK HOME
+              &lt;- BACK HOME
             </button>
           </div>
         </div>
@@ -2916,7 +2916,7 @@ function TermsPage({ navigate }) {
 
           <div style={{marginTop:'56px',paddingTop:'28px',borderTop:'1px solid rgba(168,230,207,.06)',textAlign:'center'}}>
             <button onClick={()=>navigate('home')} style={{background:'none',border:'none',cursor:'none',fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(168,230,207,.4)',letterSpacing:'.12em',transition:'color .2s'}} onMouseEnter={e=>e.target.style.color='var(--mint)'} onMouseLeave={e=>e.target.style.color='rgba(168,230,207,.4)'}>
-              â† BACK HOME
+              &lt;- BACK HOME
             </button>
           </div>
         </div>
