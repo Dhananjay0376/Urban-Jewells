@@ -1217,18 +1217,36 @@ function HeroSection({ navigate }) {
           </div>
         </div>
 
-        {/* 3D GEM */}
-        <div style={{display:'flex',justifyContent:'center',alignItems:'center',position:'relative'}}>
-          <div className="glow-pulse" style={{position:'absolute',width:'360px',height:'360px',borderRadius:'50%',background:'radial-gradient(circle,rgba(168,230,207,.07) 0%,transparent 70%)',pointerEvents:'none'}}/>
-          {w >= 900 ? (
-            <div className="fade-up-3" style={{position:'relative',zIndex:2}}>
-              <HeroGem size={Math.min(520, w*0.42)}/>
+        {/* Editorial image frame */}
+        <div style={{display:'flex',justifyContent:'center',alignItems:'center',position:'relative',minHeight:w<900?'auto':'720px'}}>
+          <div style={{position:'absolute',width:w<900?'88vw':'520px',height:w<900?'88vw':'640px',maxWidth:'560px',maxHeight:'700px',background:'radial-gradient(circle,rgba(168,230,207,.12) 0%,rgba(201,168,76,.08) 35%,transparent 72%)',filter:'blur(8px)',pointerEvents:'none'}}/>
+          <div className="fade-up-3" style={{position:'relative',zIndex:2,width:'min(88vw, 520px)'}}>
+            <div style={{position:'absolute',inset:'-18px',border:'1px solid rgba(201,168,76,.18)',borderRadius:'28px',pointerEvents:'none'}}/>
+            <div style={{position:'absolute',inset:'-34px 28px auto auto',width:'120px',height:'120px',border:'1px solid rgba(168,230,207,.16)',borderRadius:'50%',pointerEvents:'none'}}/>
+            <div style={{position:'absolute',left:'-24px',bottom:'82px',width:'90px',height:'90px',background:'linear-gradient(135deg,rgba(201,168,76,.14),rgba(168,230,207,.06))',border:'1px solid rgba(201,168,76,.12)',borderRadius:'20px',backdropFilter:'blur(8px)',pointerEvents:'none'}}/>
+            <div style={{position:'relative',padding:'18px',borderRadius:'28px',background:'linear-gradient(145deg,rgba(8,10,8,.9),rgba(18,26,15,.82))',border:'1px solid rgba(201,168,76,.24)',boxShadow:'0 28px 90px rgba(0,0,0,.55), 0 0 0 1px rgba(168,230,207,.08)'}}>
+              <div style={{position:'relative',borderRadius:'20px',overflow:'hidden',background:'var(--ink2)',aspectRatio:'4/5'}}>
+                <img
+                  src="https://res.cloudinary.com/dxw1yg7if/image/upload/v1774376772/Model_p0p9uk.jpg"
+                  alt="Urban Jewells editorial model"
+                  style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}
+                />
+                <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(8,10,8,.05) 0%,rgba(8,10,8,0) 30%,rgba(8,10,8,.28) 100%)'}}/>
+                <div style={{position:'absolute',bottom:'18px',left:'18px',right:'18px',display:'flex',justifyContent:'space-between',alignItems:'flex-end',gap:'16px'}}>
+                  <div style={{maxWidth:'220px'}}>
+                    <p style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',letterSpacing:'.18em',color:'var(--mint)',marginBottom:'7px'}}>URBAN JEWELLS</p>
+                    <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(24px,3.2vw,34px)',lineHeight:'1.02',color:'var(--cream)'}}>Modern heirlooms for the bold.</p>
+                  </div>
+                  <div style={{padding:'10px 12px',border:'1px solid rgba(201,168,76,.2)',background:'rgba(8,10,8,.46)',backdropFilter:'blur(12px)',borderRadius:'16px',fontFamily:"'DM Mono',monospace",fontSize:'9px',letterSpacing:'.14em',color:'rgba(250,250,245,.62)',textAlign:'right'}}>
+                    <div>STERLING</div>
+                    <div>GOLD</div>
+                    <div>CRYSTAL</div>
+                  </div>
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="float-slow fade-up-3" style={{width:'200px',height:'200px',borderRadius:'50%',background:'radial-gradient(circle,var(--mint),var(--dg))',opacity:.7,boxShadow:'var(--glow-mint)'}}/>
-          )}
-          {/* Decorative labels */}
-          <div style={{position:'absolute',top:'15%',right:'-5%',fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'rgba(168,230,207,.4)',letterSpacing:'.18em',writingMode:'vertical-lr',pointerEvents:'none'}}>STERLING - GOLD - CRYSTAL</div>
+          </div>
+          <div style={{position:'absolute',top:'14%',right:'0',fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'rgba(168,230,207,.32)',letterSpacing:'.18em',writingMode:'vertical-lr',pointerEvents:'none'}}>CURATED IN INDIA</div>
         </div>
       </div>
 
