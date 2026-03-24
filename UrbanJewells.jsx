@@ -271,10 +271,70 @@ const GlobalStyles = () => (
     .float-slow { animation:floatB 7s ease-in-out infinite; }
     .glow-pulse { animation:glowPulse 3s ease-in-out infinite; }
 
+    /* Tablet */
+    @media(max-width:1024px){
+      :root { --page-gutter:32px; }
+
+      header { padding:0 var(--page-gutter) !important; }
+      header nav { display:none !important; }
+      header > div:last-child > button:last-child { display:inline-flex !important; }
+
+      [style*="padding: 80px 48px"] { padding:72px var(--page-gutter) !important; }
+      [style*="padding: 96px 48px"] { padding:84px var(--page-gutter) !important; }
+      [style*="padding: 64px 48px"] { padding:58px var(--page-gutter) !important; }
+      [style*="padding: 60px 48px"] { padding:54px var(--page-gutter) !important; }
+      [style*="padding: 48px"] { padding:40px var(--page-gutter) !important; }
+      [style*="padding: 44px 48px"] { padding:38px var(--page-gutter) !important; }
+      [style*="padding: 40px 48px"] { padding:34px var(--page-gutter) !important; }
+      [style*="padding: 36px 48px"] { padding:32px var(--page-gutter) !important; }
+      [style*="padding: 120px 48px 64px"] { padding:108px var(--page-gutter) 56px !important; }
+      [style*="padding: 120px 48px 56px"] { padding:108px var(--page-gutter) 50px !important; }
+      [style*="padding: 100px 48px 60px"] { padding:96px var(--page-gutter) 54px !important; }
+      [style*="padding: 60px 48px 80px"] { padding:52px var(--page-gutter) 70px !important; }
+
+      [style*="grid-template-columns: 1.6fr 1fr 1fr 1fr"] { grid-template-columns:1fr 1fr !important; gap:32px !important; }
+      [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns:1fr !important; gap:36px !important; }
+      [style*="grid-template-columns: 1.15fr 1fr"] { grid-template-columns:1fr !important; gap:34px !important; }
+      [style*="grid-template-columns: 1.2fr 1fr"] { grid-template-columns:1fr !important; gap:34px !important; }
+    }
+
     /* Mobile */
     @media(max-width:768px){
+      :root { --page-gutter:20px; }
+
       body { cursor:auto; }
       #cursor-dot, #cursor-ring { display:none; }
+
+      header { height:64px !important; padding:0 var(--page-gutter) !important; }
+      header > div:last-child { gap:14px !important; }
+
+      .btn-luxury, .btn-ghost-luxury, .btn-gold { padding:12px 20px; font-size:12px; }
+      .dark-field { padding:12px 14px; font-size:13px; }
+
+      [style*="min-width: 300px"] { min-width:240px !important; }
+      [style*="min-width: 270px"] { min-width:0 !important; width:100% !important; }
+      [style*="height: 380px"] { height:300px !important; }
+      [style*="height: 320px"] { height:260px !important; }
+      [style*="height: 300px"] { height:240px !important; }
+
+      [style*="padding: 80px 48px"] { padding:56px var(--page-gutter) !important; }
+      [style*="padding: 96px 48px"] { padding:64px var(--page-gutter) !important; }
+      [style*="padding: 64px 48px"] { padding:48px var(--page-gutter) !important; }
+      [style*="padding: 60px 48px"] { padding:44px var(--page-gutter) !important; }
+      [style*="padding: 48px"] { padding:32px var(--page-gutter) !important; }
+      [style*="padding: 44px 48px"] { padding:28px var(--page-gutter) !important; }
+      [style*="padding: 40px 48px"] { padding:28px var(--page-gutter) !important; }
+      [style*="padding: 36px 48px"] { padding:24px var(--page-gutter) !important; }
+      [style*="padding: 120px 48px 64px"] { padding:92px var(--page-gutter) 46px !important; }
+      [style*="padding: 120px 48px 56px"] { padding:92px var(--page-gutter) 42px !important; }
+      [style*="padding: 100px 48px 60px"] { padding:88px var(--page-gutter) 42px !important; }
+      [style*="padding: 60px 48px 80px"] { padding:44px var(--page-gutter) 56px !important; }
+
+      [style*="grid-template-columns: repeat(auto-fill,minmax(380px,1fr))"] { grid-template-columns:1fr !important; }
+      [style*="grid-template-columns: repeat(auto-fill,minmax(270px,1fr))"] { grid-template-columns:1fr !important; }
+      [style*="grid-template-columns: repeat(auto-fill,minmax(260px,1fr))"] { grid-template-columns:1fr !important; }
+      [style*="grid-template-columns: repeat(auto-fill,minmax(250px,1fr))"] { grid-template-columns:1fr !important; }
+      [style*="grid-template-columns: repeat(auto-fill,minmax(220px,1fr))"] { grid-template-columns:1fr !important; }
     }
     @media(prefers-reduced-motion:reduce){
       * { animation-duration:.01ms !important; transition-duration:.01ms !important; }
@@ -710,7 +770,7 @@ function Header({ navigate, page }) {
       </header>
 
       {mobileOpen && (
-        <div style={{position:'fixed',inset:0,background:'rgba(10,13,10,0.98)',zIndex:9999,display:'flex',flexDirection:'column',padding:'0 36px'}}>
+        <div style={{position:'fixed',inset:0,background:'rgba(10,13,10,0.98)',zIndex:9999,display:'flex',flexDirection:'column',padding:'0 clamp(20px,4vw,36px)'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',height:'70px'}}>
             <Logo onClick={()=>{navigate('home');setMobileOpen(false);}}/>
             <button onClick={()=>setMobileOpen(false)} style={{background:'none',border:'none',cursor:'none',color:'var(--cream)'}}><XIcon/></button>
@@ -720,7 +780,7 @@ function Header({ navigate, page }) {
               if (p !== 'categories') return (
                 <button key={p} className="fade-up"
                   style={{animationDelay:`${i*.08}s`,background:'none',border:'none',cursor:'none',
-                    fontFamily:"'Cormorant Garamond',serif",fontSize:'52px',fontWeight:'300',
+                    fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(34px,9vw,52px)',fontWeight:'300',
                     color:'rgba(250,250,245,.8)',textAlign:'left',padding:'6px 0',
                     borderBottom:'1px solid rgba(168,230,207,.06)',transition:'color .15s',textTransform:'capitalize'}}
                   onClick={()=>{navigate(p);setMobileOpen(false);}}
@@ -731,7 +791,7 @@ function Header({ navigate, page }) {
 
               return (
                 <div key={p} className="fade-up" style={{animationDelay:`${i*.08}s`}}>
-                  <button onClick={()=>setMobileCatsOpen(!mobileCatsOpen)} style={{background:'none',border:'none',cursor:'none',fontFamily:"'Cormorant Garamond',serif",fontSize:'52px',fontWeight:'300',color:'rgba(250,250,245,.8)',textAlign:'left',padding:'6px 0',borderBottom:'1px solid rgba(168,230,207,.06)',textTransform:'capitalize'}}>
+                  <button onClick={()=>setMobileCatsOpen(!mobileCatsOpen)} style={{background:'none',border:'none',cursor:'none',fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(34px,9vw,52px)',fontWeight:'300',color:'rgba(250,250,245,.8)',textAlign:'left',padding:'6px 0',borderBottom:'1px solid rgba(168,230,207,.06)',textTransform:'capitalize'}}>
                     Categories
                   </button>
                   {mobileCatsOpen && (
@@ -1166,16 +1226,16 @@ function WelcomeBanner() {
 function FeaturedProducts({ navigate }) {
   const featured = PRODUCTS.filter(p=>p.isFeatured).slice(0,6);
   return (
-    <section style={{padding:'80px 48px',background:'var(--ink2)'}}>
+    <section style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink2)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:'48px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:'clamp(28px,5vw,48px)',gap:'14px',flexWrap:'wrap'}}>
           <div>
             <p className="label-tag" style={{marginBottom:'10px'}}>HANDPICKED FOR YOU</p>
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,52px)',color:'var(--cream)'}}>Featured Pieces</h2>
           </div>
           <button className="btn-ghost-luxury" style={{fontSize:'11px',letterSpacing:'.12em',padding:'11px 22px'}} onClick={()=>navigate('collections')}>VIEW ALL →</button>
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(270px,1fr))',gap:'20px'}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(clamp(170px,42vw,270px),1fr))',gap:'clamp(12px,2vw,20px)'}}>
           {featured.map((p,i)=>(
             <div key={p.id} className="fade-up" style={{animationDelay:`${i*.07}s`}}>
               <ProductCard product={p} navigate={navigate}/>
@@ -1189,10 +1249,10 @@ function FeaturedProducts({ navigate }) {
 
 function CollectionsBand({ navigate }) {
   return (
-    <section style={{padding:'80px 0',overflow:'hidden',background:'var(--ink)',position:'relative'}}>
+    <section style={{padding:'clamp(52px,7vw,80px) 0',overflow:'hidden',background:'var(--ink)',position:'relative'}}>
       {/* Section header */}
-      <div style={{padding:'0 48px',marginBottom:'48px'}}>
-        <div style={{maxWidth:'1200px',margin:'0 auto',display:'flex',justifyContent:'space-between',alignItems:'flex-end'}}>
+      <div style={{padding:'0 clamp(18px,4vw,48px)',marginBottom:'clamp(28px,5vw,48px)'}}>
+        <div style={{maxWidth:'1200px',margin:'0 auto',display:'flex',justifyContent:'space-between',alignItems:'flex-end',gap:'14px',flexWrap:'wrap'}}>
           <div>
             <p className="label-tag" style={{marginBottom:'10px'}}>FIVE WORLDS</p>
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,52px)',color:'var(--cream)'}}>Our Collections</h2>
@@ -1202,19 +1262,19 @@ function CollectionsBand({ navigate }) {
       </div>
 
       {/* Horizontal scroll */}
-      <div style={{display:'flex',gap:'20px',overflowX:'auto',padding:'0 48px',scrollbarWidth:'none',msOverflowStyle:'none'}}>
+      <div style={{display:'flex',gap:'clamp(8px,1.3vw,12px)',overflowX:'auto',padding:'0 clamp(18px,4vw,48px)',scrollbarWidth:'none',msOverflowStyle:'none'}}>
         {COLLECTIONS.map((col,i)=>(
-          <div key={col.id} className="fade-up" style={{animationDelay:`${i*.08}s`,minWidth:'300px',borderRadius:'12px',overflow:'hidden',position:'relative',aspectRatio:'2/3',cursor:'none',flexShrink:0,border:'1px solid rgba(168,230,207,.06)',transition:'all .4s cubic-bezier(.16,1,.3,1)'}}
+          <div key={col.id} className="fade-up" style={{animationDelay:`${i*.08}s`,width:'clamp(150px,22vw,205px)',maxWidth:'205px',borderRadius:'12px',overflow:'hidden',position:'relative',aspectRatio:'2/3',cursor:'none',flex:'0 0 auto',border:'1px solid rgba(168,230,207,.06)',transition:'all .4s cubic-bezier(.16,1,.3,1)'}}
             onClick={()=>navigate('collection-detail',{slug:col.slug})}
             onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.2)';e.currentTarget.style.transform='translateY(-8px)';e.currentTarget.style.boxShadow='0 24px 60px rgba(0,0,0,.7), var(--glow-mint)';e.currentTarget.querySelector('.col-reveal').style.opacity='1';e.currentTarget.querySelector('.col-reveal').style.transform='translateY(0)';e.currentTarget.querySelector('.col-img').style.transform='scale(1.07)';}}
             onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.06)';e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='none';e.currentTarget.querySelector('.col-reveal').style.opacity='0';e.currentTarget.querySelector('.col-reveal').style.transform='translateY(12px)';e.currentTarget.querySelector('.col-img').style.transform='scale(1)';}}>
             <img className="col-img" src={col.coverImage} alt={col.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .6s cubic-bezier(.16,1,.3,1)'}}/>
             <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,.95) 0%,rgba(5,8,5,.3) 45%,transparent 70%)'}}/>
-            <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'28px'}}>
+            <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'clamp(12px,2.2vw,18px)'}}>
               <p style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',letterSpacing:'.2em',marginBottom:'8px'}}>{col.mood}</p>
-              <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'28px',color:'var(--cream)',marginBottom:'4px',lineHeight:'1.1'}}>{col.name}</h3>
+              <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(18px,3vw,23px)',color:'var(--cream)',marginBottom:'3px',lineHeight:'1.1'}}>{col.name}</h3>
               <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.35)'}}>{col.productCount} pieces</p>
-              <div className="col-reveal" style={{opacity:0,transform:'translateY(12px)',transition:'opacity .3s,transform .3s',marginTop:'14px',display:'flex',alignItems:'center',gap:'6px',color:'var(--mint)'}}>
+              <div className="col-reveal" style={{opacity:0,transform:'translateY(12px)',transition:'opacity .3s,transform .3s',marginTop:'10px',display:'flex',alignItems:'center',gap:'6px',color:'var(--mint)'}}>
                 <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.14em'}}>EXPLORE</span>
                 <ArrowRightIcon/>
               </div>
@@ -1228,13 +1288,13 @@ function CollectionsBand({ navigate }) {
 
 function ShopByCategory({ navigate }) {
   return (
-    <section style={{padding:'80px 48px',background:'var(--ink2)'}}>
+    <section style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink2)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
-        <div style={{textAlign:'center',marginBottom:'48px'}}>
+        <div style={{textAlign:'center',marginBottom:'clamp(28px,5vw,48px)'}}>
           <p className="label-tag" style={{marginBottom:'12px'}}>BROWSE BY TYPE</p>
           <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,52px)',color:'var(--cream)'}}>Shop by Category</h2>
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:'16px'}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(clamp(165px,43vw,260px),1fr))',gap:'clamp(10px,2vw,16px)'}}>
           {CATEGORIES.map((cat,i)=>(
             <div key={cat.id} className="fade-up" style={{animationDelay:`${i*.06}s`,borderRadius:'10px',overflow:'hidden',aspectRatio:'3/2',cursor:'none',position:'relative',border:'1px solid rgba(168,230,207,.06)',transition:'all .35s cubic-bezier(.16,1,.3,1)'}}
               onClick={()=>navigate('category',{slug:cat.slug})}
@@ -1242,10 +1302,10 @@ function ShopByCategory({ navigate }) {
               onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.06)';e.currentTarget.style.transform='scale(1)';e.currentTarget.style.boxShadow='none';e.currentTarget.querySelector('.cat-img').style.transform='scale(1)';}}>
               <img className="cat-img" src={cat.coverImage} alt={cat.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .5s cubic-bezier(.16,1,.3,1)'}}/>
               <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,rgba(5,8,5,.75) 0%,rgba(5,8,5,.45) 100%)'}}/>
-              <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',justifyContent:'flex-end',padding:'20px'}}>
+              <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',justifyContent:'flex-end',padding:'clamp(12px,3vw,20px)'}}>
                 <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'4px'}}>
                   <span style={{fontSize:'18px'}}>{cat.icon}</span>
-                  <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'24px',color:'var(--cream)'}}>{cat.name}</h3>
+                  <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(19px,5vw,24px)',color:'var(--cream)'}}>{cat.name}</h3>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:'4px',color:'var(--mint)',opacity:.6}}>
                   <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px'}}>Explore</span>
@@ -1273,9 +1333,9 @@ function AllProductsGrid({ navigate }) {
   }, [active, sort]);
   const cats = ['all',...CATEGORIES.map(c=>c.id)];
   return (
-    <section style={{padding:'80px 48px',background:'var(--ink)'}}>
+    <section style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
-        <div style={{textAlign:'center',marginBottom:'48px'}}>
+        <div style={{textAlign:'center',marginBottom:'clamp(28px,5vw,48px)'}}>
           <p className="label-tag" style={{marginBottom:'12px'}}>THE FULL COLLECTION</p>
           <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,52px)',color:'var(--cream)'}}>All Pieces</h2>
         </div>
@@ -1308,7 +1368,7 @@ function AllProductsGrid({ navigate }) {
           Showing {Math.min(vis,filtered.length)} of {filtered.length} pieces
         </p>
 
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:'18px'}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(clamp(160px,42vw,250px),1fr))',gap:'clamp(12px,2vw,18px)'}}>
           {filtered.slice(0,vis).map((p,i)=>(
             <div key={p.id} className="fade-up" style={{animationDelay:`${(i%4)*.05}s`}}>
               <ProductCard product={p} navigate={navigate}/>
