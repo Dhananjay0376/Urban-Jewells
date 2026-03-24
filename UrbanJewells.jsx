@@ -699,29 +699,33 @@ function AppProvider({ children }) {
 function Logo({ variant="dark", size="md", onClick }) {
   const tc = variant==="light" ? "#1E3A0F" : "#FAFAF5";
   const gc = variant==="light" ? "#2D5016" : "#A8E6CF";
-  const ga = variant==="light" ? "#A8E6CF" : "#D4F5E9";
-  const w = {sm:108,md:150,lg:210}[size];
+  const dims = {
+    sm:{wrap:144,badge:36,title:18,sub:5.2},
+    md:{wrap:168,badge:44,title:20,sub:5.8},
+    lg:{wrap:220,badge:56,title:26,sub:6.6}
+  }[size];
   return (
-    <svg width={w} height={w*0.38} viewBox="0 0 200 55" xmlns="http://www.w3.org/2000/svg"
-      style={{cursor:"none",flexShrink:0}} onClick={onClick} role="img" aria-label="Urban Jewells">
-      <defs>
-        <filter id="gem-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="1.2" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-      <g transform="translate(3,6)" filter="url(#gem-glow)">
-        <polygon points="17,2 10,15 24,15" fill={gc} opacity=".95"/>
-        <polygon points="2,15 10,15 8,30" fill={gc} opacity=".5"/>
-        <polygon points="32,15 24,15 26,30" fill={gc} opacity=".65"/>
-        <polygon points="8,30 10,15 17,30" fill={ga} opacity=".75"/>
-        <polygon points="26,30 24,15 17,30" fill={gc} opacity=".82"/>
-        <polygon points="10,15 24,15 17,30" fill={gc}/>
-        <circle cx="17" cy="9" r="1.5" fill="white" opacity=".7"/>
-      </g>
-      <text x="44" y="26" fontFamily="Cormorant Garamond,Georgia,serif" fontWeight="300" fontSize="20" fill={tc} letterSpacing=".08em" dominantBaseline="middle">Urban Jewells</text>
-      <text x="44" y="42" fontFamily="DM Mono,monospace" fontWeight="400" fontSize="5.5" fill={gc} letterSpacing=".35em" dominantBaseline="middle" opacity=".75">INDIA - EST. 2019</text>
-    </svg>
+    <div
+      onClick={onClick}
+      role="img"
+      aria-label="Urban Jewells"
+      style={{cursor:"none",flexShrink:0,display:'flex',alignItems:'center',gap:'12px',width:dims.wrap}}
+    >
+      <div style={{position:'relative',width:dims.badge,height:dims.badge,minWidth:dims.badge,borderRadius:'50%',padding:'3px',background:'linear-gradient(145deg,rgba(201,168,76,.78),rgba(168,230,207,.55))',boxShadow:'0 10px 24px rgba(0,0,0,.28), 0 0 0 1px rgba(250,250,245,.08)',aspectRatio:'1/1',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <div style={{position:'absolute',inset:'-4px',borderRadius:'50%',border:'1px solid rgba(201,168,76,.22)',pointerEvents:'none'}}/>
+        <div style={{width:'100%',height:'100%',borderRadius:'50%',overflow:'hidden',background:'rgba(8,10,8,.86)',border:'1px solid rgba(250,250,245,.08)'}}>
+          <img
+            src="https://res.cloudinary.com/dxw1yg7if/image/upload/v1774377099/urban_jewells_logo_k2yqe6.jpg"
+            alt="Urban Jewells logo"
+            style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center',transform:'scale(1.4)',display:'block'}}
+          />
+        </div>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',minWidth:0}}>
+        <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:dims.title,color:tc,letterSpacing:'.08em',lineHeight:'1'}}>Urban Jewells</span>
+        <span style={{fontFamily:"'DM Mono',monospace",fontWeight:'400',fontSize:dims.sub,color:gc,letterSpacing:'.32em',opacity:.75,marginTop:'4px'}}>INDIA - EST. 2019</span>
+      </div>
+    </div>
   );
 }
 
