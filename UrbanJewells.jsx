@@ -1527,23 +1527,35 @@ function CategoriesPage({ navigate }) {
   const {categories} = useApp();
   return (
     <div style={{background:'var(--ink)'}}>
-      <div style={{height:'320px',position:'relative',overflow:'hidden'}}>
-        <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.5))'}} />
-        <div style={{position:'absolute',bottom:24,left:48}}>
-          <p className="label-tag" style={{letterSpacing:'.3em'}}>SHOP BY</p>
-          <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'56px',color:'var(--cream)',margin:0}}>Categories</h1>
+      <div style={{minHeight:'50vh',display:'flex',alignItems:'flex-end',padding:'100px 48px 60px',background:'linear-gradient(to bottom,var(--ink),var(--ink2))',position:'relative',overflow:'hidden'}}>
+        {categories[0]?.coverImage && <img src={categories[0].coverImage} alt="Categories hero" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:.16}}/>}
+        <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom,rgba(10,13,10,.45),rgba(10,13,10,.88))'}}/>
+        <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.02) 1px,transparent 1px)',backgroundSize:'60px 60px',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',top:'20%',right:'10%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(168,230,207,.06) 0%,transparent 70%)',pointerEvents:'none'}}/>
+        <div style={{position:'relative',zIndex:1}}>
+          <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:'.3em'}}>URBAN JEWELLS</p>
+          <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9',marginBottom:'18px'}}>Categories</h1>
+          <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:'16px',color:'rgba(250,250,245,.35)'}}>Browse every form, silhouette, and signature piece by type.</p>
         </div>
       </div>
-      <div style={{maxWidth:'1100px',margin:'0 auto',padding:'48px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:'18px'}}>
-          {categories.map(cat => (
-            <button key={cat.slug} onClick={()=>navigate('category',{slug:cat.slug})} style={{display:'flex',flexDirection:'column',alignItems:'flex-start',gap:'8px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(168,230,207,.04)',padding:'18px',borderRadius:'8px',cursor:'none'}}>
-              <div style={{fontSize:'28px'}}>{cat.icon}</div>
-              <div style={{textAlign:'left'}}>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'20px',color:'var(--cream)'}}>{cat.name}</div>
-                <div style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(250,250,245,.35)'}}>{cat.tagline || ''}</div>
+      <div style={{padding:'60px 48px 80px',maxWidth:'1300px',margin:'0 auto'}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(320px,1fr))',gap:'22px'}}>
+          {categories.map((cat,i) => (
+            <div key={cat.slug} className="fade-up" style={{animationDelay:`${i*.08}s`,position:'relative',borderRadius:'12px',overflow:'hidden',aspectRatio:'4/3',cursor:'none',border:'1px solid rgba(168,230,207,.06)',transition:'all .4s cubic-bezier(.16,1,.3,1)'}}
+              onClick={()=>navigate('category',{slug:cat.slug})}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.22)';e.currentTarget.style.boxShadow='0 24px 60px rgba(0,0,0,.75), var(--glow-mint)';e.currentTarget.querySelector('.cat-page-link').style.opacity='1';e.currentTarget.querySelector('.cat-page-link').style.transform='translateY(0)';e.currentTarget.querySelector('.cat-page-img').style.transform='scale(1.06)';}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.06)';e.currentTarget.style.boxShadow='none';e.currentTarget.querySelector('.cat-page-link').style.opacity='0';e.currentTarget.querySelector('.cat-page-link').style.transform='translateY(14px)';e.currentTarget.querySelector('.cat-page-img').style.transform='scale(1)';}}>
+              <img className="cat-page-img" src={cat.coverImage} alt={cat.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .6s cubic-bezier(.16,1,.3,1)'}}/>
+              <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,.96) 0%,rgba(5,8,5,.18) 55%,transparent 78%)'}}/>
+              <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'28px'}}>
+                <p style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',letterSpacing:'.2em',marginBottom:'10px'}}>SHOP BY TYPE</p>
+                <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(30px,4vw,40px)',color:'var(--cream)',marginBottom:'6px',lineHeight:'1.02'}}>{cat.name}</h2>
+                <div className="cat-page-link" style={{opacity:0,transform:'translateY(14px)',transition:'opacity .3s .05s,transform .3s .05s',marginTop:'14px',display:'flex',alignItems:'center',gap:'8px',color:'var(--mint)'}}>
+                  <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.16em'}}>VIEW CATEGORY</span>
+                  <ArrowRightIcon/>
+                </div>
               </div>
-            </button>
+            </div>
           ))}
         </div>
       </div>
