@@ -2,9 +2,9 @@
 import * as THREE from "three";
 import { isSanityConfigured, loadCatalogFromSanity } from "./src/lib/sanityCatalog";
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-//  GLOBAL STYLES  â€” Dark Luxury Editorial
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
+// GLOBAL STYLES - Dark Luxury Editorial
+// =================================================================
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
@@ -67,7 +67,7 @@ const GlobalStyles = () => (
     ::-webkit-scrollbar-thumb { background:var(--br2); border-radius:2px; }
     ::-webkit-scrollbar-thumb:hover { background:var(--mint2); }
 
-    /* â”€â”€â”€ Keyframes â”€â”€â”€ */
+    /* - Keyframes - */
     @keyframes fadeUp { from{opacity:0;transform:translateY(32px)} to{opacity:1;transform:translateY(0)} }
     @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     @keyframes slideRight { from{transform:translateX(105%)} to{transform:translateX(0)} }
@@ -98,11 +98,11 @@ const GlobalStyles = () => (
     @keyframes lineGrow { from{width:0} to{width:100%} }
     @keyframes typeIn { from{clip-path:inset(0 100% 0 0)} to{clip-path:inset(0 0% 0 0)} }
 
-    /* â”€â”€â”€ Font Helpers â”€â”€â”€ */
+    /* - Font Helpers - */
     .font-display { font-family:'Cormorant Garamond',Georgia,serif; }
     .font-mono { font-family:'DM Mono',monospace; }
 
-    /* â”€â”€â”€ Reveal animations â”€â”€â”€ */
+    /* - Reveal animations - */
     .fade-up   { animation:fadeUp .75s cubic-bezier(.16,1,.3,1) both; }
     .fade-up-1 { animation:fadeUp .75s cubic-bezier(.16,1,.3,1) .08s both; }
     .fade-up-2 { animation:fadeUp .75s cubic-bezier(.16,1,.3,1) .18s both; }
@@ -112,7 +112,7 @@ const GlobalStyles = () => (
     .fade-up-6 { animation:fadeUp .75s cubic-bezier(.16,1,.3,1) .64s both; }
     .scale-in  { animation:scaleIn .55s cubic-bezier(.16,1,.3,1) both; }
 
-    /* â”€â”€â”€ Glassmorphism cards â”€â”€â”€ */
+    /* - Glassmorphism cards - */
     .glass-card {
       background:rgba(10,13,10,0.6);
       backdrop-filter:blur(24px);
@@ -129,7 +129,7 @@ const GlobalStyles = () => (
       pointer-events:none;
     }
 
-    /* â”€â”€â”€ Buttons â”€â”€â”€ */
+    /* - Buttons - */
     .btn-luxury {
       display:inline-flex; align-items:center; gap:10px;
       background:linear-gradient(135deg,var(--sg),var(--dg));
@@ -176,7 +176,7 @@ const GlobalStyles = () => (
     }
     .btn-gold:hover { transform:translateY(-2px); box-shadow:var(--glow-gold); }
 
-    /* â”€â”€â”€ Product Card â”€â”€â”€ */
+    /* - Product Card - */
     .pcard {
       background:rgba(14,20,16,0.85);
       border:1px solid var(--br);
@@ -205,7 +205,7 @@ const GlobalStyles = () => (
     }
     .pcard:hover .pcard-cta { transform:translateY(0); opacity:1; }
 
-    /* â”€â”€â”€ Nav link â”€â”€â”€ */
+    /* - Nav link - */
     .nav-lnk {
       font-family:'Cormorant Garamond',serif; font-size:16px;
       letter-spacing:.08em; color:rgba(250,250,245,.65);
@@ -223,7 +223,7 @@ const GlobalStyles = () => (
     .nav-lnk:hover, .nav-lnk.active { color:var(--cream); }
     .nav-lnk:hover::after, .nav-lnk.active::after { right:0; }
 
-    /* â”€â”€â”€ Field â”€â”€â”€ */
+    /* - Field - */
     .dark-field {
       width:100%; background:rgba(255,255,255,0.04);
       border:1px solid rgba(168,230,207,.15);
@@ -246,7 +246,7 @@ const GlobalStyles = () => (
     }
     select.dark-field option { background:var(--ink); color:var(--cream); }
 
-    /* â”€â”€â”€ Misc â”€â”€â”€ */
+    /* - Misc - */
     .shimmer-line {
       height:1px;
       background:linear-gradient(90deg, transparent, var(--mint), transparent);
@@ -343,9 +343,9 @@ const GlobalStyles = () => (
   `}</style>
 );
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  CUSTOM CURSOR
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function Cursor() {
   const dot = useRef(null), ring = useRef(null);
   const pos = useRef({x:0,y:0}), target = useRef({x:0,y:0});
@@ -377,9 +377,9 @@ function Cursor() {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  PARTICLE BOKEH CANVAS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function ParticleCanvas() {
   const ref = useRef(null);
   useEffect(() => {
@@ -419,9 +419,9 @@ function ParticleCanvas() {
   return <canvas ref={ref} style={{position:'fixed',inset:0,pointerEvents:'none',zIndex:1,opacity:0.6}}/>;
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-//  THREE.JS â€” HERO GEM
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
+// THREE.JS - HERO GEM
+// =================================================================
 function HeroGem({ size = 520 }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -546,9 +546,9 @@ function HeroGem({ size = 520 }) {
   return <canvas ref={ref} style={{ width:size, height:size, display:'block', filter:'drop-shadow(0 0 60px rgba(168,230,207,.45)) drop-shadow(0 0 120px rgba(168,230,207,.15))' }}/>;
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  DATA
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 const EMPTY_PRODUCTS = [];
 const EMPTY_COLLECTIONS = [];
 const EMPTY_CATEGORIES = [];
@@ -584,9 +584,9 @@ const withCollectionCounts = (collections, products) => collections.map(collecti
   productCount: collection.productCount || products.filter(product => product.collection === collection.slug).length,
 }));
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  APP CONTEXT
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 const Ctx = createContext(null);
 const useApp = () => useContext(Ctx);
 
@@ -693,9 +693,9 @@ function AppProvider({ children }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  SVG LOGO
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function Logo({ variant="dark", size="md", onClick }) {
   const tc = variant==="light" ? "#1E3A0F" : "#FAFAF5";
   const gc = variant==="light" ? "#2D5016" : "#A8E6CF";
@@ -723,15 +723,15 @@ function Logo({ variant="dark", size="md", onClick }) {
       </div>
       <div style={{display:'flex',flexDirection:'column',minWidth:0}}>
         <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:dims.title,color:tc,letterSpacing:'.08em',lineHeight:'1'}}>Urban Jewells</span>
-        <span style={{fontFamily:"'DM Mono',monospace",fontWeight:'400',fontSize:dims.sub,color:gc,letterSpacing:'.32em',opacity:.75,marginTop:'4px'}}>INDIA - EST. 2019</span>
+        <span style={{fontFamily:"'DM Mono',monospace",fontWeight:'400',fontSize:dims.sub,color:gc,letterSpacing:'.32em',opacity:.75,marginTop:'4px'}}>INDIA - EST. 2025</span>
       </div>
     </div>
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  HEADER
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function Header({ navigate, page }) {
   const {cartCount, setCartOpen, wishlist, setSearchOpen, categories} = useApp();
   const [scrolled, setScrolled] = useState(false);
@@ -874,10 +874,14 @@ const ChevUpIcon = () => <svg width="18" height="18" fill="none" stroke="current
 const TruckIcon = () => <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>;
 const ShieldIcon = () => <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
 const ReturnIcon = () => <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.44"/></svg>;
+const MissionQualityIcon = () => <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M12 3l2.7 5.47 6.03.88-4.36 4.25 1.03 6.01L12 16.8 6.6 19.61l1.03-6.01L3.27 9.35l6.03-.88L12 3z"/><path d="M9.6 12.2l1.65 1.65 3.2-3.45"/></svg>;
+const MissionLeafIcon = () => <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M18.5 5.5C13 5 8.5 7.5 6.6 11.4c-1.55 3.2-.5 6.8 2.55 8.1 3.05 1.3 6.75-.1 8.3-3.3 1.2-2.45 1.35-6.15 1.05-10.7z"/><path d="M7 17c2.35-3.1 5.35-5.7 10-7.8"/></svg>;
+const MissionCommunityIcon = () => <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><circle cx="8" cy="8.2" r="2.7"/><circle cx="16.5" cy="9.2" r="2.3"/><path d="M3.8 18.5c.55-2.75 2.45-4.45 5.1-4.45 2.65 0 4.55 1.7 5.1 4.45"/><path d="M13.35 18.5c.35-1.95 1.8-3.15 3.9-3.15 1.7 0 2.95.85 3.55 2.35"/></svg>;
+const MissionSustainabilityIcon = () => <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M7.2 7.3h4.7V2.8"/><path d="M16.8 16.7h-4.7v4.5"/><path d="M8.1 3.3A8.9 8.9 0 0 1 20 8.2"/><path d="M15.9 20.7A8.9 8.9 0 0 1 4 15.8"/><path d="M20.2 8.2v4.9h-4.9"/><path d="M3.8 15.8v-4.9h4.9"/></svg>;
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  FOOTER
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function Footer({ navigate }) {
   const cols = [
     {h:"SHOP", links:[{l:"All Collections",p:"collections"},{l:"Featured Pieces",p:"home"},{l:"New Arrivals",p:"home"},{l:"Gift Sets",p:"category",extra:{slug:"set"}}]},
@@ -926,9 +930,9 @@ function Footer({ navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  PRODUCT CARD
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function ProductCard({ product, navigate }) {
   const {addToCart, toggleWishlist, wishlist} = useApp();
   const inWish = wishlist.some(i => i.id === product.id);
@@ -984,9 +988,9 @@ function ProductCard({ product, navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  SIDE CART
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function SideCart({ navigate }) {
   const {cart, cartOpen, setCartOpen, removeFromCart, updateQty, cartTotal} = useApp();
   if (!cartOpen) return null;
@@ -1069,9 +1073,9 @@ function SideCart({ navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  TOASTS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function Toasts() {
   const {toasts, setToasts} = useApp();
   return (
@@ -1093,9 +1097,9 @@ function Toasts() {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  BACK TO TOP
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function BackToTop() {
   const [vis, setVis] = useState(false);
   useEffect(() => {
@@ -1119,9 +1123,9 @@ function BackToTop() {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  SEARCH MODAL
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function SearchModal({ navigate }) {
   const {searchOpen, setSearchOpen, products} = useApp();
   const [q, setQ] = useState('');
@@ -1171,9 +1175,9 @@ function SearchModal({ navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-//  HOME PAGE â€” ALL SECTIONS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
+// HOME PAGE - ALL SECTIONS
+// =================================================================
 function HeroSection({ navigate }) {
   const w = typeof window !== 'undefined' ? window.innerWidth : 1200;
   return (
@@ -1563,9 +1567,9 @@ function CategoriesPage({ navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  COLLECTIONS PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function CollectionsPage({ navigate }) {
   const {collections} = useApp();
   return (
@@ -1605,9 +1609,9 @@ function CollectionsPage({ navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  COLLECTION DETAIL
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function CollectionDetail({ slug, navigate }) {
   const {collections, products, catalogLoading} = useApp();
   const col = collections.find(c=>c.slug===slug);
@@ -1649,9 +1653,9 @@ function CollectionDetail({ slug, navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  CATEGORY PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function CategoryPage({ slug, navigate }) {
   const {categories, products, catalogLoading} = useApp();
   const cat = categories.find(c=>c.slug===slug);
@@ -1688,9 +1692,9 @@ function CategoryPage({ slug, navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  PRODUCT PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function ProductPage({ slug, navigate }) {
   const {addToCart, toggleWishlist, wishlist, products, catalogLoading} = useApp();
   const product = products.find(p=>p.slug===slug);
@@ -1844,10 +1848,10 @@ function ProductPage({ slug, navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-//  FORM FIELD â€” must live OUTSIDE CartPage so React never remounts
+// =================================================================
+// FORM FIELD - must live OUTSIDE CartPage so React never remounts
 //  inputs on re-render (which would kill focus after every keystroke)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function FormField({ label, name, placeholder, type='text', span=1, req=true, ta=false, form, setForm, errors, onFieldBlur }) {
   return (
     <div style={{ gridColumn:`span ${span}` }}>
@@ -1882,9 +1886,9 @@ function FormField({ label, name, placeholder, type='text', span=1, req=true, ta
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  CART PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function CartPage({ navigate }) {
   const {cart, removeFromCart, updateQty, cartTotal, setCart} = useApp();
   const [form, setForm] = useState({fullName:'',email:'',whatsapp:'',address1:'',address2:'',city:'',province:'',postalCode:'',country:'India',notes:''});
@@ -1892,7 +1896,7 @@ function CartPage({ navigate }) {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(null);
 
-  // validate reads form via closure â€” stable reference via useCallback
+// validate reads form via closure - stable reference via useCallback
   const validate = useCallback(() => {
     const e = {};
     if (!form.fullName.trim() || form.fullName.trim().length < 2) e.fullName = 'Full name required.';
@@ -2042,9 +2046,9 @@ function CartPage({ navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  THANK YOU PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function ThankYouPage({ orderRef, email, navigate }) {
   return (
     <div style={{minHeight:'100vh',background:'var(--ink)',display:'flex',alignItems:'center',justifyContent:'center',padding:'80px 24px',position:'relative',overflow:'hidden'}}>
@@ -2079,9 +2083,9 @@ function ThankYouPage({ orderRef, email, navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  ABOUT PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function AboutPage({ navigate }) {
   const team = [
     {name:"Sudhir Krishan Narula",role:"Founder",bio:"With a passion for design and detail, Sudhir founded Urban Jewells to redefine artificial jewellery - merging refined aesthetics with bold, contemporary expression.",init:"SK", img:"https://res.cloudinary.com/dxw1yg7if/image/upload/v1772515066/IMG_9975_cypxxi.jpg"},
@@ -2133,13 +2137,15 @@ function AboutPage({ navigate }) {
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,50px)',color:'var(--cream)'}}>Our Mission</h2>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:'18px'}}>
-            {[{e:'[Award]',t:'Quality First',d:'Every component - from clasp to stone - is selected for longevity. Our pieces outlast trends.'},
-              {e:'[Leaf]',t:'Ethically Sourced',d:"All gemstones are conflict-free. We work only with suppliers who respect the land and the people who work it."},
-              {e:'[Community]',t:'Community Driven',d:"Urban Jewells grew from the women who wore it. Every WhatsApp message is read and replied to personally."},
-              {e:'[Recycle]',t:'Sustainable Practices',d:'We minimise waste, favour eco-conscious materials, and continuously improve our production footprint.'}
-            ].map(({e,t,d})=>(
+            {[{icon:<MissionQualityIcon/>,t:'Quality First',d:'Every component - from clasp to stone - is selected for longevity. Our pieces outlast trends.'},
+              {icon:<MissionLeafIcon/>,t:'Ethically Sourced',d:"All gemstones are conflict-free. We work only with suppliers who respect the land and the people who work it."},
+              {icon:<MissionCommunityIcon/>,t:'Community Driven',d:"Urban Jewells grew from the women who wore it. Every WhatsApp message is read and replied to personally."},
+              {icon:<MissionSustainabilityIcon/>,t:'Sustainable Practices',d:'We minimise waste, favour eco-conscious materials, and continuously improve our production footprint.'}
+            ].map(({icon,t,d})=>(
               <div key={t} className="glass-card" style={{padding:'32px',textAlign:'center'}}>
-                <span style={{fontSize:'32px',display:'block',marginBottom:'16px'}}>{e}</span>
+                <div style={{width:'62px',height:'62px',margin:'0 auto 18px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(145deg,rgba(201,168,76,.12),rgba(168,230,207,.08))',border:'1px solid rgba(201,168,76,.18)',color:'var(--gold)'}}>
+                  {icon}
+                </div>
                 <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'24px',color:'var(--cream)',marginBottom:'12px'}}>{t}</h3>
                 <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.38)',lineHeight:'1.8'}}>{d}</p>
               </div>
@@ -2175,9 +2181,9 @@ function AboutPage({ navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  CONTACT PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 const SUBJECT_OPTIONS = [
   'General Enquiry',
   'Order Question',
@@ -2306,9 +2312,9 @@ function ContactPage() {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  WISHLIST PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function WishlistPage({ navigate }) {
   const { wishlist, toggleWishlist, addToCart } = useApp();
   return (
@@ -2428,9 +2434,9 @@ function WishlistPage({ navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  404
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function NotFoundPage({ navigate }) {
   return (
     <div style={{minHeight:'100vh',background:'var(--ink)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'80px 24px',textAlign:'center',position:'relative',overflow:'hidden'}}>
@@ -2463,9 +2469,9 @@ function CatalogLoadingScreen({ label = 'Loading catalog' }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  PRIVACY POLICY PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function PrivacyPolicy({ navigate }) {
   return (
     <div style={{background:'var(--ink)'}}>
@@ -2620,9 +2626,9 @@ function PrivacyPolicy({ navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  SHIPPING PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function ShippingPage({ navigate }) {
   return (
     <div style={{background:'var(--ink)'}}>
@@ -2707,9 +2713,9 @@ function ShippingPage({ navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  RETURNS PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function ReturnsPage({ navigate }) {
   return (
     <div style={{background:'var(--ink)'}}>
@@ -2859,9 +2865,9 @@ function ReturnsPage({ navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  TERMS OF SERVICE PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 function TermsPage({ navigate }) {
   return (
     <div style={{background:'var(--ink)'}}>
@@ -2959,9 +2965,9 @@ function TermsPage({ navigate }) {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 //  APP
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// =================================================================
 export default function App() {
   const [page, setPage] = useState('home');
   const [params, setParams] = useState({});
