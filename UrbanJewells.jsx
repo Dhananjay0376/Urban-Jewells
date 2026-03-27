@@ -589,6 +589,27 @@ const getShippingAmount = subtotal => subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 
 const getShippingMessage = subtotal => subtotal >= FREE_SHIPPING_THRESHOLD
   ? `Free shipping applied on orders above ${formatPrice(FREE_SHIPPING_THRESHOLD)}`
   : `Add ${formatPrice(FREE_SHIPPING_THRESHOLD - subtotal)} more to unlock free shipping`;
+const getOptimizedImageUrl = (url, { width, height, quality = 80, mode = 'cover' } = {}) => {
+  if (!url) return '';
+  if (url.includes('cdn.sanity.io/images/')) {
+    const next = new URL(url);
+    next.searchParams.set('auto', 'format');
+    if (width) next.searchParams.set('w', String(width));
+    if (height && mode === 'cover') next.searchParams.set('h', String(height));
+    next.searchParams.set('q', String(quality));
+    next.searchParams.set('fit', mode === 'cover' ? 'crop' : 'max');
+    return next.toString();
+  }
+  if (url.includes('/image/upload/')) {
+    const transforms = ['f_auto', `q_${quality === 80 ? 'auto:good' : quality}`];
+    if (width) transforms.push(`w_${width}`);
+    if (height && mode === 'cover') transforms.push(`h_${height}`);
+    transforms.push(mode === 'cover' ? 'c_fill' : 'c_limit');
+    if (mode === 'cover') transforms.push('g_auto');
+    return url.replace('/image/upload/', `/image/upload/${transforms.join(',')}/`);
+  }
+  return url;
+};
 const withCollectionCounts = (collections, products) => collections.map(collection => ({
   ...collection,
   productCount: collection.productCount || products.filter(product => product.collection === collection.slug).length,
@@ -1031,8 +1052,9 @@ function ProductCard({ product, navigate }) {
   return (
     <div className="pcard" style={{fontFamily:"'DM Sans',sans-serif"}}>
       <div style={{position:'relative',aspectRatio:'1/1',overflow:'hidden',background:'var(--ink3)'}}>
-        <img src={product.images[0]} alt={product.name} className="pcard-img"
+        <img src={getOptimizedImageUrl(product.images[0], { width: 640, height: 640, mode: 'cover' })} alt={product.name} className="pcard-img"
           style={{width:'100%',height:'100%',objectFit:'cover',display:'block',cursor:'none'}}
+          loading="lazy" decoding="async"
           onClick={()=>navigate('product',{slug:product.slug})}/>
 
         {/* Badges */}
@@ -1125,7 +1147,7 @@ function SideCart({ navigate }) {
               {cart.map(item=>(
                 <div key={item.cartKey} style={{display:'flex',gap:'14px',paddingBottom:'20px',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
                   <div style={{width:'76px',height:'76px',borderRadius:'8px',overflow:'hidden',flexShrink:0,border:'1px solid rgba(168,230,207,.1)'}}>
-                    <img src={item.images[0]} alt={item.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                    <img src={getOptimizedImageUrl(item.images[0], { width: 180, height: 180, mode: 'cover' })} alt={item.name} style={{width:'100%',height:'100%',objectFit:'cover'}} loading="lazy" decoding="async"/>
                   </div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:'flex',justifyContent:'space-between'}}>
@@ -1305,7 +1327,7 @@ function SearchModal({ navigate }) {
                 onClick={()=>{navigate('product',{slug:product.slug});setSearchOpen(false);}}
                 onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.25)';e.currentTarget.style.transform='translateY(-3px)';}}
                 onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--glass-border)';e.currentTarget.style.transform='translateY(0)';}}>
-                <img src={product.images[0]} alt={product.name} style={{width:'100%',aspectRatio:'1/1',objectFit:'cover'}}/>
+                <img src={getOptimizedImageUrl(product.images[0], { width: 280, height: 280, mode: 'cover' })} alt={product.name} style={{width:'100%',aspectRatio:'1/1',objectFit:'cover'}} loading="lazy" decoding="async"/>
                 <div style={{padding:'10px 12px'}}>
                   <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'14px',color:'rgba(250,250,245,.8)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{product.name}</p>
                   <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.32)',letterSpacing:'.08em',marginTop:'4px'}}>{categoryLabel}{collectionLabel ? ` • ${collectionLabel}` : ''}</p>
@@ -1496,7 +1518,7 @@ function CollectionsBand({ navigate }) {
             onClick={()=>navigate('collection-detail',{slug:col.slug})}
             onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.2)';e.currentTarget.style.transform='translateY(-8px)';e.currentTarget.style.boxShadow='0 24px 60px rgba(0,0,0,.7), var(--glow-mint)';e.currentTarget.querySelector('.col-reveal').style.opacity='1';e.currentTarget.querySelector('.col-reveal').style.transform='translateY(0)';e.currentTarget.querySelector('.col-img').style.transform='scale(1.07)';}}
             onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.06)';e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='none';e.currentTarget.querySelector('.col-reveal').style.opacity='0';e.currentTarget.querySelector('.col-reveal').style.transform='translateY(12px)';e.currentTarget.querySelector('.col-img').style.transform='scale(1)';}}>
-            <img className="col-img" src={col.coverImage} alt={col.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .6s cubic-bezier(.16,1,.3,1)'}}/>
+            <img className="col-img" src={getOptimizedImageUrl(col.coverImage, { width: 520, height: 780, mode: 'cover' })} alt={col.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .6s cubic-bezier(.16,1,.3,1)'}} loading="lazy" decoding="async"/>
             <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,.95) 0%,rgba(5,8,5,.3) 45%,transparent 70%)'}}/>
             <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'clamp(12px,2.2vw,18px)'}}>
               <p style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',letterSpacing:'.2em',marginBottom:'8px'}}>{col.mood}</p>
@@ -1530,7 +1552,7 @@ function ShopByCategory({ navigate }) {
               onClick={()=>navigate('category',{slug:cat.slug})}
               onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.2)';e.currentTarget.style.transform='scale(1.02)';e.currentTarget.style.boxShadow='0 16px 48px rgba(0,0,0,.6), var(--glow-mint)';e.currentTarget.querySelector('.cat-img').style.transform='scale(1.08)';}}
               onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.06)';e.currentTarget.style.transform='scale(1)';e.currentTarget.style.boxShadow='none';e.currentTarget.querySelector('.cat-img').style.transform='scale(1)';}}>
-              <img className="cat-img" src={cat.coverImage} alt={cat.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .5s cubic-bezier(.16,1,.3,1)'}}/>
+              <img className="cat-img" src={getOptimizedImageUrl(cat.coverImage, { width: 520, height: 340, mode: 'cover' })} alt={cat.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .5s cubic-bezier(.16,1,.3,1)'}} loading="lazy" decoding="async"/>
               <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,rgba(5,8,5,.75) 0%,rgba(5,8,5,.45) 100%)'}}/>
               <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',justifyContent:'flex-end',padding:'clamp(12px,3vw,20px)'}}>
                 <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'4px'}}>
@@ -1919,7 +1941,7 @@ function CategoriesPage({ navigate, navigateBack }) {
   return (
     <div style={{background:'var(--ink)'}}>
       <div style={{minHeight:isMobile?'42vh':'50vh',display:'flex',alignItems:'flex-end',padding:isMobile?'88px 20px 38px':'100px 48px 60px',background:'linear-gradient(to bottom,var(--ink),var(--ink2))',position:'relative',overflow:'hidden'}}>
-        {categories[0]?.coverImage && <img src={categories[0].coverImage} alt="Categories hero" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:.16}}/>}
+        {categories[0]?.coverImage && <img src={getOptimizedImageUrl(categories[0].coverImage, { width: 1600, height: 700, mode: 'cover' })} alt="Categories hero" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:.16}} decoding="async"/>}
         <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom,rgba(10,13,10,.45),rgba(10,13,10,.88))'}}/>
         <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.02) 1px,transparent 1px)',backgroundSize:'60px 60px',pointerEvents:'none'}}/>
         <div style={{position:'absolute',top:'20%',right:'10%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(168,230,207,.06) 0%,transparent 70%)',pointerEvents:'none'}}/>
@@ -1937,7 +1959,7 @@ function CategoriesPage({ navigate, navigateBack }) {
               onClick={()=>navigate('category',{slug:cat.slug})}
               onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.22)';e.currentTarget.style.boxShadow='0 24px 60px rgba(0,0,0,.75), var(--glow-mint)';e.currentTarget.querySelector('.cat-page-link').style.opacity='1';e.currentTarget.querySelector('.cat-page-link').style.transform='translateY(0)';e.currentTarget.querySelector('.cat-page-img').style.transform='scale(1.06)';}}
               onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.06)';e.currentTarget.style.boxShadow='none';e.currentTarget.querySelector('.cat-page-link').style.opacity='0';e.currentTarget.querySelector('.cat-page-link').style.transform='translateY(14px)';e.currentTarget.querySelector('.cat-page-img').style.transform='scale(1)';}}>
-              <img className="cat-page-img" src={cat.coverImage} alt={cat.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .6s cubic-bezier(.16,1,.3,1)'}}/>
+              <img className="cat-page-img" src={getOptimizedImageUrl(cat.coverImage, { width: 720, height: 540, mode: 'cover' })} alt={cat.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .6s cubic-bezier(.16,1,.3,1)'}} loading="lazy" decoding="async"/>
               <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,.96) 0%,rgba(5,8,5,.18) 55%,transparent 78%)'}}/>
               <div style={{position:'absolute',bottom:0,left:0,right:0,padding:isMobile?'22px':'28px'}}>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',letterSpacing:'.2em',marginBottom:'10px'}}>SHOP BY TYPE</p>
@@ -1980,7 +2002,7 @@ function CollectionsPage({ navigate, navigateBack }) {
               onClick={()=>navigate('collection-detail',{slug:col.slug})}
               onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.22)';e.currentTarget.style.boxShadow='0 28px 70px rgba(0,0,0,.8), var(--glow-mint)';e.currentTarget.querySelector('.clink').style.opacity='1';e.currentTarget.querySelector('.clink').style.transform='translateY(0)';e.currentTarget.querySelector('.cimg').style.transform='scale(1.06)';}}
               onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.06)';e.currentTarget.style.boxShadow='none';e.currentTarget.querySelector('.clink').style.opacity='0';e.currentTarget.querySelector('.clink').style.transform='translateY(14px)';e.currentTarget.querySelector('.cimg').style.transform='scale(1)';}}>
-              <img className="cimg" src={col.coverImage} alt={col.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .6s cubic-bezier(.16,1,.3,1)'}}/>
+              <img className="cimg" src={getOptimizedImageUrl(col.coverImage, { width: 760, height: 1000, mode: 'cover' })} alt={col.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .6s cubic-bezier(.16,1,.3,1)'}} loading="lazy" decoding="async"/>
               <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,.97) 0%,rgba(5,8,5,.2) 50%,transparent 75%)'}}/>
               <div style={{position:'absolute',bottom:0,left:0,right:0,padding:isMobile?'22px':'32px'}}>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',letterSpacing:'.22em',marginBottom:'10px'}}>{col.mood}</p>
@@ -2014,7 +2036,7 @@ function CollectionDetail({ slug, navigate, navigateBack }) {
   return (
     <div style={{background:'var(--ink)'}}>
       <div style={{height:isMobile?'300px':'380px',position:'relative',overflow:'hidden'}}>
-        <img src={col.coverImage} alt={col.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+        <img src={getOptimizedImageUrl(col.coverImage, { width: 1600, height: 800, mode: 'cover' })} alt={col.name} style={{width:'100%',height:'100%',objectFit:'cover'}} decoding="async"/>
         <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,1) 0%,rgba(5,8,5,.5) 50%,transparent 100%)'}}/>
         <div style={{position:'absolute',bottom:0,left:0,right:0,padding:isMobile?'28px 20px':'44px 48px'}}>
           <button onClick={()=>navigateBack('collections')} style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',background:'none',border:'none',cursor:'none',letterSpacing:'.12em',marginBottom:'14px',display:'flex',alignItems:'center',gap:'6px',transition:'color .2s'}} onMouseEnter={e=>e.currentTarget.style.color='var(--mint)'} onMouseLeave={e=>e.currentTarget.style.color='rgba(250,250,245,.3)'}>&lt;- COLLECTIONS</button>
@@ -2059,7 +2081,7 @@ function CategoryPage({ slug, navigate, navigateBack }) {
   return (
     <div style={{background:'var(--ink)'}}>
       <div style={{height:isMobile?'260px':'300px',position:'relative',overflow:'hidden'}}>
-        <img src={cat.coverImage} alt={cat.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+        <img src={getOptimizedImageUrl(cat.coverImage, { width: 1600, height: 700, mode: 'cover' })} alt={cat.name} style={{width:'100%',height:'100%',objectFit:'cover'}} decoding="async"/>
         <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,1) 0%,rgba(5,8,5,.4) 60%,transparent 100%)'}}/>
         <div style={{position:'absolute',bottom:0,left:0,right:0,padding:isMobile?'24px 20px':'36px 48px'}}>
           <PageBackButton onClick={()=>navigateBack('categories')} label="Categories"/>
@@ -2133,7 +2155,7 @@ function ProductPage({ slug, navigate, navigateBack }) {
           <div style={{width:'100%',maxWidth:isMobile?'320px':'500px',margin:isMobile?'0 auto':'0'}}>
             <div style={{padding:isMobile?'9px':'14px',borderRadius:isMobile?'16px':'18px',background:'linear-gradient(145deg,rgba(14,20,16,.96),rgba(8,10,8,.98))',border:'1px solid rgba(168,230,207,.12)',boxShadow:'0 24px 60px rgba(0,0,0,.42)',marginBottom:'12px'}}>
               <div style={{borderRadius:'14px',overflow:'hidden',aspectRatio:'1/1',background:'var(--ink2)',border:'1px solid rgba(168,230,207,.08)',position:'relative'}}>
-                <img src={activeImage} alt={product.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'opacity .3s'}}/>
+                <img src={getOptimizedImageUrl(activeImage, { width: 1000, height: 1000, mode: 'cover' })} alt={product.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'opacity .3s'}} decoding="async"/>
                 <div style={{position:'absolute',top:'16px',left:'16px',display:'flex',gap:'6px'}}>
                   {product.isNew&&<span style={{background:'var(--mint)',color:'var(--sg)',fontFamily:"'DM Mono',monospace",fontSize:'9px',padding:'4px 10px',borderRadius:'2px',fontWeight:'600',letterSpacing:'.1em'}}>NEW</span>}
                   {product.isSale&&<span style={{background:'var(--gold)',color:'#0A0D0A',fontFamily:"'DM Mono',monospace",fontSize:'9px',padding:'4px 10px',borderRadius:'2px',fontWeight:'600',letterSpacing:'.1em'}}>SALE</span>}
@@ -2144,7 +2166,7 @@ function ProductPage({ slug, navigate, navigateBack }) {
               {activeImages.map((im,i)=>(
                 <button key={i} onClick={()=>setImg(i)} style={{width:isMobile?'60px':'72px',height:isMobile?'60px':'72px',padding:isMobile?'3px':'4px',borderRadius:isMobile?'11px':'12px',overflow:'hidden',border:`1.5px solid ${i===img?'rgba(168,230,207,.55)':'rgba(168,230,207,.12)'}`,cursor:'none',background:i===img?'rgba(168,230,207,.06)':'rgba(255,255,255,.02)',transition:'all .2s',flexShrink:0,boxShadow:i===img?'0 0 0 1px rgba(168,230,207,.08), 0 10px 24px rgba(0,0,0,.28)':'none'}}>
                   <div style={{width:'100%',height:'100%',borderRadius:isMobile?'7px':'8px',overflow:'hidden',border:'1px solid rgba(168,230,207,.08)',background:'var(--ink2)'}}>
-                    <img src={im} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                    <img src={getOptimizedImageUrl(im, { width: 160, height: 160, mode: 'cover' })} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} loading="lazy" decoding="async"/>
                   </div>
                 </button>
               ))}
@@ -2427,7 +2449,7 @@ function CartPage({ navigate }) {
             {cart.map(item=>(
               <div key={item.cartKey} style={{display:'flex',gap:isMobile?'12px':'16px',padding:'20px 0',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
                 <div style={{width:isMobile?'72px':'84px',height:isMobile?'72px':'84px',borderRadius:'8px',overflow:'hidden',flexShrink:0,border:'1px solid rgba(168,230,207,.08)'}}>
-                  <img src={item.images[0]} alt={item.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                  <img src={getOptimizedImageUrl(item.images[0], { width: 180, height: 180, mode: 'cover' })} alt={item.name} style={{width:'100%',height:'100%',objectFit:'cover'}} loading="lazy" decoding="async"/>
                 </div>
                 <div style={{flex:1}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
@@ -2567,7 +2589,7 @@ function AboutPage({ navigate, navigateBack }) {
       <section style={{padding:isMobile?'48px 20px':'80px 48px',maxWidth:'1200px',margin:'0 auto'}}>
         <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:isMobile?'34px':'72px',alignItems:'center'}}>
           <div style={{position:'relative'}}>
-            <img src="https://res.cloudinary.com/dxw1yg7if/image/upload/v1772515066/IMG_9975_cypxxi.jpg" alt="Our studio" style={{borderRadius:'12px',width:'100%',objectFit:'cover',border:'1px solid rgba(168,230,207,.08)'}}/>
+                <img src={getOptimizedImageUrl("https://res.cloudinary.com/dxw1yg7if/image/upload/v1772515066/IMG_9975_cypxxi.jpg", { width: 900, height: 700, mode: 'cover' })} alt="Our studio" style={{borderRadius:'12px',width:'100%',objectFit:'cover',border:'1px solid rgba(168,230,207,.08)'}} decoding="async"/>
             <div style={{position:'absolute',bottom:isMobile?'12px':'-20px',right:isMobile?'12px':'-20px',padding:isMobile?'14px 16px':'20px 24px',background:'rgba(14,20,16,.95)',backdropFilter:'blur(16px)',border:'1px solid rgba(168,230,207,.12)',borderRadius:'8px'}}>
               <p style={{fontFamily:"'DM Mono',monospace",fontSize:'28px',color:'var(--gold)',fontWeight:'500',lineHeight:'1'}}>2025</p>
               <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',letterSpacing:'.12em',marginTop:'4px'}}>FOUNDED</p>
@@ -2632,7 +2654,7 @@ function AboutPage({ navigate, navigateBack }) {
             <div key={m.name} className="glass-card fade-up" style={{padding:'32px 24px',textAlign:'center',animationDelay:`${i*.07}s`}}>
               <div style={{width:'68px',height:'68px',borderRadius:'50%',overflow:'hidden',background:'linear-gradient(135deg,var(--sg),var(--dg))',border:'1px solid rgba(168,230,207,.18)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px'}}>
                 {m.img ? (
-                  <img src={m.img} alt={m.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                  <img src={getOptimizedImageUrl(m.img, { width: 220, height: 220, mode: 'cover' })} alt={m.name} style={{width:'100%',height:'100%',objectFit:'cover'}} loading="lazy" decoding="async"/>
                 ) : (
                   <span style={{fontFamily:"'DM Mono',monospace",fontSize:'18px',color:'var(--mint)',fontWeight:'500'}}>{(m.name.match(/\b\w/g)||[]).slice(0,2).join('')}</span>
                 )}
@@ -2834,9 +2856,10 @@ function WishlistPage({ navigate }) {
                   {/* Image */}
                   <div style={{ position:'relative', aspectRatio:'1/1', overflow:'hidden', background:'var(--ink3)' }}>
                     <img
-                      src={product.images[0]} alt={product.name}
+                      src={getOptimizedImageUrl(product.images[0], { width: 520, height: 520, mode: 'cover' })} alt={product.name}
                       className="pcard-img"
                       style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', cursor:'none' }}
+                      loading="lazy" decoding="async"
                       onClick={() => navigate('product', { slug: product.slug })}
                     />
                     {/* Remove from wishlist */}
