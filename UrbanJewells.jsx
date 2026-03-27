@@ -1417,7 +1417,7 @@ function ShopByCategory({ navigate }) {
   );
 }
 
-function AllProductsGrid({ navigate, standalone=false }) {
+function AllProductsGrid({ navigate, standalone=false, navigateBack }) {
   const {products, categories} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const [active, setActive] = useState('all');
@@ -1492,6 +1492,7 @@ function AllProductsGrid({ navigate, standalone=false }) {
         <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.02) 1px,transparent 1px)',backgroundSize:'60px 60px',pointerEvents:'none'}}/>
         <div style={{position:'absolute',top:'18%',right:'8%',width:isMobile?'220px':'380px',height:isMobile?'220px':'380px',background:'radial-gradient(circle,rgba(168,230,207,.06) 0%,transparent 70%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1,maxWidth:'720px'}}>
+          {navigateBack && <PageBackButton onClick={()=>navigateBack('home')} label="Back"/>}
           <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:isMobile?'.22em':'.3em'}}>THE FULL COLLECTION</p>
           <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:isMobile?'clamp(40px,12vw,54px)':'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9',marginBottom:isMobile?'12px':'18px'}}>All Pieces</h1>
           <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'14px':'16px',color:'rgba(250,250,245,.35)',lineHeight:isMobile?'1.75':'1.6'}}>Browse the full Urban Jewells catalog with filters, sorting, and every available piece in one place.</p>
@@ -1626,11 +1627,41 @@ function HomePage({ navigate }) {
   );
 }
 
-function AllPiecesPage({ navigate }) {
-  return <AllProductsGrid navigate={navigate} standalone/>;
+function PageBackButton({ onClick, label='Back' }) {
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display:'inline-flex',
+        alignItems:'center',
+        gap:'8px',
+        marginBottom:isMobile?'16px':'20px',
+        background:'rgba(255,255,255,.03)',
+        border:'1px solid rgba(168,230,207,.12)',
+        borderRadius:'999px',
+        padding:isMobile?'8px 12px':'9px 14px',
+        color:'rgba(250,250,245,.55)',
+        fontFamily:"'DM Mono',monospace",
+        fontSize:isMobile?'10px':'11px',
+        letterSpacing:'.12em',
+        cursor:'none',
+        transition:'all .2s'
+      }}
+      onMouseEnter={e=>{e.currentTarget.style.color='var(--mint)';e.currentTarget.style.borderColor='rgba(168,230,207,.28)';e.currentTarget.style.background='rgba(168,230,207,.06)';}}
+      onMouseLeave={e=>{e.currentTarget.style.color='rgba(250,250,245,.55)';e.currentTarget.style.borderColor='rgba(168,230,207,.12)';e.currentTarget.style.background='rgba(255,255,255,.03)';}}
+    >
+      <span style={{fontSize:isMobile?'11px':'12px'}}>&larr;</span>
+      <span>{label.toUpperCase()}</span>
+    </button>
+  );
 }
 
-function CategoriesPage({ navigate }) {
+function AllPiecesPage({ navigate, navigateBack }) {
+  return <AllProductsGrid navigate={navigate} standalone navigateBack={navigateBack}/>;
+}
+
+function CategoriesPage({ navigate, navigateBack }) {
   const {categories} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   return (
@@ -1641,6 +1672,7 @@ function CategoriesPage({ navigate }) {
         <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.02) 1px,transparent 1px)',backgroundSize:'60px 60px',pointerEvents:'none'}}/>
         <div style={{position:'absolute',top:'20%',right:'10%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(168,230,207,.06) 0%,transparent 70%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1}}>
+          <PageBackButton onClick={()=>navigateBack('home')} label="Back"/>
           <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:isMobile?'.22em':'.3em'}}>URBAN JEWELLS</p>
           <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:isMobile?'clamp(40px,12vw,54px)':'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9',marginBottom:isMobile?'12px':'18px'}}>Categories</h1>
           <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'14px':'16px',color:'rgba(250,250,245,.35)',lineHeight:isMobile?'1.75':'1.6'}}>Browse every form, silhouette, and signature piece by type.</p>
@@ -1674,7 +1706,7 @@ function CategoriesPage({ navigate }) {
 // =================================================================
 //  COLLECTIONS PAGE
 // =================================================================
-function CollectionsPage({ navigate }) {
+function CollectionsPage({ navigate, navigateBack }) {
   const {collections} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   return (
@@ -1683,6 +1715,7 @@ function CollectionsPage({ navigate }) {
         <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.02) 1px,transparent 1px)',backgroundSize:'60px 60px',pointerEvents:'none'}}/>
         <div style={{position:'absolute',top:'20%',right:'10%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(168,230,207,.06) 0%,transparent 70%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1}}>
+          <PageBackButton onClick={()=>navigateBack('home')} label="Back"/>
           <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:isMobile?'.22em':'.3em'}}>URBAN JEWELLS</p>
           <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:isMobile?'clamp(40px,12vw,54px)':'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9',marginBottom:isMobile?'12px':'18px'}}>Our Collections</h1>
           <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'14px':'16px',color:'rgba(250,250,245,.35)',lineHeight:isMobile?'1.75':'1.6'}}>Five worlds. One intention: jewellery that means something.</p>
@@ -1717,7 +1750,7 @@ function CollectionsPage({ navigate }) {
 // =================================================================
 //  COLLECTION DETAIL
 // =================================================================
-function CollectionDetail({ slug, navigate }) {
+function CollectionDetail({ slug, navigate, navigateBack }) {
   const {collections, products, catalogLoading} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const col = collections.find(c=>c.slug===slug);
@@ -1732,7 +1765,7 @@ function CollectionDetail({ slug, navigate }) {
         <img src={col.coverImage} alt={col.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
         <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,1) 0%,rgba(5,8,5,.5) 50%,transparent 100%)'}}/>
         <div style={{position:'absolute',bottom:0,left:0,right:0,padding:isMobile?'28px 20px':'44px 48px'}}>
-          <button onClick={()=>navigate('collections')} style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',background:'none',border:'none',cursor:'none',letterSpacing:'.12em',marginBottom:'14px',display:'flex',alignItems:'center',gap:'6px',transition:'color .2s'}} onMouseEnter={e=>e.currentTarget.style.color='var(--mint)'} onMouseLeave={e=>e.currentTarget.style.color='rgba(250,250,245,.3)'}>&lt;- COLLECTIONS</button>
+          <button onClick={()=>navigateBack('collections')} style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',background:'none',border:'none',cursor:'none',letterSpacing:'.12em',marginBottom:'14px',display:'flex',alignItems:'center',gap:'6px',transition:'color .2s'}} onMouseEnter={e=>e.currentTarget.style.color='var(--mint)'} onMouseLeave={e=>e.currentTarget.style.color='rgba(250,250,245,.3)'}>&lt;- COLLECTIONS</button>
           <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',letterSpacing:'.2em',marginBottom:'8px'}}>{col.mood}</p>
           <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(42px,6vw,72px)',color:'var(--cream)',lineHeight:'1'}}>{col.name}</h1>
         </div>
@@ -1762,7 +1795,7 @@ function CollectionDetail({ slug, navigate }) {
 // =================================================================
 //  CATEGORY PAGE
 // =================================================================
-function CategoryPage({ slug, navigate }) {
+function CategoryPage({ slug, navigate, navigateBack }) {
   const {categories, products, catalogLoading} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const cat = categories.find(c=>c.slug===slug);
@@ -1777,6 +1810,7 @@ function CategoryPage({ slug, navigate }) {
         <img src={cat.coverImage} alt={cat.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
         <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,1) 0%,rgba(5,8,5,.4) 60%,transparent 100%)'}}/>
         <div style={{position:'absolute',bottom:0,left:0,right:0,padding:isMobile?'24px 20px':'36px 48px'}}>
+          <PageBackButton onClick={()=>navigateBack('categories')} label="Categories"/>
           <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'6px'}}>
             {cat.icon && <span style={{fontSize:'28px'}}>{cat.icon}</span>}
             <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(40px,5.5vw,64px)',color:'var(--cream)'}}>{cat.name}</h1>
@@ -1802,7 +1836,7 @@ function CategoryPage({ slug, navigate }) {
 // =================================================================
 //  PRODUCT PAGE
 // =================================================================
-function ProductPage({ slug, navigate }) {
+function ProductPage({ slug, navigate, navigateBack }) {
   const {addToCart, toggleWishlist, wishlist, products, catalogLoading} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const product = products.find(p=>p.slug===slug);
@@ -1817,6 +1851,7 @@ function ProductPage({ slug, navigate }) {
   return (
     <div style={{background:'var(--ink)',paddingTop:'70px'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto',padding:isMobile?'24px 20px 40px':'40px 48px'}}>
+        <PageBackButton onClick={()=>navigateBack('category',{slug:product.category})} label="Back"/>
         {/* Breadcrumb */}
         <div style={{display:isMobile?'none':'flex',gap:'8px',alignItems:'center',marginBottom:'40px'}}>
           {[{l:'Home',p:()=>navigate('home')},{l:product.category,p:()=>navigate('category',{slug:product.category})},{l:product.name,p:null}].map((item,i)=>(
@@ -2196,7 +2231,7 @@ function ThankYouPage({ orderRef, email, navigate }) {
 // =================================================================
 //  ABOUT PAGE
 // =================================================================
-function AboutPage({ navigate }) {
+function AboutPage({ navigate, navigateBack }) {
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const team = [
     {name:"Sudhir Krishan Narula",role:"Founder",bio:"With a passion for design and detail, Sudhir founded Urban Jewells to redefine artificial jewellery - merging refined aesthetics with bold, contemporary expression.",init:"SK", img:"https://res.cloudinary.com/dxw1yg7if/image/upload/v1772515066/IMG_9975_cypxxi.jpg"},
@@ -2211,6 +2246,7 @@ function AboutPage({ navigate }) {
         <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.025) 1px,transparent 1px)',backgroundSize:'80px 80px',pointerEvents:'none'}}/>
         <div style={{position:'absolute',top:'20%',right:'8%',width:'500px',height:'500px',background:'radial-gradient(circle,rgba(168,230,207,.05) 0%,transparent 65%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1}}>
+          <PageBackButton onClick={()=>navigateBack('home')} label="Back"/>
           <p className="label-tag fade-up" style={{marginBottom:'16px',letterSpacing:'.3em'}}>OUR STORY</p>
           <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:isMobile?'clamp(42px,12vw,58px)':'clamp(56px,9vw,110px)',color:'var(--cream)',lineHeight:isMobile?'.94':'.88',letterSpacing:'-.02em'}}>Crafted.<br/><em style={{color:'var(--mint)'}}>With intention.</em></h1>
           <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontStyle:'italic',fontSize:isMobile?'14px':'16px',color:'rgba(250,250,245,.3)',marginTop:isMobile?'18px':'24px'}}>Every piece has a story. This is ours.</p>
@@ -2317,7 +2353,7 @@ const SUBJECT_OPTIONS = [
   'Other'
 ];
 
-function ContactPage() {
+function ContactPage({ navigateBack }) {
   const [form, setForm] = useState({name:'',email:'',subject:'General Enquiry',message:''});
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState(null);
@@ -2346,6 +2382,7 @@ function ContactPage() {
       <div style={{minHeight:isMobile?'34vh':'40vh',display:'flex',alignItems:'flex-end',padding:isMobile?'92px 20px 34px':'120px 48px 56px',background:'var(--ink)',position:'relative',overflow:'hidden'}}>
         <div style={{position:'absolute',top:'20%',right:'8%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(168,230,207,.05) 0%,transparent 65%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1}}>
+          <PageBackButton onClick={()=>navigateBack('home')} label="Back"/>
           <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:'.3em'}}>REACH OUT</p>
           <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:isMobile?'clamp(40px,12vw,54px)':'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9'}}>Get in Touch</h1>
         </div>
@@ -3091,25 +3128,121 @@ function TermsPage({ navigate }) {
 // =================================================================
 //  APP
 // =================================================================
+function routeToHash(page, params={}) {
+  switch (page) {
+    case 'home': return '#/';
+    case 'all-pieces': return '#/all-pieces';
+    case 'categories': return '#/categories';
+    case 'collections': return '#/collections';
+    case 'collection-detail': return `#/collections/${encodeURIComponent(params.slug || '')}`;
+    case 'category': return `#/categories/${encodeURIComponent(params.slug || '')}`;
+    case 'product': return `#/product/${encodeURIComponent(params.slug || '')}`;
+    case 'cart': return '#/cart';
+    case 'about': return '#/about';
+    case 'contact': return '#/contact';
+    case 'wishlist': return '#/wishlist';
+    case 'privacy-policy': return '#/privacy-policy';
+    case 'shipping': return '#/shipping';
+    case 'returns': return '#/returns';
+    case 'terms': return '#/terms';
+    default: return '#/';
+  }
+}
+
+function routeFromHash(hash) {
+  const cleaned = (hash || '#/').replace(/^#/, '').replace(/^\/+/, '');
+  const parts = cleaned ? cleaned.split('/').filter(Boolean) : [];
+  const safeDecode = value => {
+    try { return decodeURIComponent(value || ''); } catch { return value || ''; }
+  };
+
+  if (parts.length === 0) return { page:'home', params:{} };
+
+  if (parts[0] === 'all-pieces') return { page:'all-pieces', params:{} };
+  if (parts[0] === 'categories' && parts[1]) return { page:'category', params:{ slug:safeDecode(parts[1]) } };
+  if (parts[0] === 'categories') return { page:'categories', params:{} };
+  if (parts[0] === 'collections' && parts[1]) return { page:'collection-detail', params:{ slug:safeDecode(parts[1]) } };
+  if (parts[0] === 'collections') return { page:'collections', params:{} };
+  if (parts[0] === 'product' && parts[1]) return { page:'product', params:{ slug:safeDecode(parts[1]) } };
+  if (parts[0] === 'cart') return { page:'cart', params:{} };
+  if (parts[0] === 'about') return { page:'about', params:{} };
+  if (parts[0] === 'contact') return { page:'contact', params:{} };
+  if (parts[0] === 'wishlist') return { page:'wishlist', params:{} };
+  if (parts[0] === 'privacy-policy') return { page:'privacy-policy', params:{} };
+  if (parts[0] === 'shipping') return { page:'shipping', params:{} };
+  if (parts[0] === 'returns') return { page:'returns', params:{} };
+  if (parts[0] === 'terms') return { page:'terms', params:{} };
+
+  return { page:'home', params:{} };
+}
+
 export default function App() {
-  const [page, setPage] = useState('home');
-  const [params, setParams] = useState({});
-  const navigate = useCallback((p, extra={}) => {
-    setPage(p); setParams(extra||{}); window.scrollTo({top:0,behavior:'smooth'});
+  const initialRoute = useMemo(() => (
+    typeof window !== 'undefined' ? routeFromHash(window.location.hash) : { page:'home', params:{} }
+  ), []);
+  const [page, setPage] = useState(initialRoute.page);
+  const [params, setParams] = useState(initialRoute.params);
+
+  const navigate = useCallback((p, extra={}, options={}) => {
+    const nextParams = extra || {};
+    setPage(p);
+    setParams(nextParams);
+    if (typeof window !== 'undefined') {
+      const currentIndex = window.history.state?.__urbanJewells ? (window.history.state.idx || 0) : 0;
+      const nextIndex = options.replace ? currentIndex : currentIndex + 1;
+      const nextState = { __urbanJewells:true, page:p, params:nextParams, idx:nextIndex };
+      const nextHash = routeToHash(p, nextParams);
+      if (options.replace) window.history.replaceState(nextState, '', nextHash);
+      else window.history.pushState(nextState, '', nextHash);
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+  }, []);
+
+  const navigateBack = useCallback((fallbackPage='home', fallbackParams={}) => {
+    if (typeof window === 'undefined') return;
+    if (window.history.state?.__urbanJewells && (window.history.state.idx || 0) > 0) {
+      window.history.back();
+      return;
+    }
+    navigate(fallbackPage, fallbackParams, { replace:true });
+  }, [navigate]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const currentRoute = routeFromHash(window.location.hash);
+    setPage(currentRoute.page);
+    setParams(currentRoute.params);
+    window.history.replaceState(
+      { __urbanJewells:true, page:currentRoute.page, params:currentRoute.params, idx:window.history.state?.__urbanJewells ? (window.history.state.idx || 0) : 0 },
+      '',
+      routeToHash(currentRoute.page, currentRoute.params)
+    );
+
+    const handlePopState = event => {
+      const nextRoute = event.state?.__urbanJewells
+        ? { page:event.state.page || 'home', params:event.state.params || {} }
+        : routeFromHash(window.location.hash);
+      setPage(nextRoute.page);
+      setParams(nextRoute.params || {});
+      window.scrollTo({ top:0, behavior:'smooth' });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const renderPage = () => {
     switch(page) {
       case 'home': return <HomePage navigate={navigate}/>;
-      case 'all-pieces': return <AllPiecesPage navigate={navigate}/>;
-      case 'categories': return <CategoriesPage navigate={navigate}/>;
-      case 'collections': return <CollectionsPage navigate={navigate}/>;
-      case 'collection-detail': return <CollectionDetail slug={params.slug} navigate={navigate}/>;
-      case 'category': return <CategoryPage slug={params.slug} navigate={navigate}/>;
-      case 'product': return <ProductPage slug={params.slug} navigate={navigate}/>;
+      case 'all-pieces': return <AllPiecesPage navigate={navigate} navigateBack={navigateBack}/>;
+      case 'categories': return <CategoriesPage navigate={navigate} navigateBack={navigateBack}/>;
+      case 'collections': return <CollectionsPage navigate={navigate} navigateBack={navigateBack}/>;
+      case 'collection-detail': return <CollectionDetail slug={params.slug} navigate={navigate} navigateBack={navigateBack}/>;
+      case 'category': return <CategoryPage slug={params.slug} navigate={navigate} navigateBack={navigateBack}/>;
+      case 'product': return <ProductPage slug={params.slug} navigate={navigate} navigateBack={navigateBack}/>;
       case 'cart': return <CartPage navigate={navigate}/>;
-      case 'about': return <AboutPage navigate={navigate}/>;
-      case 'contact': return <ContactPage/>;
+      case 'about': return <AboutPage navigate={navigate} navigateBack={navigateBack}/>;
+      case 'contact': return <ContactPage navigateBack={navigateBack}/>;
       case 'wishlist': return <WishlistPage navigate={navigate}/>;
       case 'privacy-policy': return <PrivacyPolicy navigate={navigate}/>;
       case 'shipping': return <ShippingPage navigate={navigate}/>;
