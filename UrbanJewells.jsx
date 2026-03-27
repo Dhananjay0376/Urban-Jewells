@@ -2257,7 +2257,7 @@ function AboutPage({ navigate }) {
                 <div style={{width:isMobile?'48px':'62px',height:isMobile?'48px':'62px',margin:'0 auto 18px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(145deg,rgba(201,168,76,.12),rgba(168,230,207,.08))',border:'1px solid rgba(201,168,76,.18)',color:'var(--gold)'}}>
                   {icon}
                 </div>
-                <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'14px':'24px',color:'var(--cream)',marginBottom:isMobile?'8px':'12px',lineHeight:isMobile?'1.02':'1.05'}}>{t}</h3>
+                <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'12px':'24px',color:'var(--cream)',marginBottom:isMobile?'8px':'12px',lineHeight:isMobile?'1.02':'1.05'}}>{t}</h3>
                 <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'11px':'14px',color:'rgba(250,250,245,.38)',lineHeight:isMobile?'1.5':'1.8'}}>
                   {isMobile
                     ? (t === 'Quality First'
