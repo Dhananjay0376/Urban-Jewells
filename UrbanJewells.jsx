@@ -1235,7 +1235,7 @@ function HeroSection({ navigate }) {
           </p>
 
           <div className="fade-up-5" style={{display:'flex',gap:isMobile?'10px':'14px',flexWrap:'wrap',flexDirection:isMobile?'column':'row'}}>
-            <button className="btn-luxury" onClick={()=>navigate('home',{section:'all-pieces'})} style={isMobile?{width:'100%',justifyContent:'center'}:undefined}>SHOP NOW <ArrowRightIcon/></button>
+            <button className="btn-luxury" onClick={()=>navigate('all-pieces')} style={isMobile?{width:'100%',justifyContent:'center'}:undefined}>SHOP NOW <ArrowRightIcon/></button>
             <button className="btn-ghost-luxury" onClick={()=>navigate('collections')} style={isMobile?{width:'100%',justifyContent:'center'}:undefined}>EXPLORE COLLECTIONS</button>
           </div>
 
@@ -1417,7 +1417,7 @@ function ShopByCategory({ navigate }) {
   );
 }
 
-function AllProductsGrid({ navigate }) {
+function AllProductsGrid({ navigate, standalone=false }) {
   const {products, categories} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const [active, setActive] = useState('all');
@@ -1431,11 +1431,11 @@ function AllProductsGrid({ navigate }) {
     return arr;
   }, [active, products, sort]);
   const cats = ['all',...categories.map(c=>c.id)];
-  return (
-    <section id="all-pieces" style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink)'}}>
+  const content = (
+    <section id="all-pieces" style={{padding:standalone ? (isMobile?'28px 20px 48px':'44px 48px 64px') : 'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:'clamp(28px,5vw,48px)'}}>
-          <p className="label-tag" style={{marginBottom:'12px'}}>THE FULL COLLECTION</p>
+          <p className="label-tag" style={{marginBottom:'12px'}}>{standalone ? 'SHOP EVERYTHING' : 'THE FULL COLLECTION'}</p>
           <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,52px)',color:'var(--cream)'}}>All Pieces</h2>
         </div>
 
@@ -1484,6 +1484,21 @@ function AllProductsGrid({ navigate }) {
         )}
       </div>
     </section>
+  );
+  if (!standalone) return content;
+  return (
+    <div style={{background:'var(--ink)'}}>
+      <div style={{minHeight:isMobile?'40vh':'48vh',display:'flex',alignItems:'flex-end',padding:isMobile?'88px 20px 34px':'100px 48px 56px',background:'linear-gradient(to bottom,var(--ink),var(--ink2))',position:'relative',overflow:'hidden'}}>
+        <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.02) 1px,transparent 1px)',backgroundSize:'60px 60px',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',top:'18%',right:'8%',width:isMobile?'220px':'380px',height:isMobile?'220px':'380px',background:'radial-gradient(circle,rgba(168,230,207,.06) 0%,transparent 70%)',pointerEvents:'none'}}/>
+        <div style={{position:'relative',zIndex:1,maxWidth:'720px'}}>
+          <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:isMobile?'.22em':'.3em'}}>THE FULL COLLECTION</p>
+          <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:isMobile?'clamp(40px,12vw,54px)':'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9',marginBottom:isMobile?'12px':'18px'}}>All Pieces</h1>
+          <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'14px':'16px',color:'rgba(250,250,245,.35)',lineHeight:isMobile?'1.75':'1.6'}}>Browse the full Urban Jewells catalog with filters, sorting, and every available piece in one place.</p>
+        </div>
+      </div>
+      {content}
+    </div>
   );
 }
 
@@ -1609,6 +1624,10 @@ function HomePage({ navigate }) {
       <ContactTeaser navigate={navigate}/>
     </div>
   );
+}
+
+function AllPiecesPage({ navigate }) {
+  return <AllProductsGrid navigate={navigate} standalone/>;
 }
 
 function CategoriesPage({ navigate }) {
@@ -2228,18 +2247,18 @@ function AboutPage({ navigate }) {
             <p className="label-tag" style={{marginBottom:'12px'}}>WHAT WE STAND FOR</p>
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,50px)',color:'var(--cream)'}}>Our Mission</h2>
           </div>
-          <div style={{display:isMobile?'flex':'grid',gridTemplateColumns:isMobile?undefined:'repeat(auto-fill,minmax(280px,1fr))',gap:'18px',overflowX:isMobile?'auto':'visible',paddingBottom:isMobile?'6px':'0'}}>
+          <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(4,minmax(0,1fr))':'repeat(auto-fill,minmax(280px,1fr))',gap:isMobile?'10px':'18px',paddingBottom:isMobile?'0':'0'}}>
             {[{icon:<MissionQualityIcon/>,t:'Quality First',d:'Every component - from clasp to stone - is selected for longevity. Our pieces outlast trends.'},
               {icon:<MissionLeafIcon/>,t:'Ethically Sourced',d:"All gemstones are conflict-free. We work only with suppliers who respect the land and the people who work it."},
               {icon:<MissionCommunityIcon/>,t:'Community Driven',d:"Urban Jewells grew from the women who wore it. Every WhatsApp message is read and replied to personally."},
               {icon:<MissionSustainabilityIcon/>,t:'Sustainable Practices',d:'We minimise waste, favour eco-conscious materials, and continuously improve our production footprint.'}
             ].map(({icon,t,d})=>(
-              <div key={t} className="glass-card" style={{padding:'32px',textAlign:'center',minWidth:isMobile?'260px':'auto',flex:isMobile?'0 0 260px':undefined}}>
-                <div style={{width:'62px',height:'62px',margin:'0 auto 18px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(145deg,rgba(201,168,76,.12),rgba(168,230,207,.08))',border:'1px solid rgba(201,168,76,.18)',color:'var(--gold)'}}>
+              <div key={t} className="glass-card" style={{padding:isMobile?'18px 12px':'32px',textAlign:'center',minWidth:'auto'}}>
+                <div style={{width:isMobile?'48px':'62px',height:isMobile?'48px':'62px',margin:'0 auto 18px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(145deg,rgba(201,168,76,.12),rgba(168,230,207,.08))',border:'1px solid rgba(201,168,76,.18)',color:'var(--gold)'}}>
                   {icon}
                 </div>
-                <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'24px',color:'var(--cream)',marginBottom:'12px'}}>{t}</h3>
-                <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.38)',lineHeight:'1.8'}}>{d}</p>
+                <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'16px':'24px',color:'var(--cream)',marginBottom:isMobile?'8px':'12px',lineHeight:'1.05'}}>{t}</h3>
+                <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'11px':'14px',color:'rgba(250,250,245,.38)',lineHeight:isMobile?'1.5':'1.8'}}>{d}</p>
               </div>
             ))}
           </div>
@@ -3069,18 +3088,11 @@ export default function App() {
     setPage(p); setParams(extra||{}); window.scrollTo({top:0,behavior:'smooth'});
   }, []);
 
-  useEffect(() => {
-    if (page !== 'home' || params.section !== 'all-pieces') return;
-    const t = setTimeout(() => {
-      document.getElementById('all-pieces')?.scrollIntoView({behavior:'smooth', block:'start'});
-    }, 80);
-    return () => clearTimeout(t);
-  }, [page, params]);
-
   const renderPage = () => {
     switch(page) {
       case 'home': return <HomePage navigate={navigate}/>;
-    case 'categories': return <CategoriesPage navigate={navigate}/>;
+      case 'all-pieces': return <AllPiecesPage navigate={navigate}/>;
+      case 'categories': return <CategoriesPage navigate={navigate}/>;
       case 'collections': return <CollectionsPage navigate={navigate}/>;
       case 'collection-detail': return <CollectionDetail slug={params.slug} navigate={navigate}/>;
       case 'category': return <CategoryPage slug={params.slug} navigate={navigate}/>;
