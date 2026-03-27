@@ -1866,18 +1866,22 @@ function ProductPage({ slug, navigate, navigateBack }) {
 
         <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:isMobile?'24px':'64px',alignItems:'start'}}>
           {/* Image gallery */}
-          <div>
-            <div style={{borderRadius:'14px',overflow:'hidden',aspectRatio:'1/1',background:'var(--ink2)',border:'1px solid rgba(168,230,207,.08)',marginBottom:'12px',position:'relative'}}>
-              <img src={product.images[img]} alt={product.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'opacity .3s'}}/>
-              <div style={{position:'absolute',top:'16px',left:'16px',display:'flex',gap:'6px'}}>
-                {product.isNew&&<span style={{background:'var(--mint)',color:'var(--sg)',fontFamily:"'DM Mono',monospace",fontSize:'9px',padding:'4px 10px',borderRadius:'2px',fontWeight:'600',letterSpacing:'.1em'}}>NEW</span>}
-                {product.isSale&&<span style={{background:'var(--gold)',color:'#0A0D0A',fontFamily:"'DM Mono',monospace",fontSize:'9px',padding:'4px 10px',borderRadius:'2px',fontWeight:'600',letterSpacing:'.1em'}}>SALE</span>}
+          <div style={{width:'100%',maxWidth:isMobile?'100%':'560px'}}>
+            <div style={{padding:isMobile?'10px':'14px',borderRadius:'18px',background:'linear-gradient(145deg,rgba(14,20,16,.96),rgba(8,10,8,.98))',border:'1px solid rgba(168,230,207,.12)',boxShadow:'0 24px 60px rgba(0,0,0,.42)',marginBottom:'12px'}}>
+              <div style={{borderRadius:'14px',overflow:'hidden',aspectRatio:'1/1',background:'var(--ink2)',border:'1px solid rgba(168,230,207,.08)',position:'relative'}}>
+                <img src={product.images[img]} alt={product.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'opacity .3s'}}/>
+                <div style={{position:'absolute',top:'16px',left:'16px',display:'flex',gap:'6px'}}>
+                  {product.isNew&&<span style={{background:'var(--mint)',color:'var(--sg)',fontFamily:"'DM Mono',monospace",fontSize:'9px',padding:'4px 10px',borderRadius:'2px',fontWeight:'600',letterSpacing:'.1em'}}>NEW</span>}
+                  {product.isSale&&<span style={{background:'var(--gold)',color:'#0A0D0A',fontFamily:"'DM Mono',monospace",fontSize:'9px',padding:'4px 10px',borderRadius:'2px',fontWeight:'600',letterSpacing:'.1em'}}>SALE</span>}
+                </div>
               </div>
             </div>
-            <div style={{display:'flex',gap:'10px',overflowX:isMobile?'auto':'visible',paddingBottom:isMobile?'4px':'0'}}>
+            <div style={{display:'flex',gap:'10px',overflowX:isMobile?'auto':'visible',paddingBottom:isMobile?'4px':'0',width:'100%'}}>
               {product.images.map((im,i)=>(
-                <button key={i} onClick={()=>setImg(i)} style={{width:isMobile?'62px':'70px',height:isMobile?'62px':'70px',borderRadius:'8px',overflow:'hidden',border:`1.5px solid ${i===img?'var(--mint)':'rgba(168,230,207,.1)'}`,cursor:'none',background:'none',padding:0,transition:'border-color .2s',flexShrink:0}}>
-                  <img src={im} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                <button key={i} onClick={()=>setImg(i)} style={{width:isMobile?'62px':'72px',height:isMobile?'62px':'72px',padding:'4px',borderRadius:'12px',overflow:'hidden',border:`1.5px solid ${i===img?'rgba(168,230,207,.55)':'rgba(168,230,207,.12)'}`,cursor:'none',background:i===img?'rgba(168,230,207,.06)':'rgba(255,255,255,.02)',transition:'all .2s',flexShrink:0,boxShadow:i===img?'0 0 0 1px rgba(168,230,207,.08), 0 10px 24px rgba(0,0,0,.28)':'none'}}>
+                  <div style={{width:'100%',height:'100%',borderRadius:'8px',overflow:'hidden',border:'1px solid rgba(168,230,207,.08)',background:'var(--ink2)'}}>
+                    <img src={im} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                  </div>
                 </button>
               ))}
             </div>
