@@ -66,6 +66,10 @@ const GlobalStyles = () => (
     ::-webkit-scrollbar-track { background:var(--ink); }
     ::-webkit-scrollbar-thumb { background:var(--br2); border-radius:2px; }
     ::-webkit-scrollbar-thumb:hover { background:var(--mint2); }
+    select, option, optgroup {
+      background-color: var(--ink2);
+      color: var(--cream);
+    }
 
     /* - Keyframes - */
     @keyframes fadeUp { from{opacity:0;transform:translateY(32px)} to{opacity:1;transform:translateY(0)} }
@@ -1577,7 +1581,7 @@ function AllProductsGrid({ navigate, standalone=false, navigateBack }) {
     else arr = [...arr].sort((a,b)=>b.reviewCount-a.reviewCount);
     return arr;
   }, [active, collectionFilter, matchesPriceBand, newOnly, priceBand, products, saleOnly, sort, standalone, stockOnly]);
-  const cats = ['all',...categories.map(c=>c.id)];
+  const cats = ['all',...categories.map(c=>c.slug)];
   const collectionOptions = ['all', ...collections.map(c => c.slug)];
   const activeFilterCount = [collectionFilter !== 'all', priceBand !== 'all', stockOnly, newOnly, saleOnly].filter(Boolean).length;
   useEffect(() => {
