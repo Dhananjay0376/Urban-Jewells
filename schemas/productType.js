@@ -77,6 +77,84 @@ export const productType = defineType({
       validation: (rule) => rule.min(1),
     }),
     defineField({
+      name: 'variants',
+      title: 'Variants',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'variant',
+          title: 'Variant',
+          fields: [
+            defineField({
+              name: 'id',
+              title: 'Variant ID',
+              type: 'string',
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'colorName',
+              title: 'Color Name',
+              type: 'string',
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'colorHex',
+              title: 'Color Hex',
+              type: 'string',
+              description: 'Hex code like #1D4ED8 for the color swatch.',
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'images',
+              title: 'Variant Images',
+              type: 'array',
+              of: [{ type: 'image', options: { hotspot: true } }],
+              validation: (rule) => rule.min(1),
+            }),
+            defineField({
+              name: 'price',
+              title: 'Variant Price',
+              type: 'number',
+              validation: (rule) => rule.min(0),
+            }),
+            defineField({
+              name: 'originalPrice',
+              title: 'Variant Original Price',
+              type: 'number',
+              validation: (rule) => rule.min(0),
+            }),
+            defineField({
+              name: 'inStock',
+              title: 'Variant In Stock',
+              type: 'boolean',
+              initialValue: true,
+            }),
+            defineField({
+              name: 'sku',
+              title: 'SKU',
+              type: 'string',
+            }),
+          ],
+          preview: {
+            select: {
+              title: 'colorName',
+              media: 'images.0',
+              price: 'price',
+            },
+            prepare(selection) {
+              const { title, media, price } = selection;
+              return {
+                title: title || 'Untitled Variant',
+                subtitle: typeof price === 'number' ? `INR ${price}` : 'Uses product price',
+                media,
+              };
+            },
+          },
+        },
+      ],
+    }),
+    defineField({
       name: 'inStock',
       title: 'In Stock',
       type: 'boolean',

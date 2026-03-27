@@ -583,6 +583,32 @@ const withCollectionCounts = (collections, products) => collections.map(collecti
   ...collection,
   productCount: collection.productCount || products.filter(product => product.collection === collection.slug).length,
 }));
+const getDefaultVariant = product => Array.isArray(product?.variants) && product.variants.length ? product.variants[0] : null;
+const getDisplayImages = (product, variant = null) => {
+  const variantImages = Array.isArray(variant?.images) ? variant.images.filter(Boolean) : [];
+  if (variantImages.length) return variantImages;
+  return Array.isArray(product?.images) ? product.images.filter(Boolean) : [];
+};
+const getDisplayPrice = (product, variant = null) => typeof variant?.price === 'number' ? variant.price : product?.price;
+const getDisplayOriginalPrice = (product, variant = null) => typeof variant?.originalPrice === 'number' ? variant.originalPrice : product?.originalPrice;
+const getDisplayStock = (product, variant = null) => typeof variant?.inStock === 'boolean' ? variant.inStock : product?.inStock !== false;
+const getWishlistKey = (product, variant = null) => {
+  const activeVariant = variant || getDefaultVariant(product);
+  return `${product.id}-${activeVariant?.id || 'base'}`;
+};
+const materializeProductSelection = (product, variant = null) => {
+  const activeVariant = variant || getDefaultVariant(product);
+  return {
+    ...product,
+    selectedVariantId: activeVariant?.id || null,
+    selectedColorName: activeVariant?.colorName || null,
+    selectedColorHex: activeVariant?.colorHex || null,
+    images: getDisplayImages(product, activeVariant),
+    price: getDisplayPrice(product, activeVariant),
+    originalPrice: getDisplayOriginalPrice(product, activeVariant),
+    inStock: getDisplayStock(product, activeVariant),
+  };
+};
 
 // =================================================================
 //  APP CONTEXT
@@ -660,15 +686,16 @@ function AppProvider({ children }) {
     setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
   }, []);
 
-  const addToCart = useCallback((product, size=null, qty=1) => {
-    const key = `${product.id}-${size}`;
+  const addToCart = useCallback((product, size=null, qty=1, variant=null) => {
+    const selectedProduct = materializeProductSelection(product, variant);
+    const key = `${selectedProduct.id}-${selectedProduct.selectedVariantId || 'base'}-${size || 'nosize'}`;
     setCart(prev => {
       const ex = prev.find(i => i.cartKey === key);
       if (ex) return prev.map(i => i.cartKey === key ? {...i, quantity: Math.min(i.quantity+qty,10)} : i);
-      return [...prev, {...product, size, quantity:qty, cartKey:key}];
+      return [...prev, {...selectedProduct, size, quantity:qty, cartKey:key}];
     });
     setCartOpen(true);
-    toast(`${product.name} added OK`);
+    toast(`${selectedProduct.name}${selectedProduct.selectedColorName ? ` (${selectedProduct.selectedColorName})` : ''} added OK`);
   }, [toast]);
 
   const removeFromCart = useCallback(key => setCart(p => p.filter(i => i.cartKey !== key)), []);
@@ -677,10 +704,17 @@ function AppProvider({ children }) {
     setCart(p => p.map(i => i.cartKey === key ? {...i, quantity:Math.min(qty,10)} : i));
   }, [removeFromCart]);
 
-  const toggleWishlist = useCallback(product => {
-    const has = wishlist.some(i => i.id === product.id);
-    if (has) { setWishlist(p => p.filter(i => i.id !== product.id)); toast("Removed from wishlist"); }
-    else { setWishlist(p => [...p, product]); toast("Added to wishlist <3"); }
+  const toggleWishlist = useCallback((product, variant=null) => {
+    const selectedProduct = materializeProductSelection(product, variant);
+    const wishKey = getWishlistKey(product, variant);
+    const has = wishlist.some(i => i.wishKey === wishKey);
+    if (has) {
+      setWishlist(p => p.filter(i => i.wishKey !== wishKey));
+      toast("Removed from wishlist");
+    } else {
+      setWishlist(p => [...p, {...selectedProduct, wishKey}]);
+      toast("Added to wishlist <3");
+    }
   }, [wishlist, toast]);
 
   const cartTotal = cart.reduce((s,i) => s + i.price * i.quantity, 0);
@@ -954,7 +988,7 @@ function Footer({ navigate }) {
 function ProductCard({ product, navigate }) {
   const {addToCart, toggleWishlist, wishlist} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
-  const inWish = wishlist.some(i => i.id === product.id);
+  const inWish = wishlist.some(i => i.wishKey === getWishlistKey(product));
   return (
     <div className="pcard" style={{fontFamily:"'DM Sans',sans-serif"}}>
       <div style={{position:'relative',aspectRatio:'1/1',overflow:'hidden',background:'var(--ink3)'}}>
@@ -1059,7 +1093,9 @@ function SideCart({ navigate }) {
                       <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',fontWeight:'500',color:'rgba(250,250,245,.85)',marginBottom:'2px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'180px'}}>{item.name}</p>
                       <button aria-label="Remove" onClick={()=>removeFromCart(item.cartKey)} style={{background:'none',border:'none',cursor:'none',color:'rgba(250,250,245,.2)',transition:'color .15s',flexShrink:0}} onMouseEnter={e=>e.target.style.color='rgba(250,250,245,.7)'} onMouseLeave={e=>e.target.style.color='rgba(250,250,245,.2)'}><XIcon/></button>
                     </div>
-                    {item.size&&<p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',opacity:.6,marginBottom:'8px'}}>Size: {item.size}</p>}
+                    {(item.selectedColorName || item.size)&&<p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',opacity:.6,marginBottom:'8px'}}>
+                      {[item.selectedColorName ? `Color: ${item.selectedColorName}` : null, item.size ? `Size: ${item.size}` : null].filter(Boolean).join(' | ')}
+                    </p>}
                     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:'8px'}}>
                       <div style={{display:'flex',alignItems:'center',gap:'8px',border:'1px solid rgba(168,230,207,.12)',borderRadius:'4px'}}>
                         <button onClick={()=>updateQty(item.cartKey,item.quantity-1)} style={{width:'28px',height:'28px',background:'none',border:'none',cursor:'none',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(250,250,245,.5)'}}><MinusIcon/></button>
@@ -1844,8 +1880,20 @@ function ProductPage({ slug, navigate, navigateBack }) {
   const [size, setSize] = useState(null);
   const [qty, setQty] = useState(1);
   const [acc, setAcc] = useState(null);
+  const [selectedVariantId, setSelectedVariantId] = useState(null);
+  useEffect(() => {
+    setSelectedVariantId(getDefaultVariant(product)?.id || null);
+    setImg(0);
+    setSize(null);
+  }, [product]);
+  const selectedVariant = product?.variants?.find(variant => variant.id === selectedVariantId) || getDefaultVariant(product);
+  const activeImages = getDisplayImages(product, selectedVariant);
+  const activePrice = getDisplayPrice(product, selectedVariant);
+  const activeOriginalPrice = getDisplayOriginalPrice(product, selectedVariant);
+  const activeInStock = getDisplayStock(product, selectedVariant);
+  const activeImage = activeImages[img] || activeImages[0] || product?.images?.[0];
   const related = products.filter(p=>p.category===product?.category&&p.slug!==slug).slice(0,4);
-  const inWish = wishlist.some(i=>i.id===product?.id);
+  const inWish = product ? wishlist.some(i=>i.wishKey===getWishlistKey(product, selectedVariant)) : false;
   if (catalogLoading) return <CatalogLoadingScreen label="Loading product"/>;
   if (!product) return <NotFoundPage navigate={navigate}/>;
   return (
@@ -1869,7 +1917,7 @@ function ProductPage({ slug, navigate, navigateBack }) {
           <div style={{width:'100%',maxWidth:isMobile?'320px':'500px',margin:isMobile?'0 auto':'0'}}>
             <div style={{padding:isMobile?'9px':'14px',borderRadius:isMobile?'16px':'18px',background:'linear-gradient(145deg,rgba(14,20,16,.96),rgba(8,10,8,.98))',border:'1px solid rgba(168,230,207,.12)',boxShadow:'0 24px 60px rgba(0,0,0,.42)',marginBottom:'12px'}}>
               <div style={{borderRadius:'14px',overflow:'hidden',aspectRatio:'1/1',background:'var(--ink2)',border:'1px solid rgba(168,230,207,.08)',position:'relative'}}>
-                <img src={product.images[img]} alt={product.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'opacity .3s'}}/>
+                <img src={activeImage} alt={product.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'opacity .3s'}}/>
                 <div style={{position:'absolute',top:'16px',left:'16px',display:'flex',gap:'6px'}}>
                   {product.isNew&&<span style={{background:'var(--mint)',color:'var(--sg)',fontFamily:"'DM Mono',monospace",fontSize:'9px',padding:'4px 10px',borderRadius:'2px',fontWeight:'600',letterSpacing:'.1em'}}>NEW</span>}
                   {product.isSale&&<span style={{background:'var(--gold)',color:'#0A0D0A',fontFamily:"'DM Mono',monospace",fontSize:'9px',padding:'4px 10px',borderRadius:'2px',fontWeight:'600',letterSpacing:'.1em'}}>SALE</span>}
@@ -1877,7 +1925,7 @@ function ProductPage({ slug, navigate, navigateBack }) {
               </div>
             </div>
             <div style={{display:'flex',gap:isMobile?'8px':'10px',overflowX:isMobile?'auto':'visible',paddingBottom:isMobile?'4px':'0',width:'100%',justifyContent:isMobile?'flex-start':'flex-start'}}>
-              {product.images.map((im,i)=>(
+              {activeImages.map((im,i)=>(
                 <button key={i} onClick={()=>setImg(i)} style={{width:isMobile?'60px':'72px',height:isMobile?'60px':'72px',padding:isMobile?'3px':'4px',borderRadius:isMobile?'11px':'12px',overflow:'hidden',border:`1.5px solid ${i===img?'rgba(168,230,207,.55)':'rgba(168,230,207,.12)'}`,cursor:'none',background:i===img?'rgba(168,230,207,.06)':'rgba(255,255,255,.02)',transition:'all .2s',flexShrink:0,boxShadow:i===img?'0 0 0 1px rgba(168,230,207,.08), 0 10px 24px rgba(0,0,0,.28)':'none'}}>
                   <div style={{width:'100%',height:'100%',borderRadius:isMobile?'7px':'8px',overflow:'hidden',border:'1px solid rgba(168,230,207,.08)',background:'var(--ink2)'}}>
                     <img src={im} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
@@ -1892,10 +1940,10 @@ function ProductPage({ slug, navigate, navigateBack }) {
             <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',background:'rgba(168,230,207,.08)',padding:'4px 10px',borderRadius:'2px',border:'1px solid rgba(168,230,207,.15)',letterSpacing:'.12em',textTransform:'uppercase'}}>{product.category}</span>
             <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,3.5vw,48px)',color:'var(--cream)',lineHeight:'1.05',margin:'14px 0 12px'}}>{product.name}</h1>
             <div style={{display:'flex',alignItems:'center',gap:'14px',marginBottom:'14px',flexWrap:'wrap'}}>
-              <span style={{fontFamily:"'DM Mono',monospace",fontSize:'22px',color:'var(--gold)',fontWeight:'500'}}>{formatPrice(product.price)}</span>
-              {product.originalPrice&&<>
-                <span style={{fontFamily:"'DM Mono',monospace",fontSize:'14px',color:'rgba(250,250,245,.25)',textDecoration:'line-through'}}>{formatPrice(product.originalPrice)}</span>
-                <span style={{background:'rgba(220,38,38,.15)',color:'#F87171',fontFamily:"'DM Mono',monospace",fontSize:'10px',padding:'3px 8px',borderRadius:'2px',letterSpacing:'.08em'}}>{formatDiscount(product.originalPrice,product.price)}% OFF</span>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:'22px',color:'var(--gold)',fontWeight:'500'}}>{formatPrice(activePrice)}</span>
+              {activeOriginalPrice&&<>
+                <span style={{fontFamily:"'DM Mono',monospace",fontSize:'14px',color:'rgba(250,250,245,.25)',textDecoration:'line-through'}}>{formatPrice(activeOriginalPrice)}</span>
+                <span style={{background:'rgba(220,38,38,.15)',color:'#F87171',fontFamily:"'DM Mono',monospace",fontSize:'10px',padding:'3px 8px',borderRadius:'2px',letterSpacing:'.08em'}}>{formatDiscount(activeOriginalPrice,activePrice)}% OFF</span>
               </>}
             </div>
             <div style={{display:'flex',alignItems:'center',gap:'6px',marginBottom:'18px'}}>
@@ -1904,6 +1952,30 @@ function ProductPage({ slug, navigate, navigateBack }) {
             </div>
             <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'15px',color:'rgba(250,250,245,.5)',lineHeight:'1.85',marginBottom:'24px'}}>{product.shortDescription}</p>
             <div style={{height:'1px',background:'rgba(168,230,207,.06)',marginBottom:'24px'}}/>
+
+            {product.variants?.length > 0 && (
+              <div style={{marginBottom:'22px'}}>
+                <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.25)',letterSpacing:'.14em',marginBottom:'10px'}}>SELECT COLOR</p>
+                <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
+                  {product.variants.map(variant => {
+                    const active = variant.id === selectedVariant?.id;
+                    return (
+                      <button
+                        key={variant.id}
+                        onClick={()=>{setSelectedVariantId(variant.id);setImg(0);}}
+                        title={variant.colorName}
+                        style={{width:'34px',height:'34px',borderRadius:'50%',border:`1.5px solid ${active?'rgba(201,168,76,.7)':'rgba(168,230,207,.14)'}`,background:'transparent',padding:'4px',cursor:'none',boxShadow:active?'0 0 0 1px rgba(201,168,76,.18), 0 10px 20px rgba(0,0,0,.24)':'none',transition:'all .2s'}}
+                      >
+                        <span style={{display:'block',width:'100%',height:'100%',borderRadius:'50%',background:variant.colorHex}}/>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.42)',marginTop:'10px'}}>
+                  Selected: <span style={{color:'rgba(250,250,245,.82)'}}>{selectedVariant?.colorName || 'Default'}</span>
+                </p>
+              </div>
+            )}
 
             {/* Materials */}
             <div style={{marginBottom:'22px'}}>
@@ -1944,10 +2016,10 @@ function ProductPage({ slug, navigate, navigateBack }) {
 
             {/* CTAs */}
             <div style={{display:'flex',flexDirection:'column',gap:'10px',marginBottom:'24px'}}>
-              <button className="btn-luxury" style={{width:'100%',justifyContent:'center',padding:'17px',fontSize:'13px',letterSpacing:'.1em'}} onClick={()=>addToCart(product,size,qty)}>
-                ADD TO CART
+              <button className="btn-luxury" style={{width:'100%',justifyContent:'center',padding:'17px',fontSize:'13px',letterSpacing:'.1em',opacity:activeInStock?1:.55,cursor:activeInStock?'none':'not-allowed'}} onClick={()=>activeInStock&&addToCart(product,size,qty,selectedVariant)}>
+                {activeInStock?'ADD TO CART':'OUT OF STOCK'}
               </button>
-              <button className="btn-ghost-luxury" style={{width:'100%',justifyContent:'center',padding:'14px',fontSize:'12px',letterSpacing:'.1em'}} onClick={()=>toggleWishlist(product)}>
+              <button className="btn-ghost-luxury" style={{width:'100%',justifyContent:'center',padding:'14px',fontSize:'12px',letterSpacing:'.1em'}} onClick={()=>toggleWishlist(product,selectedVariant)}>
                 {inWish?'OK IN WISHLIST':'<3 ADD TO WISHLIST'}
               </button>
             </div>
@@ -2083,6 +2155,7 @@ function CartPage({ navigate }) {
     msg += `\nItems:\n`;
     cart.forEach(item => {
       msg += `- ${item.name}`;
+      if (item.selectedColorName) msg += ` (color: ${item.selectedColorName})`;
       if (item.size) msg += ` (size: ${item.size})`;
       msg += ` x${item.quantity} = ${formatPrice(item.price*item.quantity)}\n`;
     });
@@ -2129,7 +2202,9 @@ function CartPage({ navigate }) {
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
                     <div>
                       <p style={{fontFamily:"'DM Sans',sans-serif",fontWeight:'500',fontSize:'15px',color:'rgba(250,250,245,.8)'}}>{item.name}</p>
-                      {item.size&&<p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',opacity:.6,marginTop:'2px'}}>Size: {item.size}</p>}
+                      {(item.selectedColorName || item.size)&&<p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',opacity:.6,marginTop:'2px'}}>
+                        {[item.selectedColorName ? `Color: ${item.selectedColorName}` : null, item.size ? `Size: ${item.size}` : null].filter(Boolean).join(' | ')}
+                      </p>}
                     </div>
                     <button onClick={()=>removeFromCart(item.cartKey)} style={{background:'none',border:'none',cursor:'none',color:'rgba(250,250,245,.2)',transition:'color .15s'}} onMouseEnter={e=>e.target.style.color='rgba(250,250,245,.7)'} onMouseLeave={e=>e.target.style.color='rgba(250,250,245,.2)'}><XIcon/></button>
                   </div>
@@ -2524,7 +2599,7 @@ function WishlistPage({ navigate }) {
             {/* Product grid */}
             <div style={{ display:'grid', gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(auto-fill,minmax(260px,1fr))', gap:isMobile?'12px':'20px', marginBottom:'40px' }}>
               {wishlist.map((product, i) => (
-                <div key={product.id} className="pcard fade-up" style={{ animationDelay:`${i*.06}s`, fontFamily:"'DM Sans',sans-serif" }}>
+                <div key={product.wishKey || product.id} className="pcard fade-up" style={{ animationDelay:`${i*.06}s`, fontFamily:"'DM Sans',sans-serif" }}>
                   {/* Image */}
                   <div style={{ position:'relative', aspectRatio:'1/1', overflow:'hidden', background:'var(--ink3)' }}>
                     <img
@@ -2536,7 +2611,7 @@ function WishlistPage({ navigate }) {
                     {/* Remove from wishlist */}
                     <button
                       aria-label="Remove from wishlist"
-                      onClick={() => toggleWishlist(product)}
+                      onClick={() => toggleWishlist(product, product.selectedVariantId ? { id: product.selectedVariantId, colorName: product.selectedColorName, colorHex: product.selectedColorHex, images: product.images, price: product.price, originalPrice: product.originalPrice, inStock: product.inStock } : null)}
                       title="Remove from wishlist"
                       style={{ position:'absolute', top:'12px', right:'12px', width:'36px', height:'36px', borderRadius:'50%',
                         background:'rgba(10,13,10,0.75)', backdropFilter:'blur(8px)',
@@ -2555,7 +2630,7 @@ function WishlistPage({ navigate }) {
                       <button
                         className="btn-luxury"
                         style={{ width:'100%', borderRadius:'0', justifyContent:'center', padding:'14px', letterSpacing:'.1em', fontSize:'12px' }}
-                        onClick={e => { e.stopPropagation(); addToCart(product, null, 1); }}
+                        onClick={e => { e.stopPropagation(); addToCart(product, null, 1, product.selectedVariantId ? { id: product.selectedVariantId, colorName: product.selectedColorName, colorHex: product.selectedColorHex, images: product.images, price: product.price, originalPrice: product.originalPrice, inStock: product.inStock } : null); }}
                       >
                         ADD TO CART
                       </button>
@@ -2566,6 +2641,7 @@ function WishlistPage({ navigate }) {
                     onClick={() => navigate('product', { slug: product.slug })}>
                     <p className="label-tag" style={{ marginBottom:'5px' }}>{product.category}</p>
                     <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'20px', color:'rgba(250,250,245,.88)', lineHeight:'1.2', marginBottom:'10px' }}>{product.name}</h3>
+                    {product.selectedColorName && <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',opacity:.7,marginBottom:'8px'}}>Color: {product.selectedColorName}</p>}
                     <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'8px' }}>
                       <span style={{ fontFamily:"'DM Mono',monospace", fontSize:'14px', color:'var(--gold)', fontWeight:'500' }}>{formatPrice(product.price)}</span>
                       {product.originalPrice && (
@@ -2587,7 +2663,7 @@ function WishlistPage({ navigate }) {
                 &lt;- CONTINUE SHOPPING
               </button>
               <button className="btn-luxury" style={{ fontSize:'11px', letterSpacing:'.12em', padding:'12px 28px', width:isMobile?'100%':'auto', justifyContent:'center' }}
-                onClick={() => { wishlist.forEach(p => addToCart(p, null, 1)); navigate('cart'); }}>
+                onClick={() => { wishlist.forEach(p => addToCart(p, null, 1, p.selectedVariantId ? { id: p.selectedVariantId, colorName: p.selectedColorName, colorHex: p.selectedColorHex, images: p.images, price: p.price, originalPrice: p.originalPrice, inStock: p.inStock } : null)); navigate('cart'); }}>
                 ADD ALL TO CART
               </button>
             </div>

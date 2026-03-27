@@ -42,7 +42,17 @@ const catalogQuery = `{
     "isSale": coalesce(isSale, false),
     rating,
     reviewCount,
-    tags
+    tags,
+    "variants": variants[]{
+      id,
+      colorName,
+      colorHex,
+      "images": array::compact(images[].asset->url),
+      price,
+      originalPrice,
+      inStock,
+      sku
+    }
   },
   "collections": *[_type == "collection"] | order(name asc) {
     _id,
@@ -66,26 +76,44 @@ const catalogQuery = `{
 
 const ensureArray = (value) => Array.isArray(value) ? value.filter(Boolean) : [];
 
-const normalizeProduct = (product) => ({
-  id: product.id,
-  name: product.name || "Untitled Product",
-  slug: product.slug || String(product.id),
-  price: Number(product.price || 0),
-  originalPrice: product.originalPrice ? Number(product.originalPrice) : undefined,
-  category: product.category || "",
-  collection: product.collection || "",
-  shortDescription: product.shortDescription || "",
-  materials: ensureArray(product.materials),
-  sizes: ensureArray(product.sizes),
-  images: ensureArray(product.images),
-  inStock: product.inStock !== false,
-  isFeatured: Boolean(product.isFeatured),
-  isNew: Boolean(product.isNew),
-  isSale: Boolean(product.isSale),
-  rating: product.rating ? Number(product.rating) : 0,
-  reviewCount: product.reviewCount ? Number(product.reviewCount) : 0,
-  tags: ensureArray(product.tags),
+const normalizeVariant = (variant, fallbackProduct) => ({
+  id: variant.id,
+  colorName: variant.colorName || "Variant",
+  colorHex: variant.colorHex || "#A8E6CF",
+  images: ensureArray(variant.images),
+  price: typeof variant.price === "number" ? Number(variant.price) : undefined,
+  originalPrice: typeof variant.originalPrice === "number" ? Number(variant.originalPrice) : undefined,
+  inStock: variant.inStock !== false,
+  sku: variant.sku || "",
+  productId: fallbackProduct.id,
 });
+
+const normalizeProduct = (product) => {
+  const variants = ensureArray(product.variants).map(variant => normalizeVariant(variant, product));
+  const fallbackImages = ensureArray(product.images);
+  const primaryVariant = variants[0];
+  return {
+    id: product.id,
+    name: product.name || "Untitled Product",
+    slug: product.slug || String(product.id),
+    price: Number(product.price || 0),
+    originalPrice: typeof product.originalPrice === "number" ? Number(product.originalPrice) : undefined,
+    category: product.category || "",
+    collection: product.collection || "",
+    shortDescription: product.shortDescription || "",
+    materials: ensureArray(product.materials),
+    sizes: ensureArray(product.sizes),
+    images: fallbackImages.length ? fallbackImages : primaryVariant?.images || [],
+    inStock: product.inStock !== false,
+    isFeatured: Boolean(product.isFeatured),
+    isNew: Boolean(product.isNew),
+    isSale: Boolean(product.isSale),
+    rating: product.rating ? Number(product.rating) : 0,
+    reviewCount: product.reviewCount ? Number(product.reviewCount) : 0,
+    tags: ensureArray(product.tags),
+    variants,
+  };
+};
 
 const normalizeCollection = (collection) => ({
   id: collection.id,
