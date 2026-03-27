@@ -1550,17 +1550,18 @@ function ShopByCategory({ navigate }) {
   );
 }
 
-function AllProductsGrid({ navigate, standalone=false, navigateBack }) {
+function AllProductsGrid({ navigate, standalone=false, navigateBack, routeParams={}, onStandaloneFiltersChange }) {
   const {products, categories, collections} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
-  const [active, setActive] = useState('all');
-  const [sort, setSort] = useState('popular');
-  const [collectionFilter, setCollectionFilter] = useState('all');
-  const [priceBand, setPriceBand] = useState('all');
-  const [stockOnly, setStockOnly] = useState(false);
-  const [newOnly, setNewOnly] = useState(false);
-  const [saleOnly, setSaleOnly] = useState(false);
+  const [active, setActive] = useState(routeParams.category || 'all');
+  const [sort, setSort] = useState(routeParams.sort || 'popular');
+  const [collectionFilter, setCollectionFilter] = useState(routeParams.collection || 'all');
+  const [priceBand, setPriceBand] = useState(routeParams.price || 'all');
+  const [stockOnly, setStockOnly] = useState(routeParams.stock === '1');
+  const [newOnly, setNewOnly] = useState(routeParams.new === '1');
+  const [saleOnly, setSaleOnly] = useState(routeParams.sale === '1');
   const [vis, setVis] = useState(8);
+  const lastRouteSyncRef = useRef('');
   const matchesPriceBand = useCallback((price) => {
     if (priceBand === 'all') return true;
     if (priceBand === 'under-1000') return price < 1000;
@@ -1585,8 +1586,44 @@ function AllProductsGrid({ navigate, standalone=false, navigateBack }) {
   const collectionOptions = ['all', ...collections.map(c => c.slug)];
   const activeFilterCount = [collectionFilter !== 'all', priceBand !== 'all', stockOnly, newOnly, saleOnly].filter(Boolean).length;
   useEffect(() => {
+    if (!standalone) return;
+    const syncedParams = {
+      category: routeParams.category || undefined,
+      sort: routeParams.sort || undefined,
+      collection: routeParams.collection || undefined,
+      price: routeParams.price || undefined,
+      stock: routeParams.stock || undefined,
+      new: routeParams.new || undefined,
+      sale: routeParams.sale || undefined,
+    };
+    lastRouteSyncRef.current = JSON.stringify(syncedParams);
+    setActive(routeParams.category || 'all');
+    setSort(routeParams.sort || 'popular');
+    setCollectionFilter(routeParams.collection || 'all');
+    setPriceBand(routeParams.price || 'all');
+    setStockOnly(routeParams.stock === '1');
+    setNewOnly(routeParams.new === '1');
+    setSaleOnly(routeParams.sale === '1');
+  }, [routeParams.category, routeParams.collection, routeParams.new, routeParams.price, routeParams.sale, routeParams.sort, routeParams.stock, standalone]);
+  useEffect(() => {
     setVis(8);
   }, [active, sort, collectionFilter, priceBand, stockOnly, newOnly, saleOnly]);
+  useEffect(() => {
+    if (!standalone || !onStandaloneFiltersChange) return;
+    const nextParams = {
+      category: active !== 'all' ? active : undefined,
+      sort: sort !== 'popular' ? sort : undefined,
+      collection: collectionFilter !== 'all' ? collectionFilter : undefined,
+      price: priceBand !== 'all' ? priceBand : undefined,
+      stock: stockOnly ? '1' : undefined,
+      new: newOnly ? '1' : undefined,
+      sale: saleOnly ? '1' : undefined,
+    };
+    const signature = JSON.stringify(nextParams);
+    if (signature === lastRouteSyncRef.current) return;
+    lastRouteSyncRef.current = signature;
+    onStandaloneFiltersChange(nextParams);
+  }, [active, collectionFilter, newOnly, onStandaloneFiltersChange, priceBand, saleOnly, sort, standalone, stockOnly]);
   const resetFilters = () => {
     setActive('all');
     setSort('popular');
@@ -1869,8 +1906,11 @@ function PageBackButton({ onClick, label='Back' }) {
   );
 }
 
-function AllPiecesPage({ navigate, navigateBack }) {
-  return <AllProductsGrid navigate={navigate} standalone navigateBack={navigateBack}/>;
+function AllPiecesPage({ navigate, navigateBack, params }) {
+  const handleFiltersChange = useCallback((nextParams) => {
+    navigate('all-pieces', nextParams, { replace:false });
+  }, [navigate]);
+  return <AllProductsGrid navigate={navigate} standalone navigateBack={navigateBack} routeParams={params} onStandaloneFiltersChange={handleFiltersChange}/>;
 }
 
 function CategoriesPage({ navigate, navigateBack }) {
@@ -3401,9 +3441,14 @@ function TermsPage({ navigate }) {
 //  APP
 // =================================================================
 function routeToHash(page, params={}) {
+  const query = new URLSearchParams();
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') query.set(key, value);
+  });
+  const queryString = query.toString();
   switch (page) {
     case 'home': return '#/';
-    case 'all-pieces': return '#/all-pieces';
+    case 'all-pieces': return `#/all-pieces${queryString ? `?${queryString}` : ''}`;
     case 'categories': return '#/categories';
     case 'collections': return '#/collections';
     case 'collection-detail': return `#/collections/${encodeURIComponent(params.slug || '')}`;
@@ -3423,14 +3468,27 @@ function routeToHash(page, params={}) {
 
 function routeFromHash(hash) {
   const cleaned = (hash || '#/').replace(/^#/, '').replace(/^\/+/, '');
-  const parts = cleaned ? cleaned.split('/').filter(Boolean) : [];
+  const [pathPart, queryPart=''] = cleaned.split('?');
+  const parts = pathPart ? pathPart.split('/').filter(Boolean) : [];
+  const query = new URLSearchParams(queryPart);
   const safeDecode = value => {
     try { return decodeURIComponent(value || ''); } catch { return value || ''; }
   };
 
   if (parts.length === 0) return { page:'home', params:{} };
 
-  if (parts[0] === 'all-pieces') return { page:'all-pieces', params:{} };
+  if (parts[0] === 'all-pieces') return {
+    page:'all-pieces',
+    params:{
+      category: query.get('category') || undefined,
+      sort: query.get('sort') || undefined,
+      collection: query.get('collection') || undefined,
+      price: query.get('price') || undefined,
+      stock: query.get('stock') || undefined,
+      new: query.get('new') || undefined,
+      sale: query.get('sale') || undefined,
+    }
+  };
   if (parts[0] === 'categories' && parts[1]) return { page:'category', params:{ slug:safeDecode(parts[1]) } };
   if (parts[0] === 'categories') return { page:'categories', params:{} };
   if (parts[0] === 'collections' && parts[1]) return { page:'collection-detail', params:{ slug:safeDecode(parts[1]) } };
@@ -3506,7 +3564,7 @@ export default function App() {
   const renderPage = () => {
     switch(page) {
       case 'home': return <HomePage navigate={navigate}/>;
-      case 'all-pieces': return <AllPiecesPage navigate={navigate} navigateBack={navigateBack}/>;
+      case 'all-pieces': return <AllPiecesPage navigate={navigate} navigateBack={navigateBack} params={params}/>;
       case 'categories': return <CategoriesPage navigate={navigate} navigateBack={navigateBack}/>;
       case 'collections': return <CollectionsPage navigate={navigate} navigateBack={navigateBack}/>;
       case 'collection-detail': return <CollectionDetail slug={params.slug} navigate={navigate} navigateBack={navigateBack}/>;
