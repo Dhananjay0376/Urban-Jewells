@@ -748,6 +748,15 @@ function Header({ navigate, page }) {
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [mobileOpen]);
+
   const nav = ["home","categories","collections","about","contact"];
 
   return (
@@ -811,12 +820,13 @@ function Header({ navigate, page }) {
       </header>
 
       {mobileOpen && (
-        <div style={{position:'fixed',inset:0,background:'rgba(10,13,10,0.98)',zIndex:9999,display:'flex',flexDirection:'column',padding:'0 20px'}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',height:'64px'}}>
+        <div style={{position:'fixed',inset:0,background:'rgba(5,8,5,0.72)',backdropFilter:'blur(10px)',zIndex:9999,display:'flex',justifyContent:'flex-end'}}>
+          <div style={{width:'min(86vw, 420px)',height:'100%',background:'linear-gradient(180deg,rgba(10,13,10,.98),rgba(14,20,16,.98))',borderLeft:'1px solid rgba(168,230,207,.08)',boxShadow:'-16px 0 60px rgba(0,0,0,.45)',display:'flex',flexDirection:'column',padding:'0 20px 24px',animation:'slideRight .32s cubic-bezier(.16,1,.3,1)'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',height:'64px',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
             <Logo onClick={()=>{navigate('home');setMobileOpen(false);}}/>
             <button onClick={()=>setMobileOpen(false)} style={{background:'none',border:'none',cursor:'none',color:'var(--cream)'}}><XIcon/></button>
           </div>
-          <div style={{display:'flex',flexDirection:'column',gap:'8px',marginTop:'28px'}}>
+          <div style={{display:'flex',flexDirection:'column',gap:'8px',marginTop:'22px'}}>
             {nav.map((p,i)=>{
               if (p !== 'categories') return (
                 <button key={p} className="fade-up"
@@ -845,6 +855,7 @@ function Header({ navigate, page }) {
                 </div>
               );
             })}
+          </div>
           </div>
         </div>
       )}
@@ -909,20 +920,22 @@ function Footer({ navigate }) {
               ))}
             </div>
           </div>
-          {cols.map(col=>(
-            <div key={col.h}>
-              <p className="label-tag" style={{marginBottom:'22px'}}>{col.h}</p>
-              <div style={{display:'flex',flexDirection:'column',gap:'11px'}}>
-                {col.links.map(lk=>(
-                  <button key={lk.l} onClick={()=>lk.href?window.open(lk.href,'_blank'):navigate(lk.p,lk.extra)}
-                    style={{background:'none',border:'none',cursor:'none',fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.38)',textAlign:'left',transition:'color .15s',padding:'1px 0'}}
-                    onMouseEnter={e=>e.currentTarget.style.color='rgba(250,250,245,.8)'}
-                    onMouseLeave={e=>e.currentTarget.style.color='rgba(250,250,245,.38)'}
-                  >{lk.l}</button>
-                ))}
+          <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'contents',gap:isMobile?'22px 18px':'0'}}>
+            {cols.map(col=>(
+              <div key={col.h}>
+                <p className="label-tag" style={{marginBottom:isMobile?'16px':'22px'}}>{col.h}</p>
+                <div style={{display:'flex',flexDirection:'column',gap:isMobile?'9px':'11px'}}>
+                  {col.links.map(lk=>(
+                    <button key={lk.l} onClick={()=>lk.href?window.open(lk.href,'_blank'):navigate(lk.p,lk.extra)}
+                      style={{background:'none',border:'none',cursor:'none',fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'13px':'14px',color:'rgba(250,250,245,.38)',textAlign:'left',transition:'color .15s',padding:'1px 0'}}
+                      onMouseEnter={e=>e.currentTarget.style.color='rgba(250,250,245,.8)'}
+                      onMouseLeave={e=>e.currentTarget.style.color='rgba(250,250,245,.38)'}
+                    >{lk.l}</button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
         <div className="shimmer-line" style={{marginBottom:'28px'}}/>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'12px'}}>
@@ -976,7 +989,7 @@ function ProductCard({ product, navigate }) {
 
       <div style={{padding:isMobile?'15px 14px 18px':'18px 18px 20px',position:'relative',zIndex:1,cursor:'none'}} onClick={()=>navigate('product',{slug:product.slug})}>
         <p className="label-tag" style={{marginBottom:'5px'}}>{product.category}</p>
-        <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'18px':'20px',color:'rgba(250,250,245,.88)',lineHeight:'1.2',marginBottom:'10px'}}>{product.name}</h3>
+        <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'18px':'20px',color:'rgba(250,250,245,.88)',lineHeight:'1.2',marginBottom:'10px',display:'-webkit-box',WebkitLineClamp:isMobile?2:3,WebkitBoxOrient:'vertical',overflow:'hidden',minHeight:isMobile?'43px':'72px'}}>{product.name}</h3>
         <div style={{display:'flex',alignItems:'center',gap:isMobile?'8px':'10px',marginBottom:'8px',flexWrap:'wrap'}}>
           <span style={{fontFamily:"'DM Mono',monospace",fontSize:isMobile?'13px':'14px',color:'var(--gold)',fontWeight:'500'}}>{formatPrice(product.price)}</span>
           {product.originalPrice&&<>
@@ -1189,6 +1202,7 @@ function HeroSection({ navigate }) {
   const w = typeof window !== 'undefined' ? window.innerWidth : 1200;
   const isMobile = w < 768;
   const isTablet = w < 900;
+  const heroObjectPosition = w < 380 ? '41% 10%' : w < 520 ? '40% 10%' : w < 768 ? '39% 10%' : w < 1024 ? '37% 10%' : '39% 10%';
   return (
     <section id="main" style={{minHeight:isMobile?'auto':'100vh',background:'var(--ink)',display:'flex',alignItems:'center',position:'relative',overflow:'hidden',paddingTop:isMobile?'94px':'70px',paddingBottom:isMobile?'38px':'0'}}>
       {/* Radial glow backgrounds */}
@@ -1252,7 +1266,7 @@ function HeroSection({ navigate }) {
                 <img
                   src="https://res.cloudinary.com/dxw1yg7if/image/upload/v1774376772/Model_p0p9uk.jpg"
                   alt="Urban Jewells editorial model"
-                  style={{position:'relative',zIndex:1,width:'100%',height:'100%',objectFit:'cover',objectPosition:'39% 10%',display:'block'}}
+                  style={{position:'relative',zIndex:1,width:'100%',height:'100%',objectFit:'cover',objectPosition:heroObjectPosition,display:'block'}}
                 />
                 <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(8,10,8,.05) 0%,rgba(8,10,8,0) 30%,rgba(8,10,8,.28) 100%)'}}/>
                 <div style={{position:'absolute',bottom:isMobile?'14px':'18px',left:isMobile?'14px':'18px',right:isMobile?'14px':'18px',display:'flex',justifyContent:'space-between',alignItems:'flex-end',gap:isMobile?'10px':'16px'}}>
@@ -1607,9 +1621,9 @@ function CategoriesPage({ navigate }) {
         <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.02) 1px,transparent 1px)',backgroundSize:'60px 60px',pointerEvents:'none'}}/>
         <div style={{position:'absolute',top:'20%',right:'10%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(168,230,207,.06) 0%,transparent 70%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1}}>
-          <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:'.3em'}}>URBAN JEWELLS</p>
-          <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9',marginBottom:'18px'}}>Categories</h1>
-          <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:'16px',color:'rgba(250,250,245,.35)'}}>Browse every form, silhouette, and signature piece by type.</p>
+          <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:isMobile?'.22em':'.3em'}}>URBAN JEWELLS</p>
+          <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:isMobile?'clamp(40px,12vw,54px)':'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9',marginBottom:isMobile?'12px':'18px'}}>Categories</h1>
+          <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'14px':'16px',color:'rgba(250,250,245,.35)',lineHeight:isMobile?'1.75':'1.6'}}>Browse every form, silhouette, and signature piece by type.</p>
         </div>
       </div>
       <div style={{padding:isMobile?'36px 20px 56px':'60px 48px 80px',maxWidth:'1300px',margin:'0 auto'}}>
@@ -1649,15 +1663,15 @@ function CollectionsPage({ navigate }) {
         <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.02) 1px,transparent 1px)',backgroundSize:'60px 60px',pointerEvents:'none'}}/>
         <div style={{position:'absolute',top:'20%',right:'10%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(168,230,207,.06) 0%,transparent 70%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1}}>
-          <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:'.3em'}}>URBAN JEWELLS</p>
-          <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9',marginBottom:'18px'}}>Our Collections</h1>
-          <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:'16px',color:'rgba(250,250,245,.35)'}}>Five worlds. One intention: jewellery that means something.</p>
+          <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:isMobile?'.22em':'.3em'}}>URBAN JEWELLS</p>
+          <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:isMobile?'clamp(40px,12vw,54px)':'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9',marginBottom:isMobile?'12px':'18px'}}>Our Collections</h1>
+          <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'14px':'16px',color:'rgba(250,250,245,.35)',lineHeight:isMobile?'1.75':'1.6'}}>Five worlds. One intention: jewellery that means something.</p>
         </div>
       </div>
-      <div style={{padding:isMobile?'36px 20px 56px':'60px 48px 80px',maxWidth:'1300px',margin:'0 auto'}}>
-        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill,minmax(380px,1fr))',gap:isMobile?'16px':'22px'}}>
+      <div style={{padding:isMobile?'32px 16px 52px':'60px 48px 80px',maxWidth:'1300px',margin:'0 auto'}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(auto-fill,minmax(380px,1fr))',gap:isMobile?'12px':'22px'}}>
           {collections.map((col,i)=>(
-            <div key={col.id} className="fade-up" style={{animationDelay:`${i*.09}s`,position:'relative',borderRadius:'12px',overflow:'hidden',aspectRatio:'3/4',cursor:'none',border:'1px solid rgba(168,230,207,.06)',transition:'all .4s cubic-bezier(.16,1,.3,1)'}}
+            <div key={col.id} className="fade-up" style={{animationDelay:`${i*.09}s`,position:'relative',borderRadius:isMobile?'10px':'12px',overflow:'hidden',aspectRatio:isMobile?'5/7':'3/4',cursor:'none',border:'1px solid rgba(168,230,207,.06)',transition:'all .4s cubic-bezier(.16,1,.3,1)'}}
               onClick={()=>navigate('collection-detail',{slug:col.slug})}
               onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.22)';e.currentTarget.style.boxShadow='0 28px 70px rgba(0,0,0,.8), var(--glow-mint)';e.currentTarget.querySelector('.clink').style.opacity='1';e.currentTarget.querySelector('.clink').style.transform='translateY(0)';e.currentTarget.querySelector('.cimg').style.transform='scale(1.06)';}}
               onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.06)';e.currentTarget.style.boxShadow='none';e.currentTarget.querySelector('.clink').style.opacity='0';e.currentTarget.querySelector('.clink').style.transform='translateY(14px)';e.currentTarget.querySelector('.cimg').style.transform='scale(1)';}}>
@@ -1665,10 +1679,10 @@ function CollectionsPage({ navigate }) {
               <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,.97) 0%,rgba(5,8,5,.2) 50%,transparent 75%)'}}/>
               <div style={{position:'absolute',bottom:0,left:0,right:0,padding:isMobile?'22px':'32px'}}>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',letterSpacing:'.22em',marginBottom:'10px'}}>{col.mood}</p>
-                <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'30px':'36px',color:'var(--cream)',marginBottom:'6px',lineHeight:'1.05'}}>{col.name}</h2>
-                <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',marginBottom:'2px'}}>{col.tagline}</p>
-                <div className="clink" style={{opacity:isMobile?1:0,transform:isMobile?'translateY(0)':'translateY(14px)',transition:'opacity .3s .05s,transform .3s .05s',marginTop:'16px',display:'flex',alignItems:'center',gap:'8px',color:'var(--mint)'}}>
-                  <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.16em'}}>VIEW COLLECTION</span>
+                <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'22px':'36px',color:'var(--cream)',marginBottom:isMobile?'4px':'6px',lineHeight:'1.05'}}>{col.name}</h2>
+                <p style={{fontFamily:"'DM Mono',monospace",fontSize:isMobile?'9px':'10px',color:'rgba(250,250,245,.3)',marginBottom:'2px',lineHeight:isMobile?'1.45':'1.2'}}>{col.tagline}</p>
+                <div className="clink" style={{opacity:isMobile?1:0,transform:isMobile?'translateY(0)':'translateY(14px)',transition:'opacity .3s .05s,transform .3s .05s',marginTop:isMobile?'10px':'16px',display:'flex',alignItems:'center',gap:'8px',color:'var(--mint)'}}>
+                  <span style={{fontFamily:"'DM Mono',monospace",fontSize:isMobile?'9px':'10px',letterSpacing:'.16em'}}>VIEW COLLECTION</span>
                   <ArrowRightIcon/>
                 </div>
               </div>
@@ -2178,8 +2192,8 @@ function AboutPage({ navigate }) {
         <div style={{position:'absolute',top:'20%',right:'8%',width:'500px',height:'500px',background:'radial-gradient(circle,rgba(168,230,207,.05) 0%,transparent 65%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1}}>
           <p className="label-tag fade-up" style={{marginBottom:'16px',letterSpacing:'.3em'}}>OUR STORY</p>
-          <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:'clamp(56px,9vw,110px)',color:'var(--cream)',lineHeight:'.88',letterSpacing:'-.02em'}}>Crafted.<br/><em style={{color:'var(--mint)'}}>With intention.</em></h1>
-          <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontStyle:'italic',fontSize:'16px',color:'rgba(250,250,245,.3)',marginTop:'24px'}}>Every piece has a story. This is ours.</p>
+          <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:isMobile?'clamp(42px,12vw,58px)':'clamp(56px,9vw,110px)',color:'var(--cream)',lineHeight:isMobile?'.94':'.88',letterSpacing:'-.02em'}}>Crafted.<br/><em style={{color:'var(--mint)'}}>With intention.</em></h1>
+          <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontStyle:'italic',fontSize:isMobile?'14px':'16px',color:'rgba(250,250,245,.3)',marginTop:isMobile?'18px':'24px'}}>Every piece has a story. This is ours.</p>
         </div>
       </div>
 
@@ -2303,7 +2317,7 @@ function ContactPage() {
         <div style={{position:'absolute',top:'20%',right:'8%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(168,230,207,.05) 0%,transparent 65%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1}}>
           <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:'.3em'}}>REACH OUT</p>
-          <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9'}}>Get in Touch</h1>
+          <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:isMobile?'clamp(40px,12vw,54px)':'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9'}}>Get in Touch</h1>
         </div>
       </div>
 
@@ -2364,7 +2378,7 @@ function ContactPage() {
         </div>
 
         {/* FAQ */}
-        <div style={{marginTop:isMobile?'52px':'72px'}}>
+        <div style={{marginTop:isMobile?'46px':'72px'}}>
           <div style={{textAlign:'center',marginBottom:isMobile?'28px':'40px'}}>
             <p className="label-tag" style={{marginBottom:'12px'}}>ANSWERS</p>
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,50px)',color:'var(--cream)'}}>Frequently Asked Questions</h2>
@@ -2403,7 +2417,7 @@ function WishlistPage({ navigate }) {
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
           <p className="label-tag" style={{ marginBottom:'12px', letterSpacing:'.3em' }}>YOUR COLLECTION</p>
           <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', flexWrap:'wrap', gap:'16px' }}>
-            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:'300', fontSize:'clamp(40px,6vw,72px)', color:'var(--cream)', lineHeight:'1' }}>
+            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:'300', fontSize:isMobile?'clamp(38px,11vw,50px)':'clamp(40px,6vw,72px)', color:'var(--cream)', lineHeight:'1' }}>
               Wishlist
             </h1>
             {wishlist.length > 0 && (
