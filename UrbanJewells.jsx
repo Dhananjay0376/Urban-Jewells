@@ -1226,7 +1226,7 @@ function BackToTop() {
 //  SEARCH MODAL
 // =================================================================
 function SearchModal({ navigate }) {
-  const {searchOpen, setSearchOpen, products} = useApp();
+  const {searchOpen, setSearchOpen, products, categories, collections} = useApp();
   const [q, setQ] = useState('');
   const inputRef = useRef(null);
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
@@ -1236,11 +1236,44 @@ function SearchModal({ navigate }) {
     document.addEventListener('keydown', fn);
     return () => document.removeEventListener('keydown', fn);
   }, []);
+  const categoryLabelMap = useMemo(() => Object.fromEntries(categories.map(c => [c.slug, c.name])), [categories]);
+  const collectionLabelMap = useMemo(() => Object.fromEntries(collections.map(c => [c.slug, c.name])), [collections]);
   const results = useMemo(() => {
     if (!q.trim()) return [];
     const lq = q.toLowerCase();
-    return products.filter(p=>[p.name,p.shortDescription,p.category,...(p.tags||[])].some(f=>f?.toLowerCase().includes(lq))).slice(0,6);
-  }, [products, q]);
+    return products
+      .map(product => {
+        const categoryLabel = categoryLabelMap[product.category] || product.category || '';
+        const collectionLabel = collectionLabelMap[product.collection] || product.collection || '';
+        const variantColors = (product.variants || []).map(variant => variant.colorName).filter(Boolean);
+        const searchable = [
+          product.name,
+          product.shortDescription,
+          product.category,
+          categoryLabel,
+          product.collection,
+          collectionLabel,
+          ...(product.tags || []),
+          ...variantColors,
+        ].filter(Boolean).map(value => value.toLowerCase());
+
+        if (!searchable.some(value => value.includes(lq))) return null;
+
+        let score = 0;
+        if (product.name?.toLowerCase().includes(lq)) score += 6;
+        if (product.name?.toLowerCase().startsWith(lq)) score += 4;
+        if (categoryLabel.toLowerCase().includes(lq)) score += 3;
+        if (collectionLabel.toLowerCase().includes(lq)) score += 3;
+        if (variantColors.some(color => color?.toLowerCase().includes(lq))) score += 2;
+        if ((product.tags || []).some(tag => tag?.toLowerCase().includes(lq))) score += 2;
+        if (product.shortDescription?.toLowerCase().includes(lq)) score += 1;
+
+        return { product, score, categoryLabel, collectionLabel, variantColors };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.score - a.score || b.product.reviewCount - a.product.reviewCount)
+      .slice(0, 8);
+  }, [categoryLabelMap, collectionLabelMap, products, q]);
   if (!searchOpen) return null;
   return (
     <div style={{position:'fixed',inset:0,background:'rgba(5,8,5,0.97)',zIndex:1200,display:'flex',flexDirection:'column',alignItems:'center',padding:isMobile?'84px 18px 28px':'100px 24px 40px',animation:'fadeIn .2s ease',backdropFilter:'blur(8px)'}} onClick={e=>{if(e.target===e.currentTarget)setSearchOpen(false);}}>
@@ -1253,23 +1286,40 @@ function SearchModal({ navigate }) {
             style={{width:'100%',background:'rgba(255,255,255,.04)',border:'none',borderBottom:'1px solid rgba(168,230,207,.3)',borderRadius:'0',padding:'16px 4px',fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'22px':'28px',color:'var(--cream)',outline:'none',letterSpacing:'.04em'}}/>
           <div style={{position:'absolute',bottom:0,left:0,width:q?'100%':'0',height:'2px',background:'linear-gradient(90deg,var(--mint),var(--gold))',transition:'width .4s cubic-bezier(.16,1,.3,1)'}}/>
         </div>
+        {!q.trim()&&(
+          <div className="glass-card" style={{marginTop:'26px',padding:isMobile?'18px 16px':'20px 22px'}}>
+            <p className="label-tag" style={{marginBottom:'10px'}}>TRY SEARCHING</p>
+            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.46)',lineHeight:'1.8'}}>Search by product name, category, collection, tag, or color. Example: `rings`, `urban luxe`, `gold`, `green`.</p>
+          </div>
+        )}
         {results.length>0&&(
-          <div style={{marginTop:'32px',display:'grid',gridTemplateColumns:isMobile?'repeat(2,1fr)':'repeat(3,1fr)',gap:'12px'}}>
-            {results.map(p=>(
-              <div key={p.id} className="glass-card" style={{cursor:'none',transition:'border-color .2s,transform .2s'}}
-                onClick={()=>{navigate('product',{slug:p.slug});setSearchOpen(false);}}
+          <div style={{marginTop:'32px'}}>
+            <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.32)',letterSpacing:'.14em',marginBottom:'14px'}}>TOP MATCHES ({results.length})</p>
+            <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,1fr)':'repeat(3,1fr)',gap:'12px'}}>
+            {results.map(({product, categoryLabel, collectionLabel, variantColors})=>(
+              <div key={product.id} className="glass-card" style={{cursor:'none',transition:'border-color .2s,transform .2s'}}
+                onClick={()=>{navigate('product',{slug:product.slug});setSearchOpen(false);}}
                 onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.25)';e.currentTarget.style.transform='translateY(-3px)';}}
                 onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--glass-border)';e.currentTarget.style.transform='translateY(0)';}}>
-                <img src={p.images[0]} alt={p.name} style={{width:'100%',aspectRatio:'1/1',objectFit:'cover'}}/>
+                <img src={product.images[0]} alt={product.name} style={{width:'100%',aspectRatio:'1/1',objectFit:'cover'}}/>
                 <div style={{padding:'10px 12px'}}>
-                  <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'14px',color:'rgba(250,250,245,.8)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.name}</p>
-                  <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'var(--gold)'}}>{formatPrice(p.price)}</p>
+                  <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'14px',color:'rgba(250,250,245,.8)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{product.name}</p>
+                  <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.32)',letterSpacing:'.08em',marginTop:'4px'}}>{categoryLabel}{collectionLabel ? ` • ${collectionLabel}` : ''}</p>
+                  {variantColors.length>0&&<p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',opacity:.7,marginTop:'6px'}}>Colors: {variantColors.slice(0,2).join(', ')}{variantColors.length>2?'...':''}</p>}
+                  <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'var(--gold)',marginTop:'8px'}}>{formatPrice(product.price)}</p>
                 </div>
               </div>
             ))}
+            </div>
           </div>
         )}
-        {q.trim()&&results.length===0&&<p style={{fontFamily:"'DM Sans',sans-serif",color:'rgba(250,250,245,.25)',marginTop:'32px',textAlign:'center'}}>No results for "{q}"</p>}
+        {q.trim()&&results.length===0&&(
+          <div className="glass-card" style={{marginTop:'32px',padding:'22px 20px',textAlign:'center'}}>
+            <p className="label-tag" style={{marginBottom:'12px'}}>NO RESULTS</p>
+            <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'28px',color:'rgba(250,250,245,.72)',marginBottom:'8px'}}>No results for "{q}"</p>
+            <p style={{fontFamily:"'DM Sans',sans-serif",color:'rgba(250,250,245,.35)',lineHeight:'1.8'}}>Try searching by product name, category, collection, tag, or color instead.</p>
+          </div>
+        )}
       </div>
     </div>
   );
