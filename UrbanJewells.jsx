@@ -1866,7 +1866,7 @@ function ProductPage({ slug, navigate, navigateBack }) {
 
         <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:isMobile?'24px':'64px',alignItems:'start'}}>
           {/* Image gallery */}
-          <div style={{width:'100%',maxWidth:isMobile?'420px':'560px',margin:isMobile?'0 auto':'0'}}>
+          <div style={{width:'100%',maxWidth:isMobile?'360px':'500px',margin:isMobile?'0 auto':'0'}}>
             <div style={{padding:isMobile?'9px':'14px',borderRadius:isMobile?'16px':'18px',background:'linear-gradient(145deg,rgba(14,20,16,.96),rgba(8,10,8,.98))',border:'1px solid rgba(168,230,207,.12)',boxShadow:'0 24px 60px rgba(0,0,0,.42)',marginBottom:'12px'}}>
               <div style={{borderRadius:'14px',overflow:'hidden',aspectRatio:'1/1',background:'var(--ink2)',border:'1px solid rgba(168,230,207,.08)',position:'relative'}}>
                 <img src={product.images[img]} alt={product.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'opacity .3s'}}/>
