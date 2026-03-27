@@ -1236,8 +1236,14 @@ function HeroSection({ navigate }) {
               <div style={{position:'relative',borderRadius:'20px',overflow:'hidden',background:'var(--ink2)',aspectRatio:'4/5'}}>
                 <img
                   src="https://res.cloudinary.com/dxw1yg7if/image/upload/v1774376772/Model_p0p9uk.jpg"
+                  alt=""
+                  aria-hidden="true"
+                  style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',filter:'blur(18px)',transform:'scale(1.08)',opacity:.3,display:'block'}}
+                />
+                <img
+                  src="https://res.cloudinary.com/dxw1yg7if/image/upload/v1774376772/Model_p0p9uk.jpg"
                   alt="Urban Jewells editorial model"
-                  style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}
+                  style={{position:'relative',zIndex:1,width:'100%',height:'100%',objectFit:'cover',objectPosition:'39% 10%',display:'block'}}
                 />
                 <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(8,10,8,.05) 0%,rgba(8,10,8,0) 30%,rgba(8,10,8,.28) 100%)'}}/>
                 <div style={{position:'absolute',bottom:'18px',left:'18px',right:'18px',display:'flex',justifyContent:'space-between',alignItems:'flex-end',gap:'16px'}}>
@@ -1499,12 +1505,59 @@ function ContactTeaser({ navigate }) {
           Have a question about a piece, want a custom design, or just want to say hello? Every message is answered personally.
         </p>
         <button className="btn-gold" onClick={()=>navigate('contact')} style={{padding:'17px 44px',fontSize:'13px',letterSpacing:'.1em'}}>CONTACT US</button>
-        <div style={{display:'flex',justifyContent:'center',gap:'48px',marginTop:'56px'}}>
-          {[{icon:'Phone',l:'WhatsApp'},{icon:'Email',l:'Email Us'},{icon:'IG',l:'@urbanjewells'}].map(({icon,l})=>(
-            <div key={l} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'8px'}}>
-              <span style={{fontSize:'22px'}}>{icon}</span>
-              <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.25)',letterSpacing:'.12em'}}>{l}</span>
-            </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:'16px',marginTop:'56px'}}>
+          {[
+            {
+              l:'WhatsApp',
+              v:'+91 73512 57315',
+              href:'https://wa.me/917351257315',
+              icon:(
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.63 2.62a2 2 0 0 1-.45 2.11L8 9.91a16 16 0 0 0 6.09 6.09l1.46-1.29a2 2 0 0 1 2.11-.45c.84.3 1.72.51 2.62.63A2 2 0 0 1 22 16.92z"/>
+                </svg>
+              )
+            },
+            {
+              l:'Email',
+              v:'hello@urbanjewells.in',
+              href:'mailto:hello@urbanjewells.in',
+              icon:(
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="5" width="18" height="14" rx="2"/>
+                  <path d="m3 7 9 6 9-6"/>
+                </svg>
+              )
+            },
+            {
+              l:'Instagram',
+              v:'@urbanjewells',
+              href:'https://instagram.com/urbanjewells',
+              icon:(
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="5"/>
+                  <circle cx="12" cy="12" r="4"/>
+                  <circle cx="17.5" cy="6.5" r="1"/>
+                </svg>
+              )
+            }
+          ].map(({icon,l,v,href})=>(
+            <a
+              key={l}
+              href={href}
+              target={href.startsWith('http') ? '_blank' : undefined}
+              rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+              style={{display:'flex',alignItems:'center',gap:'14px',padding:'16px 18px',textDecoration:'none',background:'linear-gradient(145deg,rgba(14,20,16,.78),rgba(8,10,8,.92))',border:'1px solid rgba(168,230,207,.1)',borderRadius:'18px',boxShadow:'0 18px 44px rgba(0,0,0,.28)',transition:'transform .25s, border-color .25s, box-shadow .25s'}}
+              onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-4px)';e.currentTarget.style.borderColor='rgba(201,168,76,.24)';e.currentTarget.style.boxShadow='0 22px 56px rgba(0,0,0,.38), var(--glow-mint)';}}
+              onMouseLeave={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.borderColor='rgba(168,230,207,.1)';e.currentTarget.style.boxShadow='0 18px 44px rgba(0,0,0,.28)';}}
+            >
+              <div style={{width:'42px',height:'42px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--gold)',background:'linear-gradient(145deg,rgba(201,168,76,.14),rgba(168,230,207,.06))',border:'1px solid rgba(201,168,76,.18)',flexShrink:0}}>
+                {icon}
+              </div>
+              <div style={{textAlign:'left'}}>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.28)',letterSpacing:'.14em',marginBottom:'5px'}}>{l}</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.8)'}}>{v}</div>
+              </div>
+            </a>
           ))}
         </div>
       </div>
