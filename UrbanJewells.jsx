@@ -900,9 +900,9 @@ function Footer({ navigate }) {
           <div>
             <Logo onClick={()=>navigate('home')}/>
             <p style={{fontFamily:"'DM Sans',sans-serif",fontStyle:'italic',color:'rgba(250,250,245,.4)',fontSize:'14px',lineHeight:'1.8',marginTop:'20px',maxWidth:'220px'}}>Crafted for the bold.<br/>Made for you.</p>
-            <div style={{display:'flex',gap:'14px',marginTop:'28px'}}>
+            <div style={{display:'flex',gap:isMobile?'10px':'14px',marginTop:'28px'}}>
               {['IG','FB','YT','PT'].map(s=>(
-                <button key={s} aria-label={s} style={{width:'38px',height:'38px',borderRadius:'50%',background:'rgba(168,230,207,.06)',border:'1px solid rgba(168,230,207,.1)',cursor:'none',color:'rgba(168,230,207,.6)',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'DM Mono',monospace",fontSize:'10px',transition:'all .2s'}}
+                <button key={s} aria-label={s} style={{width:isMobile?'34px':'38px',height:isMobile?'34px':'38px',borderRadius:'50%',background:'rgba(168,230,207,.06)',border:'1px solid rgba(168,230,207,.1)',cursor:'none',color:'rgba(168,230,207,.6)',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'DM Mono',monospace",fontSize:isMobile?'9px':'10px',transition:'all .2s'}}
                   onMouseEnter={e=>{e.currentTarget.style.background='rgba(168,230,207,.15)';e.currentTarget.style.color='var(--mint)';e.currentTarget.style.borderColor='rgba(168,230,207,.3)';}}
                   onMouseLeave={e=>{e.currentTarget.style.background='rgba(168,230,207,.06)';e.currentTarget.style.color='rgba(168,230,207,.6)';e.currentTarget.style.borderColor='rgba(168,230,207,.1)';}}
                 >{s}</button>
@@ -1562,16 +1562,16 @@ function ContactTeaser({ navigate }) {
               href={href}
               target={href.startsWith('http') ? '_blank' : undefined}
               rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
-              style={{display:'flex',alignItems:'center',gap:'14px',padding:'16px 18px',textDecoration:'none',background:'linear-gradient(145deg,rgba(14,20,16,.78),rgba(8,10,8,.92))',border:'1px solid rgba(168,230,207,.1)',borderRadius:'18px',boxShadow:'0 18px 44px rgba(0,0,0,.28)',transition:'transform .25s, border-color .25s, box-shadow .25s'}}
+              style={{display:'flex',alignItems:'center',gap:isMobile?'12px':'14px',padding:isMobile?'14px 15px':'16px 18px',textDecoration:'none',background:'linear-gradient(145deg,rgba(14,20,16,.78),rgba(8,10,8,.92))',border:'1px solid rgba(168,230,207,.1)',borderRadius:isMobile?'16px':'18px',boxShadow:'0 18px 44px rgba(0,0,0,.28)',transition:'transform .25s, border-color .25s, box-shadow .25s'}}
               onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-4px)';e.currentTarget.style.borderColor='rgba(201,168,76,.24)';e.currentTarget.style.boxShadow='0 22px 56px rgba(0,0,0,.38), var(--glow-mint)';}}
               onMouseLeave={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.borderColor='rgba(168,230,207,.1)';e.currentTarget.style.boxShadow='0 18px 44px rgba(0,0,0,.28)';}}
             >
-              <div style={{width:'42px',height:'42px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--gold)',background:'linear-gradient(145deg,rgba(201,168,76,.14),rgba(168,230,207,.06))',border:'1px solid rgba(201,168,76,.18)',flexShrink:0}}>
+              <div style={{width:isMobile?'38px':'42px',height:isMobile?'38px':'42px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--gold)',background:'linear-gradient(145deg,rgba(201,168,76,.14),rgba(168,230,207,.06))',border:'1px solid rgba(201,168,76,.18)',flexShrink:0}}>
                 {icon}
               </div>
               <div style={{textAlign:'left'}}>
                 <div style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.28)',letterSpacing:'.14em',marginBottom:'5px'}}>{l}</div>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.8)'}}>{v}</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'13px':'14px',color:'rgba(250,250,245,.8)'}}>{v}</div>
               </div>
             </a>
           ))}
@@ -2125,25 +2125,26 @@ function CartPage({ navigate }) {
 //  THANK YOU PAGE
 // =================================================================
 function ThankYouPage({ orderRef, email, navigate }) {
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   return (
-    <div style={{minHeight:'100vh',background:'var(--ink)',display:'flex',alignItems:'center',justifyContent:'center',padding:'80px 24px',position:'relative',overflow:'hidden'}}>
+    <div style={{minHeight:'100vh',background:'var(--ink)',display:'flex',alignItems:'center',justifyContent:'center',padding:isMobile?'56px 20px':'80px 24px',position:'relative',overflow:'hidden'}}>
       <div style={{position:'absolute',inset:0,background:'radial-gradient(ellipse at center,rgba(30,58,15,.4) 0%,transparent 60%)',pointerEvents:'none'}}/>
       <div style={{maxWidth:'540px',width:'100%',textAlign:'center',position:'relative',zIndex:1}}>
-        <svg width="88" height="88" viewBox="0 0 88 88" style={{marginBottom:'28px'}}>
+        <svg width={isMobile ? "76" : "88"} height={isMobile ? "76" : "88"} viewBox="0 0 88 88" style={{marginBottom:isMobile?'22px':'28px'}}>
           <circle cx="44" cy="44" r="36" fill="none" stroke="rgba(168,230,207,.15)" strokeWidth="1"/>
           <circle cx="44" cy="44" r="36" fill="none" stroke="var(--mint)" strokeWidth="2" strokeDasharray="226" strokeDashoffset="226" style={{animation:'drawCheck .7s ease-out .3s forwards'}}/>
           <polyline points="27,45 39,57 62,33" fill="none" stroke="var(--mint)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="52" strokeDashoffset="52" style={{animation:'drawCheck .45s ease-out .85s forwards'}}/>
         </svg>
-        <p className="label-tag" style={{marginBottom:'14px',letterSpacing:'.28em'}}>ORDER RECEIVED</p>
-        <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(44px,7vw,64px)',color:'var(--cream)',marginBottom:'8px',lineHeight:'1'}}>Thank You</h1>
+        <p className="label-tag" style={{marginBottom:'14px',letterSpacing:isMobile?'.18em':'.28em'}}>ORDER RECEIVED</p>
+        <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'clamp(38px,12vw,50px)':'clamp(44px,7vw,64px)',color:'var(--cream)',marginBottom:'8px',lineHeight:'1'}}>Thank You</h1>
         <p style={{fontFamily:"'DM Mono',monospace",fontSize:'12px',color:'rgba(250,250,245,.25)',marginBottom:'22px',letterSpacing:'.08em'}}>Order #{orderRef}</p>
         <div className="shimmer-line" style={{width:'48px',margin:'0 auto 24px'}}/>
-        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'15px',color:'rgba(250,250,245,.45)',lineHeight:'1.9',marginBottom:'32px'}}>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'14px':'15px',color:'rgba(250,250,245,.45)',lineHeight:isMobile?'1.8':'1.9',marginBottom:isMobile?'24px':'32px'}}>
           We've received your order and will reach out on WhatsApp within a few hours to confirm payment and dispatch. Keep your WhatsApp available.
         </p>
         <a href={`https://wa.me/917351257315?text=Hi%20Urban%20Jewells!%20I%20placed%20Order%20%23${orderRef}%20and%20I'm%20ready%20to%20confirm.`}
           target="_blank" rel="noopener noreferrer"
-          style={{display:'inline-flex',alignItems:'center',gap:'10px',background:'#25D366',color:'#fff',padding:'16px 36px',borderRadius:'4px',fontFamily:"'DM Sans',sans-serif",fontSize:'14px',fontWeight:'600',textDecoration:'none',letterSpacing:'.06em',boxShadow:'0 8px 32px rgba(37,211,102,.3)',transition:'transform .2s,box-shadow .2s',marginBottom:'22px'}}
+          style={{display:'inline-flex',alignItems:'center',justifyContent:'center',gap:'10px',background:'#25D366',color:'#fff',padding:isMobile?'15px 22px':'16px 36px',borderRadius:'4px',fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'13px':'14px',fontWeight:'600',textDecoration:'none',letterSpacing:'.06em',boxShadow:'0 8px 32px rgba(37,211,102,.3)',transition:'transform .2s,box-shadow .2s',marginBottom:'22px',width:isMobile?'100%':'auto'}}
           onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 12px 40px rgba(37,211,102,.45)';}}
           onMouseLeave={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='0 8px 32px rgba(37,211,102,.3)';}}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -2346,7 +2347,7 @@ function ContactPage() {
 
           {/* Info */}
           <div>
-            <div className="glass-card" style={{padding:'32px',marginBottom:'20px'}}>
+            <div className="glass-card" style={{padding:isMobile?'24px':'32px',marginBottom:'20px'}}>
               <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'24px',color:'var(--cream)',marginBottom:'22px'}}>Contact Info</h3>
               {[{t:'WhatsApp',v:'+91 73512 57315',a:'https://wa.me/917351257315',e:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.63 2.62a2 2 0 0 1-.45 2.11L8 9.91a16 16 0 0 0 6.09 6.09l1.46-1.29a2 2 0 0 1 2.11-.45c.84.3 1.72.51 2.62.63A2 2 0 0 1 22 16.92z"/></svg>},{t:'Email',v:'hello@urbanjewells.in',a:'mailto:hello@urbanjewells.in',e:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>},{t:'Instagram',v:'@urbanjewells',a:'https://instagram.com/urbanjewells',e:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>}].map(({e,t,v,a})=>(
                 <a key={t} href={a} target="_blank" rel="noopener noreferrer" style={{display:'flex',alignItems:'center',gap:'14px',padding:'14px 0',borderBottom:'1px solid rgba(168,230,207,.06)',textDecoration:'none',transition:'opacity .15s'}} onMouseEnter={el=>el.currentTarget.style.opacity='.8'} onMouseLeave={el=>el.currentTarget.style.opacity='1'}>
@@ -2363,8 +2364,8 @@ function ContactPage() {
         </div>
 
         {/* FAQ */}
-        <div style={{marginTop:'72px'}}>
-          <div style={{textAlign:'center',marginBottom:'40px'}}>
+        <div style={{marginTop:isMobile?'52px':'72px'}}>
+          <div style={{textAlign:'center',marginBottom:isMobile?'28px':'40px'}}>
             <p className="label-tag" style={{marginBottom:'12px'}}>ANSWERS</p>
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,50px)',color:'var(--cream)'}}>Frequently Asked Questions</h2>
           </div>
@@ -2372,7 +2373,7 @@ function ContactPage() {
             {FAQS.map((faq,i)=>(
               <div key={i} style={{borderBottom:'1px solid rgba(168,230,207,.06)'}}>
                 <button onClick={()=>setOpenFaq(openFaq===i?null:i)}
-                  style={{width:'100%',display:'flex',justifyContent:'space-between',alignItems:'center',padding:'18px 0',background:'none',border:'none',cursor:'none',textAlign:'left',gap:'12px',transition:'color .15s'}}
+                  style={{width:'100%',display:'flex',justifyContent:'space-between',alignItems:'center',padding:isMobile?'15px 0':'18px 0',background:'none',border:'none',cursor:'none',textAlign:'left',gap:'12px',transition:'color .15s'}}
                   onMouseEnter={e=>e.currentTarget.style.color='var(--cream)'} onMouseLeave={e=>e.currentTarget.style.color='rgba(250,250,245,.55)'}>
                   <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:'400',fontSize:'15px',color:'inherit'}}>{faq.q}</span>
                   <span style={{flexShrink:0,transform:openFaq===i?'rotate(180deg)':'rotate(0)',transition:'transform .28s',color:'rgba(250,250,245,.2)'}}><ChevDownIcon/></span>
@@ -2394,10 +2395,11 @@ function ContactPage() {
 // =================================================================
 function WishlistPage({ navigate }) {
   const { wishlist, toggleWishlist, addToCart } = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   return (
     <div style={{ background:'var(--ink)', minHeight:'100vh', paddingTop:'70px' }}>
       {/* Header */}
-      <div style={{ background:'var(--ink2)', borderBottom:'1px solid rgba(168,230,207,.06)', padding:'48px 48px 40px' }}>
+      <div style={{ background:'var(--ink2)', borderBottom:'1px solid rgba(168,230,207,.06)', padding:isMobile?'28px 20px 24px':'48px 48px 40px' }}>
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
           <p className="label-tag" style={{ marginBottom:'12px', letterSpacing:'.3em' }}>YOUR COLLECTION</p>
           <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', flexWrap:'wrap', gap:'16px' }}>
@@ -2413,7 +2415,7 @@ function WishlistPage({ navigate }) {
         </div>
       </div>
 
-      <div style={{ maxWidth:'1200px', margin:'0 auto', padding:'48px' }}>
+      <div style={{ maxWidth:'1200px', margin:'0 auto', padding:isMobile?'24px 20px 40px':'48px' }}>
         {wishlist.length === 0 ? (
           /* Empty state */
           <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'80px 0', textAlign:'center', gap:'20px' }}>
@@ -2435,7 +2437,7 @@ function WishlistPage({ navigate }) {
         ) : (
           <>
             {/* Product grid */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:'20px', marginBottom:'40px' }}>
+            <div style={{ display:'grid', gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(auto-fill,minmax(260px,1fr))', gap:isMobile?'12px':'20px', marginBottom:'40px' }}>
               {wishlist.map((product, i) => (
                 <div key={product.id} className="pcard fade-up" style={{ animationDelay:`${i*.06}s`, fontFamily:"'DM Sans',sans-serif" }}>
                   {/* Image */}
@@ -2495,11 +2497,11 @@ function WishlistPage({ navigate }) {
             </div>
 
             {/* Bottom actions */}
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', paddingTop:'24px', borderTop:'1px solid rgba(168,230,207,.06)', flexWrap:'wrap', gap:'16px' }}>
-              <button className="btn-ghost-luxury" style={{ fontSize:'11px', letterSpacing:'.12em', padding:'12px 24px' }} onClick={() => navigate('collections')}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', paddingTop:'24px', borderTop:'1px solid rgba(168,230,207,.06)', flexWrap:'wrap', gap:'16px', flexDirection:isMobile?'column':'row' }}>
+              <button className="btn-ghost-luxury" style={{ fontSize:'11px', letterSpacing:'.12em', padding:'12px 24px', width:isMobile?'100%':'auto', justifyContent:'center' }} onClick={() => navigate('collections')}>
                 &lt;- CONTINUE SHOPPING
               </button>
-              <button className="btn-luxury" style={{ fontSize:'11px', letterSpacing:'.12em', padding:'12px 28px' }}
+              <button className="btn-luxury" style={{ fontSize:'11px', letterSpacing:'.12em', padding:'12px 28px', width:isMobile?'100%':'auto', justifyContent:'center' }}
                 onClick={() => { wishlist.forEach(p => addToCart(p, null, 1)); navigate('cart'); }}>
                 ADD ALL TO CART
               </button>
