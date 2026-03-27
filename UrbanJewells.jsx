@@ -2258,7 +2258,17 @@ function AboutPage({ navigate }) {
                   {icon}
                 </div>
                 <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'16px':'24px',color:'var(--cream)',marginBottom:isMobile?'8px':'12px',lineHeight:'1.05'}}>{t}</h3>
-                <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'11px':'14px',color:'rgba(250,250,245,.38)',lineHeight:isMobile?'1.5':'1.8'}}>{d}</p>
+                <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'11px':'14px',color:'rgba(250,250,245,.38)',lineHeight:isMobile?'1.5':'1.8'}}>
+                  {isMobile
+                    ? (t === 'Quality First'
+                        ? 'Selected for lasting wear.'
+                        : t === 'Ethically Sourced'
+                          ? 'Conflict-free stones only.'
+                          : t === 'Community Driven'
+                            ? 'Every customer message matters.'
+                            : 'A lighter footprint, always.')
+                    : d}
+                </p>
               </div>
             ))}
           </div>
