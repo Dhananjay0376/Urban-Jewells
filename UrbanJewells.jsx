@@ -1497,19 +1497,51 @@ function ShopByCategory({ navigate }) {
 }
 
 function AllProductsGrid({ navigate, standalone=false, navigateBack }) {
-  const {products, categories} = useApp();
+  const {products, categories, collections} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const [active, setActive] = useState('all');
   const [sort, setSort] = useState('popular');
+  const [collectionFilter, setCollectionFilter] = useState('all');
+  const [priceBand, setPriceBand] = useState('all');
+  const [stockOnly, setStockOnly] = useState(false);
+  const [newOnly, setNewOnly] = useState(false);
+  const [saleOnly, setSaleOnly] = useState(false);
   const [vis, setVis] = useState(8);
+  const matchesPriceBand = useCallback((price) => {
+    if (priceBand === 'all') return true;
+    if (priceBand === 'under-1000') return price < 1000;
+    if (priceBand === '1000-2000') return price >= 1000 && price <= 2000;
+    if (priceBand === '2000-3500') return price > 2000 && price <= 3500;
+    if (priceBand === '3500-plus') return price > 3500;
+    return true;
+  }, [priceBand]);
   const filtered = useMemo(() => {
     let arr = active==='all' ? products : products.filter(p=>p.category===active);
+    if (standalone && collectionFilter !== 'all') arr = arr.filter(p => p.collection === collectionFilter);
+    if (standalone && stockOnly) arr = arr.filter(p => p.inStock !== false);
+    if (standalone && newOnly) arr = arr.filter(p => p.isNew);
+    if (standalone && saleOnly) arr = arr.filter(p => p.isSale);
+    if (standalone) arr = arr.filter(p => matchesPriceBand(p.price));
     if (sort==='price-low') arr = [...arr].sort((a,b)=>a.price-b.price);
     else if (sort==='price-high') arr = [...arr].sort((a,b)=>b.price-a.price);
     else arr = [...arr].sort((a,b)=>b.reviewCount-a.reviewCount);
     return arr;
-  }, [active, products, sort]);
+  }, [active, collectionFilter, matchesPriceBand, newOnly, priceBand, products, saleOnly, sort, standalone, stockOnly]);
   const cats = ['all',...categories.map(c=>c.id)];
+  const collectionOptions = ['all', ...collections.map(c => c.slug)];
+  const activeFilterCount = [collectionFilter !== 'all', priceBand !== 'all', stockOnly, newOnly, saleOnly].filter(Boolean).length;
+  useEffect(() => {
+    setVis(8);
+  }, [active, sort, collectionFilter, priceBand, stockOnly, newOnly, saleOnly]);
+  const resetFilters = () => {
+    setActive('all');
+    setSort('popular');
+    setCollectionFilter('all');
+    setPriceBand('all');
+    setStockOnly(false);
+    setNewOnly(false);
+    setSaleOnly(false);
+  };
   const content = (
     <section id="all-pieces" style={{padding:standalone ? (isMobile?'28px 20px 48px':'44px 48px 64px') : 'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
@@ -1519,40 +1551,87 @@ function AllProductsGrid({ navigate, standalone=false, navigateBack }) {
         </div>
 
         {/* Filter bar */}
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:isMobile?'stretch':'center',marginBottom:'28px',flexWrap:'wrap',gap:'14px',padding:isMobile?'14px':'16px 20px',background:'rgba(255,255,255,.025)',borderRadius:'8px',border:'1px solid rgba(168,230,207,.06)',backdropFilter:'blur(10px)'}}>
-          <div style={{display:'flex',flexWrap:'wrap',gap:'6px',width:isMobile?'100%':'auto'}}>
-            {cats.map(c=>(
-              <button key={c} onClick={()=>{setActive(c);setVis(8);}}
-                style={{padding:'7px 15px',borderRadius:'3px',border:`1px solid ${active===c?'rgba(168,230,207,.5)':'rgba(168,230,207,.12)'}`,
-                  background:active===c?'rgba(168,230,207,.1)':'transparent',
-                  color:active===c?'var(--mint)':'rgba(250,250,245,.35)',
-                  fontFamily:"'DM Mono',monospace",fontSize:'10px',cursor:'none',
-                  textTransform:'capitalize',letterSpacing:'.08em',transition:'all .2s'}}>
-                {c==='all'?'ALL':c.toUpperCase()}
-              </button>
-            ))}
+        <div style={{marginBottom:'28px',padding:isMobile?'14px':'18px 20px',background:'rgba(255,255,255,.025)',borderRadius:'10px',border:'1px solid rgba(168,230,207,.06)',backdropFilter:'blur(10px)'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:isMobile?'stretch':'center',flexWrap:'wrap',gap:'14px',marginBottom:'14px'}}>
+            <div style={{display:'flex',flexWrap:'wrap',gap:'6px',width:isMobile?'100%':'auto'}}>
+              {cats.map(c=>(
+                <button key={c} onClick={()=>setActive(c)}
+                  style={{padding:'7px 15px',borderRadius:'3px',border:`1px solid ${active===c?'rgba(168,230,207,.5)':'rgba(168,230,207,.12)'}`,
+                    background:active===c?'rgba(168,230,207,.1)':'transparent',
+                    color:active===c?'var(--mint)':'rgba(250,250,245,.35)',
+                    fontFamily:"'DM Mono',monospace",fontSize:'10px',cursor:'none',
+                    textTransform:'capitalize',letterSpacing:'.08em',transition:'all .2s'}}>
+                  {c==='all'?'ALL':c.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <select value={sort} onChange={e=>setSort(e.target.value)}
+              style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'8px 12px',
+                fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',
+                background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.5)',outline:'none',cursor:'none',width:isMobile?'100%':'auto'}}>
+              <option value="popular">MOST POPULAR</option>
+              <option value="price-low">PRICE: LOW -&gt; HIGH</option>
+              <option value="price-high">PRICE: HIGH -&gt; LOW</option>
+            </select>
           </div>
-          <select value={sort} onChange={e=>setSort(e.target.value)}
-            style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'8px 12px',
-              fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',
-              background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.5)',outline:'none',cursor:'none',width:isMobile?'100%':'auto'}}>
-            <option value="popular">MOST POPULAR</option>
-            <option value="price-low">PRICE: LOW -&gt; HIGH</option>
-            <option value="price-high">PRICE: HIGH -&gt; LOW</option>
-          </select>
+
+          {standalone && (
+            <>
+              <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(3,minmax(0,1fr))',gap:'12px',marginBottom:'12px'}}>
+                <select value={collectionFilter} onChange={e=>setCollectionFilter(e.target.value)}
+                  style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'10px 12px',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.6)',outline:'none',cursor:'none'}}>
+                  <option value="all">ALL COLLECTIONS</option>
+                  {collectionOptions.filter(option => option !== 'all').map(option => <option key={option} value={option}>{option.toUpperCase()}</option>)}
+                </select>
+                <select value={priceBand} onChange={e=>setPriceBand(e.target.value)}
+                  style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'10px 12px',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.6)',outline:'none',cursor:'none'}}>
+                  <option value="all">ALL PRICES</option>
+                  <option value="under-1000">UNDER INR 1000</option>
+                  <option value="1000-2000">INR 1000 - 2000</option>
+                  <option value="2000-3500">INR 2000 - 3500</option>
+                  <option value="3500-plus">ABOVE INR 3500</option>
+                </select>
+                <button className="btn-ghost-luxury" style={{justifyContent:'center',padding:'10px 16px',fontSize:'10px',letterSpacing:'.12em'}} onClick={resetFilters}>
+                  CLEAR FILTERS {activeFilterCount>0?`(${activeFilterCount})`:''}
+                </button>
+              </div>
+
+              <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
+                {[
+                  {label:'IN STOCK', active:stockOnly, set:setStockOnly},
+                  {label:'NEW ARRIVALS', active:newOnly, set:setNewOnly},
+                  {label:'ON SALE', active:saleOnly, set:setSaleOnly},
+                ].map(({label, active:enabled, set})=>(
+                  <button key={label} onClick={()=>set(v=>!v)}
+                    style={{padding:'8px 14px',borderRadius:'999px',border:`1px solid ${enabled?'rgba(201,168,76,.45)':'rgba(168,230,207,.12)'}`,background:enabled?'rgba(201,168,76,.12)':'transparent',color:enabled?'var(--gold2)':'rgba(250,250,245,.42)',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',cursor:'none',transition:'all .2s'}}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(250,250,245,.2)',marginBottom:'24px'}}>
           Showing {Math.min(vis,filtered.length)} of {filtered.length} pieces
         </p>
 
-        <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(auto-fill,minmax(clamp(160px,42vw,250px),1fr))',gap:isMobile?'12px':'clamp(12px,2vw,18px)'}}>
-          {filtered.slice(0,vis).map((p,i)=>(
-            <div key={p.id} className="fade-up" style={{animationDelay:`${(i%4)*.05}s`}}>
-              <ProductCard product={p} navigate={navigate}/>
-            </div>
-          ))}
-        </div>
+        {filtered.length === 0 ? (
+          <div className="glass-card" style={{padding:isMobile?'28px 20px':'38px 32px',textAlign:'center'}}>
+            <p className="label-tag" style={{marginBottom:'12px'}}>NO MATCHES</p>
+            <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(28px,4vw,38px)',color:'var(--cream)',marginBottom:'10px'}}>No pieces match these filters</h3>
+            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.42)',lineHeight:'1.8',marginBottom:'20px'}}>Try clearing a few filters or broadening the price range.</p>
+            <button className="btn-luxury" style={{fontSize:'11px',letterSpacing:'.12em'}} onClick={resetFilters}>RESET FILTERS</button>
+          </div>
+        ) : (
+          <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(auto-fill,minmax(clamp(160px,42vw,250px),1fr))',gap:isMobile?'12px':'clamp(12px,2vw,18px)'}}>
+            {filtered.slice(0,vis).map((p,i)=>(
+              <div key={p.id} className="fade-up" style={{animationDelay:`${(i%4)*.05}s`}}>
+                <ProductCard product={p} navigate={navigate}/>
+              </div>
+            ))}
+          </div>
+        )}
 
         {vis<filtered.length&&(
           <div style={{textAlign:'center',marginTop:'44px'}}>
