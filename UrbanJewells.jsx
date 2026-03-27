@@ -847,6 +847,7 @@ function Header({ navigate, page }) {
                   </button>
                   {mobileCatsOpen && (
                     <div style={{display:'flex',flexDirection:'column',gap:'6px',paddingLeft:'12px',marginTop:'8px'}}>
+                      <button onClick={()=>{navigate('categories');setMobileOpen(false);}} style={{background:'none',border:'none',color:'var(--mint)',textAlign:'left',fontFamily:"'DM Mono',monospace",fontSize:'18px',padding:'6px 0',letterSpacing:'.08em'}}>All Categories</button>
                       {categories.slice(0,6).map(c=> (
                         <button key={c.slug} onClick={()=>{navigate('category',{slug:c.slug});setMobileOpen(false);}} style={{background:'none',border:'none',color:'rgba(250,250,245,.8)',textAlign:'left',fontFamily:"'DM Mono',monospace",fontSize:'18px',padding:'6px 0'}}>{c.name}</button>
                       ))}
@@ -1234,7 +1235,7 @@ function HeroSection({ navigate }) {
           </p>
 
           <div className="fade-up-5" style={{display:'flex',gap:isMobile?'10px':'14px',flexWrap:'wrap',flexDirection:isMobile?'column':'row'}}>
-            <button className="btn-luxury" onClick={()=>navigate('collections')} style={isMobile?{width:'100%',justifyContent:'center'}:undefined}>SHOP NOW <ArrowRightIcon/></button>
+            <button className="btn-luxury" onClick={()=>navigate('home',{section:'all-pieces'})} style={isMobile?{width:'100%',justifyContent:'center'}:undefined}>SHOP NOW <ArrowRightIcon/></button>
             <button className="btn-ghost-luxury" onClick={()=>navigate('collections')} style={isMobile?{width:'100%',justifyContent:'center'}:undefined}>EXPLORE COLLECTIONS</button>
           </div>
 
@@ -1431,7 +1432,7 @@ function AllProductsGrid({ navigate }) {
   }, [active, products, sort]);
   const cats = ['all',...categories.map(c=>c.id)];
   return (
-    <section style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink)'}}>
+    <section id="all-pieces" style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:'clamp(28px,5vw,48px)'}}>
           <p className="label-tag" style={{marginBottom:'12px'}}>THE FULL COLLECTION</p>
@@ -2227,13 +2228,13 @@ function AboutPage({ navigate }) {
             <p className="label-tag" style={{marginBottom:'12px'}}>WHAT WE STAND FOR</p>
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,50px)',color:'var(--cream)'}}>Our Mission</h2>
           </div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:'18px'}}>
+          <div style={{display:isMobile?'flex':'grid',gridTemplateColumns:isMobile?undefined:'repeat(auto-fill,minmax(280px,1fr))',gap:'18px',overflowX:isMobile?'auto':'visible',paddingBottom:isMobile?'6px':'0'}}>
             {[{icon:<MissionQualityIcon/>,t:'Quality First',d:'Every component - from clasp to stone - is selected for longevity. Our pieces outlast trends.'},
               {icon:<MissionLeafIcon/>,t:'Ethically Sourced',d:"All gemstones are conflict-free. We work only with suppliers who respect the land and the people who work it."},
               {icon:<MissionCommunityIcon/>,t:'Community Driven',d:"Urban Jewells grew from the women who wore it. Every WhatsApp message is read and replied to personally."},
               {icon:<MissionSustainabilityIcon/>,t:'Sustainable Practices',d:'We minimise waste, favour eco-conscious materials, and continuously improve our production footprint.'}
             ].map(({icon,t,d})=>(
-              <div key={t} className="glass-card" style={{padding:'32px',textAlign:'center'}}>
+              <div key={t} className="glass-card" style={{padding:'32px',textAlign:'center',minWidth:isMobile?'260px':'auto',flex:isMobile?'0 0 260px':undefined}}>
                 <div style={{width:'62px',height:'62px',margin:'0 auto 18px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(145deg,rgba(201,168,76,.12),rgba(168,230,207,.08))',border:'1px solid rgba(201,168,76,.18)',color:'var(--gold)'}}>
                   {icon}
                 </div>
@@ -2387,7 +2388,7 @@ function ContactPage() {
             {FAQS.map((faq,i)=>(
               <div key={i} style={{borderBottom:'1px solid rgba(168,230,207,.06)'}}>
                 <button onClick={()=>setOpenFaq(openFaq===i?null:i)}
-                  style={{width:'100%',display:'flex',justifyContent:'space-between',alignItems:'center',padding:isMobile?'15px 0':'18px 0',background:'none',border:'none',cursor:'none',textAlign:'left',gap:'12px',transition:'color .15s'}}
+                  style={{width:'100%',display:'flex',justifyContent:'space-between',alignItems:'center',padding:isMobile?'15px 0':'18px 0',background:'none',border:'none',cursor:'none',textAlign:'left',gap:'12px',transition:'color .15s',color:'rgba(250,250,245,.55)'}}
                   onMouseEnter={e=>e.currentTarget.style.color='var(--cream)'} onMouseLeave={e=>e.currentTarget.style.color='rgba(250,250,245,.55)'}>
                   <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:'400',fontSize:'15px',color:'inherit'}}>{faq.q}</span>
                   <span style={{flexShrink:0,transform:openFaq===i?'rotate(180deg)':'rotate(0)',transition:'transform .28s',color:'rgba(250,250,245,.2)'}}><ChevDownIcon/></span>
@@ -3067,6 +3068,14 @@ export default function App() {
   const navigate = useCallback((p, extra={}) => {
     setPage(p); setParams(extra||{}); window.scrollTo({top:0,behavior:'smooth'});
   }, []);
+
+  useEffect(() => {
+    if (page !== 'home' || params.section !== 'all-pieces') return;
+    const t = setTimeout(() => {
+      document.getElementById('all-pieces')?.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 80);
+    return () => clearTimeout(t);
+  }, [page, params]);
 
   const renderPage = () => {
     switch(page) {
