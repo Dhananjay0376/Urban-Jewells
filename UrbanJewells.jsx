@@ -697,13 +697,15 @@ function AppProvider({ children }) {
 //  SVG LOGO
 // =================================================================
 function Logo({ variant="dark", size="md", onClick }) {
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+  const resolvedSize = size === "md" && isMobile ? "sm" : size;
   const tc = variant==="light" ? "#1E3A0F" : "#FAFAF5";
   const gc = variant==="light" ? "#2D5016" : "#A8E6CF";
   const dims = {
     sm:{wrap:144,badge:36,title:18,sub:5.2},
     md:{wrap:168,badge:44,title:20,sub:5.8},
     lg:{wrap:220,badge:56,title:26,sub:6.6}
-  }[size];
+  }[resolvedSize];
   return (
     <div
       onClick={onClick}
@@ -738,6 +740,7 @@ function Header({ navigate, page }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
   const [mobileCatsOpen, setMobileCatsOpen] = useState(false);
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 900 : false;
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 70);
@@ -752,7 +755,7 @@ function Header({ navigate, page }) {
       <a href="#main" style={{position:'absolute',left:'-9999px'}} onFocus={e=>e.target.style.cssText='position:fixed;top:16px;left:16px;z-index:99999;background:var(--mint);color:var(--sg);padding:8px 16px;border-radius:4px;font-family:DM Sans,sans-serif;font-size:13px;'}>Skip to content</a>
       <header style={{
         position:'fixed',top:0,left:0,right:0,zIndex:1000,
-        padding:'0 40px',height:'70px',
+        padding:isMobile?'0 16px':'0 40px',height:isMobile?'64px':'70px',
         display:'flex',alignItems:'center',justifyContent:'space-between',
         background: scrolled ? 'rgba(10,13,10,0.88)' : 'transparent',
         backdropFilter: scrolled ? 'blur(24px)' : 'none',
@@ -763,7 +766,7 @@ function Header({ navigate, page }) {
       }}>
         <Logo onClick={() => navigate('home')} />
 
-        <nav style={{display:'flex',gap:'36px',alignItems:'center'}}>
+        <nav style={{display:isMobile?'none':'flex',gap:'36px',alignItems:'center'}}>
           {nav.map(p => {
             if (p !== 'categories') return (
               <button key={p} className={`nav-lnk ${page===p?'active':''}`}
@@ -788,32 +791,32 @@ function Header({ navigate, page }) {
           })}
         </nav>
 
-        <div style={{display:'flex',alignItems:'center',gap:'22px'}}>
+        <div style={{display:'flex',alignItems:'center',gap:isMobile?'14px':'22px'}}>
           {[
             {icon:<SearchIcon/>, label:"Search", fn:()=>setSearchOpen(true)},
             {icon:<HeartIcon count={wishlist.length}/>, label:"Wishlist", fn:()=>navigate('wishlist')},
             {icon:<BagIcon count={cartCount}/>, label:"Cart", fn:()=>setCartOpen(true)},
           ].map(({icon,label,fn}) => (
             <button key={label} aria-label={label} onClick={fn}
-              style={{background:'none',border:'none',cursor:'none',color:'rgba(250,250,245,.6)',position:'relative',transition:'color .2s'}}
+              style={{background:'none',border:'none',cursor:'none',color:'rgba(250,250,245,.6)',position:'relative',transition:'color .2s',padding:isMobile?'8px 4px':'0'}}
               onMouseEnter={e=>e.currentTarget.style.color='var(--cream)'}
               onMouseLeave={e=>e.currentTarget.style.color='rgba(250,250,245,.6)'}>
               {icon}
             </button>
           ))}
-          <button onClick={()=>setMobileOpen(true)} style={{background:'none',border:'none',cursor:'none',color:'rgba(250,250,245,.6)',display:'none'}}>
+          <button onClick={()=>setMobileOpen(true)} style={{background:'none',border:'none',cursor:'none',color:'rgba(250,250,245,.6)',display:isMobile?'inline-flex':'none',padding:'8px 2px'}}>
             <MenuIcon/>
           </button>
         </div>
       </header>
 
       {mobileOpen && (
-        <div style={{position:'fixed',inset:0,background:'rgba(10,13,10,0.98)',zIndex:9999,display:'flex',flexDirection:'column',padding:'0 clamp(20px,4vw,36px)'}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',height:'70px'}}>
+        <div style={{position:'fixed',inset:0,background:'rgba(10,13,10,0.98)',zIndex:9999,display:'flex',flexDirection:'column',padding:'0 20px'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',height:'64px'}}>
             <Logo onClick={()=>{navigate('home');setMobileOpen(false);}}/>
             <button onClick={()=>setMobileOpen(false)} style={{background:'none',border:'none',cursor:'none',color:'var(--cream)'}}><XIcon/></button>
           </div>
-          <div style={{display:'flex',flexDirection:'column',gap:'8px',marginTop:'48px'}}>
+          <div style={{display:'flex',flexDirection:'column',gap:'8px',marginTop:'28px'}}>
             {nav.map((p,i)=>{
               if (p !== 'categories') return (
                 <button key={p} className="fade-up"
@@ -883,16 +886,17 @@ const MissionSustainabilityIcon = () => <svg width="26" height="26" fill="none" 
 //  FOOTER
 // =================================================================
 function Footer({ navigate }) {
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const cols = [
     {h:"SHOP", links:[{l:"All Collections",p:"collections"},{l:"Featured Pieces",p:"home"},{l:"New Arrivals",p:"home"},{l:"Gift Sets",p:"category",extra:{slug:"set"}}]},
     {h:"HELP", links:[{l:"Contact Us",p:"contact"},{l:"FAQ",p:"contact"},{l:"WhatsApp",href:"https://wa.me/917351257315"},{l:"Track Order",p:"contact"}]},
     {h:"LEGAL", links:[{l:"Privacy Policy",p:"privacy-policy"},{l:"Shipping",p:"shipping"},{l:"Returns",p:"returns"},{l:"Terms",p:"terms"}]},
   ];
   return (
-    <footer style={{background:'var(--ink2)',borderTop:'1px solid rgba(168,230,207,.08)',paddingTop:'72px',paddingBottom:'40px',padding:'64px 48px 36px',position:'relative',overflow:'hidden'}}>
+    <footer style={{background:'var(--ink2)',borderTop:'1px solid rgba(168,230,207,.08)',paddingTop:'72px',paddingBottom:'40px',padding:isMobile?'52px 20px 28px':'64px 48px 36px',position:'relative',overflow:'hidden'}}>
       <div style={{position:'absolute',top:'-80px',left:'50%',transform:'translateX(-50%)',width:'600px',height:'200px',background:'radial-gradient(ellipse,rgba(168,230,207,.04) 0%,transparent 70%)',pointerEvents:'none'}}/>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
-        <div style={{display:'grid',gridTemplateColumns:'1.6fr 1fr 1fr 1fr',gap:'56px',marginBottom:'56px',alignItems:'start'}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1.6fr 1fr 1fr 1fr',gap:isMobile?'30px':'56px',marginBottom:isMobile?'34px':'56px',alignItems:'start'}}>
           <div>
             <Logo onClick={()=>navigate('home')}/>
             <p style={{fontFamily:"'DM Sans',sans-serif",fontStyle:'italic',color:'rgba(250,250,245,.4)',fontSize:'14px',lineHeight:'1.8',marginTop:'20px',maxWidth:'220px'}}>Crafted for the bold.<br/>Made for you.</p>
@@ -994,13 +998,14 @@ function ProductCard({ product, navigate }) {
 // =================================================================
 function SideCart({ navigate }) {
   const {cart, cartOpen, setCartOpen, removeFromCart, updateQty, cartTotal} = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   if (!cartOpen) return null;
   return (
     <>
       <div onClick={()=>setCartOpen(false)}
         style={{position:'fixed',inset:0,background:'rgba(0,0,0,.65)',zIndex:1100,animation:'fadeIn .2s ease',backdropFilter:'blur(4px)'}}/>
       <div className="glass-card" style={{
-        position:'fixed',right:0,top:0,bottom:0,width:'420px',maxWidth:'95vw',
+        position:'fixed',right:0,top:0,bottom:0,width:isMobile?'100vw':'420px',maxWidth:isMobile?'100vw':'95vw',
         zIndex:1101,display:'flex',flexDirection:'column',
         background:'rgba(10,13,10,0.96)',borderRadius:'0',borderRight:'none',
         borderTop:'none',borderBottom:'none',
@@ -1008,7 +1013,7 @@ function SideCart({ navigate }) {
         animation:'slideRight .38s cubic-bezier(.16,1,.3,1)',
         boxShadow:'-8px 0 60px rgba(0,0,0,.8)',
       }}>
-        <div style={{padding:'24px',borderBottom:'1px solid rgba(168,230,207,.08)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style={{padding:isMobile?'18px 16px':'24px',borderBottom:'1px solid rgba(168,230,207,.08)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
           <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
             <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'22px',color:'var(--cream)'}}>Your Cart</span>
             {cart.length>0&&<span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',background:'rgba(168,230,207,.1)',padding:'3px 9px',borderRadius:'999px',border:'1px solid rgba(168,230,207,.2)'}}>{cart.reduce((s,i)=>s+i.quantity,0)}</span>}
@@ -1016,7 +1021,7 @@ function SideCart({ navigate }) {
           <button aria-label="Close" onClick={()=>setCartOpen(false)} style={{background:'none',border:'none',cursor:'none',color:'rgba(250,250,245,.4)',transition:'color .15s'}} onMouseEnter={e=>e.target.style.color='var(--cream)'} onMouseLeave={e=>e.target.style.color='rgba(250,250,245,.4)'}><XIcon/></button>
         </div>
 
-        <div style={{flex:1,overflowY:'auto',padding:'20px 24px'}}>
+        <div style={{flex:1,overflowY:'auto',padding:isMobile?'16px':'20px 24px'}}>
           {cart.length===0 ? (
             <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100%',gap:'20px',textAlign:'center',padding:'40px 0'}}>
               <div style={{width:'72px',height:'72px',borderRadius:'50%',border:'1px solid rgba(168,230,207,.2)',display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -1057,13 +1062,13 @@ function SideCart({ navigate }) {
         </div>
 
         {cart.length>0&&(
-          <div style={{padding:'20px 24px',borderTop:'1px solid rgba(168,230,207,.08)'}}>
+          <div style={{padding:isMobile?'16px':'20px 24px',borderTop:'1px solid rgba(168,230,207,.08)'}}>
             <div style={{display:'flex',justifyContent:'space-between',marginBottom:'6px'}}>
               <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.5)'}}>Subtotal</span>
               <span style={{fontFamily:"'DM Mono',monospace",fontSize:'16px',color:'var(--gold)',fontWeight:'500'}}>{formatPrice(cartTotal)}</span>
             </div>
             <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',opacity:.5,marginBottom:'18px'}}>Free shipping over INR 500</p>
-            <div style={{display:'flex',gap:'10px'}}>
+            <div style={{display:'flex',gap:'10px',flexDirection:isMobile?'column':'row'}}>
               <button className="btn-ghost-luxury" style={{flex:1,justifyContent:'center',padding:'12px',fontSize:'11px',letterSpacing:'.1em'}} onClick={()=>{setCartOpen(false);navigate('cart');}}>VIEW CART</button>
               <button className="btn-luxury" style={{flex:1,justifyContent:'center',padding:'12px',fontSize:'11px',letterSpacing:'.1em'}} onClick={()=>{setCartOpen(false);navigate('cart');}}>CHECKOUT</button>
             </div>
@@ -1131,6 +1136,7 @@ function SearchModal({ navigate }) {
   const {searchOpen, setSearchOpen, products} = useApp();
   const [q, setQ] = useState('');
   const inputRef = useRef(null);
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   useEffect(() => { if (searchOpen) { setQ(''); setTimeout(()=>inputRef.current?.focus(),60); } }, [searchOpen]);
   useEffect(() => {
     const fn = e => { if (e.key==='Escape') setSearchOpen(false); };
@@ -1144,18 +1150,18 @@ function SearchModal({ navigate }) {
   }, [products, q]);
   if (!searchOpen) return null;
   return (
-    <div style={{position:'fixed',inset:0,background:'rgba(5,8,5,0.97)',zIndex:1200,display:'flex',flexDirection:'column',alignItems:'center',padding:'100px 24px 40px',animation:'fadeIn .2s ease',backdropFilter:'blur(8px)'}} onClick={e=>{if(e.target===e.currentTarget)setSearchOpen(false);}}>
-      <button aria-label="Close" onClick={()=>setSearchOpen(false)} style={{position:'absolute',top:'24px',right:'28px',background:'none',border:'none',cursor:'none',color:'rgba(250,250,245,.4)'}}><XIcon/></button>
+    <div style={{position:'fixed',inset:0,background:'rgba(5,8,5,0.97)',zIndex:1200,display:'flex',flexDirection:'column',alignItems:'center',padding:isMobile?'84px 18px 28px':'100px 24px 40px',animation:'fadeIn .2s ease',backdropFilter:'blur(8px)'}} onClick={e=>{if(e.target===e.currentTarget)setSearchOpen(false);}}>
+      <button aria-label="Close" onClick={()=>setSearchOpen(false)} style={{position:'absolute',top:isMobile?'18px':'24px',right:isMobile?'18px':'28px',background:'none',border:'none',cursor:'none',color:'rgba(250,250,245,.4)'}}><XIcon/></button>
       <div style={{width:'100%',maxWidth:'580px'}}>
         <p className="label-tag" style={{marginBottom:'20px',textAlign:'center',letterSpacing:'.3em'}}>SEARCH OUR COLLECTION</p>
         <div style={{position:'relative'}}>
           <input ref={inputRef} value={q} onChange={e=>setQ(e.target.value)}
             placeholder="Search jewellery..."
-            style={{width:'100%',background:'rgba(255,255,255,.04)',border:'none',borderBottom:'1px solid rgba(168,230,207,.3)',borderRadius:'0',padding:'16px 4px',fontFamily:"'Cormorant Garamond',serif",fontSize:'28px',color:'var(--cream)',outline:'none',letterSpacing:'.04em'}}/>
+            style={{width:'100%',background:'rgba(255,255,255,.04)',border:'none',borderBottom:'1px solid rgba(168,230,207,.3)',borderRadius:'0',padding:'16px 4px',fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'22px':'28px',color:'var(--cream)',outline:'none',letterSpacing:'.04em'}}/>
           <div style={{position:'absolute',bottom:0,left:0,width:q?'100%':'0',height:'2px',background:'linear-gradient(90deg,var(--mint),var(--gold))',transition:'width .4s cubic-bezier(.16,1,.3,1)'}}/>
         </div>
         {results.length>0&&(
-          <div style={{marginTop:'32px',display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'12px'}}>
+          <div style={{marginTop:'32px',display:'grid',gridTemplateColumns:isMobile?'repeat(2,1fr)':'repeat(3,1fr)',gap:'12px'}}>
             {results.map(p=>(
               <div key={p.id} className="glass-card" style={{cursor:'none',transition:'border-color .2s,transform .2s'}}
                 onClick={()=>{navigate('product',{slug:p.slug});setSearchOpen(false);}}
@@ -1592,9 +1598,10 @@ function HomePage({ navigate }) {
 
 function CategoriesPage({ navigate }) {
   const {categories} = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   return (
     <div style={{background:'var(--ink)'}}>
-      <div style={{minHeight:'50vh',display:'flex',alignItems:'flex-end',padding:'100px 48px 60px',background:'linear-gradient(to bottom,var(--ink),var(--ink2))',position:'relative',overflow:'hidden'}}>
+      <div style={{minHeight:isMobile?'42vh':'50vh',display:'flex',alignItems:'flex-end',padding:isMobile?'88px 20px 38px':'100px 48px 60px',background:'linear-gradient(to bottom,var(--ink),var(--ink2))',position:'relative',overflow:'hidden'}}>
         {categories[0]?.coverImage && <img src={categories[0].coverImage} alt="Categories hero" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:.16}}/>}
         <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom,rgba(10,13,10,.45),rgba(10,13,10,.88))'}}/>
         <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.02) 1px,transparent 1px)',backgroundSize:'60px 60px',pointerEvents:'none'}}/>
@@ -1605,8 +1612,8 @@ function CategoriesPage({ navigate }) {
           <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:'16px',color:'rgba(250,250,245,.35)'}}>Browse every form, silhouette, and signature piece by type.</p>
         </div>
       </div>
-      <div style={{padding:'60px 48px 80px',maxWidth:'1300px',margin:'0 auto'}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(320px,1fr))',gap:'22px'}}>
+      <div style={{padding:isMobile?'36px 20px 56px':'60px 48px 80px',maxWidth:'1300px',margin:'0 auto'}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill,minmax(320px,1fr))',gap:isMobile?'16px':'22px'}}>
           {categories.map((cat,i) => (
             <div key={cat.slug} className="fade-up" style={{animationDelay:`${i*.08}s`,position:'relative',borderRadius:'12px',overflow:'hidden',aspectRatio:'4/3',cursor:'none',border:'1px solid rgba(168,230,207,.06)',transition:'all .4s cubic-bezier(.16,1,.3,1)'}}
               onClick={()=>navigate('category',{slug:cat.slug})}
@@ -1614,10 +1621,10 @@ function CategoriesPage({ navigate }) {
               onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.06)';e.currentTarget.style.boxShadow='none';e.currentTarget.querySelector('.cat-page-link').style.opacity='0';e.currentTarget.querySelector('.cat-page-link').style.transform='translateY(14px)';e.currentTarget.querySelector('.cat-page-img').style.transform='scale(1)';}}>
               <img className="cat-page-img" src={cat.coverImage} alt={cat.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .6s cubic-bezier(.16,1,.3,1)'}}/>
               <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,.96) 0%,rgba(5,8,5,.18) 55%,transparent 78%)'}}/>
-              <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'28px'}}>
+              <div style={{position:'absolute',bottom:0,left:0,right:0,padding:isMobile?'22px':'28px'}}>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',letterSpacing:'.2em',marginBottom:'10px'}}>SHOP BY TYPE</p>
                 <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(30px,4vw,40px)',color:'var(--cream)',marginBottom:'6px',lineHeight:'1.02'}}>{cat.name}</h2>
-                <div className="cat-page-link" style={{opacity:0,transform:'translateY(14px)',transition:'opacity .3s .05s,transform .3s .05s',marginTop:'14px',display:'flex',alignItems:'center',gap:'8px',color:'var(--mint)'}}>
+                <div className="cat-page-link" style={{opacity:isMobile?1:0,transform:isMobile?'translateY(0)':'translateY(14px)',transition:'opacity .3s .05s,transform .3s .05s',marginTop:'14px',display:'flex',alignItems:'center',gap:'8px',color:'var(--mint)'}}>
                   <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.16em'}}>VIEW CATEGORY</span>
                   <ArrowRightIcon/>
                 </div>
@@ -1635,9 +1642,10 @@ function CategoriesPage({ navigate }) {
 // =================================================================
 function CollectionsPage({ navigate }) {
   const {collections} = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   return (
     <div style={{background:'var(--ink)'}}>
-      <div style={{minHeight:'50vh',display:'flex',alignItems:'flex-end',padding:'100px 48px 60px',background:'linear-gradient(to bottom,var(--ink),var(--ink2))',position:'relative',overflow:'hidden'}}>
+      <div style={{minHeight:isMobile?'42vh':'50vh',display:'flex',alignItems:'flex-end',padding:isMobile?'88px 20px 38px':'100px 48px 60px',background:'linear-gradient(to bottom,var(--ink),var(--ink2))',position:'relative',overflow:'hidden'}}>
         <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.02) 1px,transparent 1px)',backgroundSize:'60px 60px',pointerEvents:'none'}}/>
         <div style={{position:'absolute',top:'20%',right:'10%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(168,230,207,.06) 0%,transparent 70%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1}}>
@@ -1646,8 +1654,8 @@ function CollectionsPage({ navigate }) {
           <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:'16px',color:'rgba(250,250,245,.35)'}}>Five worlds. One intention: jewellery that means something.</p>
         </div>
       </div>
-      <div style={{padding:'60px 48px 80px',maxWidth:'1300px',margin:'0 auto'}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(380px,1fr))',gap:'22px'}}>
+      <div style={{padding:isMobile?'36px 20px 56px':'60px 48px 80px',maxWidth:'1300px',margin:'0 auto'}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill,minmax(380px,1fr))',gap:isMobile?'16px':'22px'}}>
           {collections.map((col,i)=>(
             <div key={col.id} className="fade-up" style={{animationDelay:`${i*.09}s`,position:'relative',borderRadius:'12px',overflow:'hidden',aspectRatio:'3/4',cursor:'none',border:'1px solid rgba(168,230,207,.06)',transition:'all .4s cubic-bezier(.16,1,.3,1)'}}
               onClick={()=>navigate('collection-detail',{slug:col.slug})}
@@ -1655,11 +1663,11 @@ function CollectionsPage({ navigate }) {
               onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.06)';e.currentTarget.style.boxShadow='none';e.currentTarget.querySelector('.clink').style.opacity='0';e.currentTarget.querySelector('.clink').style.transform='translateY(14px)';e.currentTarget.querySelector('.cimg').style.transform='scale(1)';}}>
               <img className="cimg" src={col.coverImage} alt={col.name} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .6s cubic-bezier(.16,1,.3,1)'}}/>
               <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,.97) 0%,rgba(5,8,5,.2) 50%,transparent 75%)'}}/>
-              <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'32px'}}>
+              <div style={{position:'absolute',bottom:0,left:0,right:0,padding:isMobile?'22px':'32px'}}>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',letterSpacing:'.22em',marginBottom:'10px'}}>{col.mood}</p>
-                <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'36px',color:'var(--cream)',marginBottom:'6px',lineHeight:'1.05'}}>{col.name}</h2>
+                <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'30px':'36px',color:'var(--cream)',marginBottom:'6px',lineHeight:'1.05'}}>{col.name}</h2>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',marginBottom:'2px'}}>{col.tagline}</p>
-                <div className="clink" style={{opacity:0,transform:'translateY(14px)',transition:'opacity .3s .05s,transform .3s .05s',marginTop:'16px',display:'flex',alignItems:'center',gap:'8px',color:'var(--mint)'}}>
+                <div className="clink" style={{opacity:isMobile?1:0,transform:isMobile?'translateY(0)':'translateY(14px)',transition:'opacity .3s .05s,transform .3s .05s',marginTop:'16px',display:'flex',alignItems:'center',gap:'8px',color:'var(--mint)'}}>
                   <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.16em'}}>VIEW COLLECTION</span>
                   <ArrowRightIcon/>
                 </div>
@@ -1677,6 +1685,7 @@ function CollectionsPage({ navigate }) {
 // =================================================================
 function CollectionDetail({ slug, navigate }) {
   const {collections, products, catalogLoading} = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const col = collections.find(c=>c.slug===slug);
   const prods = products.filter(p=>p.collection===slug);
   const [sort, setSort] = useState('popular');
@@ -1685,19 +1694,19 @@ function CollectionDetail({ slug, navigate }) {
   const sorted = sort==='price-low'?[...prods].sort((a,b)=>a.price-b.price):sort==='price-high'?[...prods].sort((a,b)=>b.price-a.price):[...prods].sort((a,b)=>b.reviewCount-a.reviewCount);
   return (
     <div style={{background:'var(--ink)'}}>
-      <div style={{height:'380px',position:'relative',overflow:'hidden'}}>
+      <div style={{height:isMobile?'300px':'380px',position:'relative',overflow:'hidden'}}>
         <img src={col.coverImage} alt={col.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
         <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,1) 0%,rgba(5,8,5,.5) 50%,transparent 100%)'}}/>
-        <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'44px 48px'}}>
+        <div style={{position:'absolute',bottom:0,left:0,right:0,padding:isMobile?'28px 20px':'44px 48px'}}>
           <button onClick={()=>navigate('collections')} style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',background:'none',border:'none',cursor:'none',letterSpacing:'.12em',marginBottom:'14px',display:'flex',alignItems:'center',gap:'6px',transition:'color .2s'}} onMouseEnter={e=>e.currentTarget.style.color='var(--mint)'} onMouseLeave={e=>e.currentTarget.style.color='rgba(250,250,245,.3)'}>&lt;- COLLECTIONS</button>
           <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',letterSpacing:'.2em',marginBottom:'8px'}}>{col.mood}</p>
           <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(42px,6vw,72px)',color:'var(--cream)',lineHeight:'1'}}>{col.name}</h1>
         </div>
       </div>
-      <div style={{padding:'44px 48px',maxWidth:'1200px',margin:'0 auto'}}>
+      <div style={{padding:isMobile?'28px 20px 44px':'44px 48px',maxWidth:'1200px',margin:'0 auto'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'32px',flexWrap:'wrap',gap:'12px'}}>
           <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(250,250,245,.25)'}}>{prods.length} pieces</p>
-          <select value={sort} onChange={e=>setSort(e.target.value)} style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'9px 12px',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.5)',outline:'none',cursor:'none'}}>
+          <select value={sort} onChange={e=>setSort(e.target.value)} style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'9px 12px',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.5)',outline:'none',cursor:'none',width:isMobile?'100%':'auto'}}>
             <option value="popular">MOST POPULAR</option><option value="price-low">PRICE: LOW -&gt; HIGH</option><option value="price-high">PRICE: HIGH -&gt; LOW</option>
           </select>
         </div>
@@ -1707,7 +1716,7 @@ function CollectionDetail({ slug, navigate }) {
             <button className="btn-ghost-luxury" style={{marginTop:'24px',fontSize:'11px',letterSpacing:'.12em'}} onClick={()=>navigate('collections')}>&lt;- BACK</button>
           </div>
         ) : (
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:'18px'}}>
+          <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(auto-fill,minmax(250px,1fr))',gap:isMobile?'12px':'18px'}}>
             {sorted.map((p,i)=><div key={p.id} className="fade-up" style={{animationDelay:`${i*.05}s`}}><ProductCard product={p} navigate={navigate}/></div>)}
           </div>
         )}
@@ -1721,6 +1730,7 @@ function CollectionDetail({ slug, navigate }) {
 // =================================================================
 function CategoryPage({ slug, navigate }) {
   const {categories, products, catalogLoading} = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const cat = categories.find(c=>c.slug===slug);
   const prods = products.filter(p=>p.category===slug);
   const [sort, setSort] = useState('popular');
@@ -1729,25 +1739,25 @@ function CategoryPage({ slug, navigate }) {
   const sorted = sort==='price-low'?[...prods].sort((a,b)=>a.price-b.price):sort==='price-high'?[...prods].sort((a,b)=>b.price-a.price):[...prods].sort((a,b)=>b.reviewCount-a.reviewCount);
   return (
     <div style={{background:'var(--ink)'}}>
-      <div style={{height:'300px',position:'relative',overflow:'hidden'}}>
+      <div style={{height:isMobile?'260px':'300px',position:'relative',overflow:'hidden'}}>
         <img src={cat.coverImage} alt={cat.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
         <div style={{position:'absolute',inset:0,background:'linear-gradient(to top,rgba(5,8,5,1) 0%,rgba(5,8,5,.4) 60%,transparent 100%)'}}/>
-        <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'36px 48px'}}>
+        <div style={{position:'absolute',bottom:0,left:0,right:0,padding:isMobile?'24px 20px':'36px 48px'}}>
           <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'6px'}}>
-            <span style={{fontSize:'28px'}}>{cat.icon}</span>
+            {cat.icon && <span style={{fontSize:'28px'}}>{cat.icon}</span>}
             <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(40px,5.5vw,64px)',color:'var(--cream)'}}>{cat.name}</h1>
           </div>
           <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',opacity:.6}}>{prods.length} pieces</p>
         </div>
       </div>
-      <div style={{padding:'40px 48px',maxWidth:'1200px',margin:'0 auto'}}>
+      <div style={{padding:isMobile?'28px 20px 44px':'40px 48px',maxWidth:'1200px',margin:'0 auto'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'28px',flexWrap:'wrap',gap:'12px'}}>
           <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(250,250,245,.25)'}}>{prods.length} {cat.name.toLowerCase()}</p>
-          <select value={sort} onChange={e=>setSort(e.target.value)} style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'9px 12px',fontFamily:"'DM Mono',monospace",fontSize:'10px',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.5)',outline:'none',cursor:'none'}}>
+          <select value={sort} onChange={e=>setSort(e.target.value)} style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'9px 12px',fontFamily:"'DM Mono',monospace",fontSize:'10px',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.5)',outline:'none',cursor:'none',width:isMobile?'100%':'auto'}}>
             <option value="popular">MOST POPULAR</option><option value="price-low">PRICE: LOW -&gt; HIGH</option><option value="price-high">PRICE: HIGH -&gt; LOW</option>
           </select>
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:'18px'}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(auto-fill,minmax(250px,1fr))',gap:isMobile?'12px':'18px'}}>
           {sorted.map((p,i)=><div key={p.id} className="fade-up" style={{animationDelay:`${i*.05}s`}}><ProductCard product={p} navigate={navigate}/></div>)}
         </div>
       </div>
@@ -1760,6 +1770,7 @@ function CategoryPage({ slug, navigate }) {
 // =================================================================
 function ProductPage({ slug, navigate }) {
   const {addToCart, toggleWishlist, wishlist, products, catalogLoading} = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const product = products.find(p=>p.slug===slug);
   const [img, setImg] = useState(0);
   const [size, setSize] = useState(null);
@@ -1771,9 +1782,9 @@ function ProductPage({ slug, navigate }) {
   if (!product) return <NotFoundPage navigate={navigate}/>;
   return (
     <div style={{background:'var(--ink)',paddingTop:'70px'}}>
-      <div style={{maxWidth:'1200px',margin:'0 auto',padding:'40px 48px'}}>
+      <div style={{maxWidth:'1200px',margin:'0 auto',padding:isMobile?'24px 20px 40px':'40px 48px'}}>
         {/* Breadcrumb */}
-        <div style={{display:'flex',gap:'8px',alignItems:'center',marginBottom:'40px'}}>
+        <div style={{display:isMobile?'none':'flex',gap:'8px',alignItems:'center',marginBottom:'40px'}}>
           {[{l:'Home',p:()=>navigate('home')},{l:product.category,p:()=>navigate('category',{slug:product.category})},{l:product.name,p:null}].map((item,i)=>(
             <span key={i} style={{display:'flex',alignItems:'center',gap:'8px'}}>
               {i>0&&<span style={{color:'rgba(250,250,245,.15)',fontSize:'12px'}}>&gt;</span>}
@@ -1784,7 +1795,7 @@ function ProductPage({ slug, navigate }) {
           ))}
         </div>
 
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'64px',alignItems:'start'}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:isMobile?'24px':'64px',alignItems:'start'}}>
           {/* Image gallery */}
           <div>
             <div style={{borderRadius:'14px',overflow:'hidden',aspectRatio:'1/1',background:'var(--ink2)',border:'1px solid rgba(168,230,207,.08)',marginBottom:'12px',position:'relative'}}>
@@ -1794,9 +1805,9 @@ function ProductPage({ slug, navigate }) {
                 {product.isSale&&<span style={{background:'var(--gold)',color:'#0A0D0A',fontFamily:"'DM Mono',monospace",fontSize:'9px',padding:'4px 10px',borderRadius:'2px',fontWeight:'600',letterSpacing:'.1em'}}>SALE</span>}
               </div>
             </div>
-            <div style={{display:'flex',gap:'10px'}}>
+            <div style={{display:'flex',gap:'10px',overflowX:isMobile?'auto':'visible',paddingBottom:isMobile?'4px':'0'}}>
               {product.images.map((im,i)=>(
-                <button key={i} onClick={()=>setImg(i)} style={{width:'70px',height:'70px',borderRadius:'8px',overflow:'hidden',border:`1.5px solid ${i===img?'var(--mint)':'rgba(168,230,207,.1)'}`,cursor:'none',background:'none',padding:0,transition:'border-color .2s'}}>
+                <button key={i} onClick={()=>setImg(i)} style={{width:isMobile?'62px':'70px',height:isMobile?'62px':'70px',borderRadius:'8px',overflow:'hidden',border:`1.5px solid ${i===img?'var(--mint)':'rgba(168,230,207,.1)'}`,cursor:'none',background:'none',padding:0,transition:'border-color .2s',flexShrink:0}}>
                   <img src={im} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
                 </button>
               ))}
@@ -1807,7 +1818,7 @@ function ProductPage({ slug, navigate }) {
           <div>
             <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',background:'rgba(168,230,207,.08)',padding:'4px 10px',borderRadius:'2px',border:'1px solid rgba(168,230,207,.15)',letterSpacing:'.12em',textTransform:'uppercase'}}>{product.category}</span>
             <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,3.5vw,48px)',color:'var(--cream)',lineHeight:'1.05',margin:'14px 0 12px'}}>{product.name}</h1>
-            <div style={{display:'flex',alignItems:'center',gap:'14px',marginBottom:'14px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'14px',marginBottom:'14px',flexWrap:'wrap'}}>
               <span style={{fontFamily:"'DM Mono',monospace",fontSize:'22px',color:'var(--gold)',fontWeight:'500'}}>{formatPrice(product.price)}</span>
               {product.originalPrice&&<>
                 <span style={{fontFamily:"'DM Mono',monospace",fontSize:'14px',color:'rgba(250,250,245,.25)',textDecoration:'line-through'}}>{formatPrice(product.originalPrice)}</span>
@@ -1849,7 +1860,7 @@ function ProductPage({ slug, navigate }) {
             )}
 
             {/* Qty */}
-            <div style={{display:'flex',alignItems:'center',gap:'16px',marginBottom:'24px'}}>
+            <div style={{display:'flex',alignItems:isMobile?'stretch':'center',gap:'16px',marginBottom:'24px',flexDirection:isMobile?'column':'row'}}>
               <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.25)',letterSpacing:'.14em'}}>QTY</p>
               <div style={{display:'flex',alignItems:'center',border:'1px solid rgba(168,230,207,.14)',borderRadius:'4px',overflow:'hidden'}}>
                 <button onClick={()=>setQty(q=>Math.max(1,q-1))} style={{width:'40px',height:'40px',background:'none',border:'none',cursor:'none',color:'rgba(250,250,245,.4)',display:'flex',alignItems:'center',justifyContent:'center',transition:'color .15s'}} onMouseEnter={e=>e.target.style.color='var(--cream)'} onMouseLeave={e=>e.target.style.color='rgba(250,250,245,.4)'}><MinusIcon/></button>
@@ -1869,7 +1880,7 @@ function ProductPage({ slug, navigate }) {
             </div>
 
             {/* Trust */}
-            <div style={{display:'flex',justifyContent:'space-around',padding:'14px',background:'rgba(168,230,207,.03)',border:'1px solid rgba(168,230,207,.06)',borderRadius:'6px',marginBottom:'24px'}}>
+            <div style={{display:'flex',justifyContent:'space-around',padding:'14px',background:'rgba(168,230,207,.03)',border:'1px solid rgba(168,230,207,.06)',borderRadius:'6px',marginBottom:'24px',gap:isMobile?'10px':'0',flexDirection:isMobile?'column':'row'}}>
               {[{I:TruckIcon,t:'Free Ship INR 500+'},{I:ShieldIcon,t:'Secure Payment'},{I:ReturnIcon,t:'Easy Returns'}].map(({I,t})=>(
                 <div key={t} style={{display:'flex',alignItems:'center',gap:'7px'}}>
                   <I/><span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',letterSpacing:'.06em'}}>{t}</span>
@@ -1901,7 +1912,7 @@ function ProductPage({ slug, navigate }) {
         {related.length>0&&(
           <div style={{marginTop:'72px'}}>
             <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(28px,3.5vw,40px)',color:'var(--cream)',marginBottom:'28px'}}>You Might Also Like</h3>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:'16px'}}>
+            <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(auto-fill,minmax(220px,1fr))',gap:isMobile?'12px':'16px'}}>
               {related.map(p=><ProductCard key={p.id} product={p} navigate={navigate}/>)}
             </div>
           </div>
@@ -1954,6 +1965,7 @@ function FormField({ label, name, placeholder, type='text', span=1, req=true, ta
 // =================================================================
 function CartPage({ navigate }) {
   const {cart, removeFromCart, updateQty, cartTotal, setCart} = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const [form, setForm] = useState({fullName:'',email:'',whatsapp:'',address1:'',address2:'',city:'',province:'',postalCode:'',country:'India',notes:''});
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -2030,14 +2042,14 @@ function CartPage({ navigate }) {
 
   return (
     <div style={{background:'var(--ink)',minHeight:'100vh',paddingTop:'70px'}}>
-      <div style={{maxWidth:'1200px',margin:'0 auto',padding:'48px'}}>
-        <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'48px',color:'var(--cream)',marginBottom:'40px'}}>Your Order</h1>
-        <div style={{display:'grid',gridTemplateColumns:'1.15fr 1fr',gap:'48px',alignItems:'start'}}>
+      <div style={{maxWidth:'1200px',margin:'0 auto',padding:isMobile?'24px 20px 36px':'48px'}}>
+        <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'38px':'48px',color:'var(--cream)',marginBottom:isMobile?'28px':'40px'}}>Your Order</h1>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1.15fr 1fr',gap:isMobile?'32px':'48px',alignItems:'start'}}>
           {/* Cart items */}
           <div>
             {cart.map(item=>(
-              <div key={item.cartKey} style={{display:'flex',gap:'16px',padding:'20px 0',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
-                <div style={{width:'84px',height:'84px',borderRadius:'8px',overflow:'hidden',flexShrink:0,border:'1px solid rgba(168,230,207,.08)'}}>
+              <div key={item.cartKey} style={{display:'flex',gap:isMobile?'12px':'16px',padding:'20px 0',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
+                <div style={{width:isMobile?'72px':'84px',height:isMobile?'72px':'84px',borderRadius:'8px',overflow:'hidden',flexShrink:0,border:'1px solid rgba(168,230,207,.08)'}}>
                   <img src={item.images[0]} alt={item.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
                 </div>
                 <div style={{flex:1}}>
@@ -2082,7 +2094,7 @@ function CartPage({ navigate }) {
 
             <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'24px',color:'var(--cream)',marginBottom:'20px'}}>Delivery Details</h3>
             <div>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px',marginBottom:'14px'}}>
+              <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:'14px',marginBottom:'14px'}}>
                 <FormField label="Full Name"              name="fullName"  placeholder="Priya Sharma"                  {...fieldProps}/>
                 <FormField label="Email"                  name="email"     placeholder="priya@email.com" type="email"  {...fieldProps}/>
                 <FormField label="WhatsApp Number"        name="whatsapp"  placeholder="+91 98765 43210" span={2}       {...fieldProps}/>
@@ -2150,6 +2162,7 @@ function ThankYouPage({ orderRef, email, navigate }) {
 //  ABOUT PAGE
 // =================================================================
 function AboutPage({ navigate }) {
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const team = [
     {name:"Sudhir Krishan Narula",role:"Founder",bio:"With a passion for design and detail, Sudhir founded Urban Jewells to redefine artificial jewellery - merging refined aesthetics with bold, contemporary expression.",init:"SK", img:"https://res.cloudinary.com/dxw1yg7if/image/upload/v1772515066/IMG_9975_cypxxi.jpg"},
     {name:"Meera Narula",role:"CEO",bio:"With a background in business and a passion for craftsmanship, Meera steers the brand's vision and ensures every piece reflects luxury with integrity.",init:"MN", img:"https://res.cloudinary.com/dxw1yg7if/image/upload/v1772521076/Maa_xrolun.jpg"},
@@ -2159,7 +2172,7 @@ function AboutPage({ navigate }) {
   return (
     <div style={{background:'var(--ink)'}}>
       {/* Hero */}
-      <div style={{minHeight:'55vh',display:'flex',alignItems:'flex-end',padding:'120px 48px 64px',position:'relative',overflow:'hidden',background:'var(--ink)'}}>
+      <div style={{minHeight:isMobile?'42vh':'55vh',display:'flex',alignItems:'flex-end',padding:isMobile?'92px 20px 38px':'120px 48px 64px',position:'relative',overflow:'hidden',background:'var(--ink)'}}>
         <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.025) 1px,transparent 1px)',backgroundSize:'80px 80px',pointerEvents:'none'}}/>
         <div style={{position:'absolute',top:'20%',right:'8%',width:'500px',height:'500px',background:'radial-gradient(circle,rgba(168,230,207,.05) 0%,transparent 65%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1}}>
@@ -2170,11 +2183,11 @@ function AboutPage({ navigate }) {
       </div>
 
       {/* Story */}
-      <section style={{padding:'80px 48px',maxWidth:'1200px',margin:'0 auto'}}>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'72px',alignItems:'center'}}>
+      <section style={{padding:isMobile?'48px 20px':'80px 48px',maxWidth:'1200px',margin:'0 auto'}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:isMobile?'34px':'72px',alignItems:'center'}}>
           <div style={{position:'relative'}}>
             <img src="https://res.cloudinary.com/dxw1yg7if/image/upload/v1772515066/IMG_9975_cypxxi.jpg" alt="Our studio" style={{borderRadius:'12px',width:'100%',objectFit:'cover',border:'1px solid rgba(168,230,207,.08)'}}/>
-            <div style={{position:'absolute',bottom:'-20px',right:'-20px',padding:'20px 24px',background:'rgba(14,20,16,.95)',backdropFilter:'blur(16px)',border:'1px solid rgba(168,230,207,.12)',borderRadius:'8px'}}>
+            <div style={{position:'absolute',bottom:isMobile?'12px':'-20px',right:isMobile?'12px':'-20px',padding:isMobile?'14px 16px':'20px 24px',background:'rgba(14,20,16,.95)',backdropFilter:'blur(16px)',border:'1px solid rgba(168,230,207,.12)',borderRadius:'8px'}}>
               <p style={{fontFamily:"'DM Mono',monospace",fontSize:'28px',color:'var(--gold)',fontWeight:'500',lineHeight:'1'}}>2019</p>
               <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',letterSpacing:'.12em',marginTop:'4px'}}>FOUNDED</p>
             </div>
@@ -2193,7 +2206,7 @@ function AboutPage({ navigate }) {
       </section>
 
       {/* Mission */}
-      <section style={{padding:'64px 48px',background:'var(--ink2)',borderTop:'1px solid rgba(168,230,207,.05)',borderBottom:'1px solid rgba(168,230,207,.05)'}}>
+      <section style={{padding:isMobile?'48px 20px':'64px 48px',background:'var(--ink2)',borderTop:'1px solid rgba(168,230,207,.05)',borderBottom:'1px solid rgba(168,230,207,.05)'}}>
         <div style={{maxWidth:'1200px',margin:'0 auto'}}>
           <div style={{textAlign:'center',marginBottom:'48px'}}>
             <p className="label-tag" style={{marginBottom:'12px'}}>WHAT WE STAND FOR</p>
@@ -2218,7 +2231,7 @@ function AboutPage({ navigate }) {
       </section>
 
       {/* Team */}
-      <section style={{padding:'80px 48px',maxWidth:'1200px',margin:'0 auto'}}>
+      <section style={{padding:isMobile?'48px 20px 56px':'80px 48px',maxWidth:'1200px',margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:'52px'}}>
           <p className="label-tag" style={{marginBottom:'12px'}}>THE PEOPLE BEHIND THE PIECES</p>
           <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,50px)',color:'var(--cream)'}}>Our Team</h2>
@@ -2265,6 +2278,7 @@ function ContactPage() {
   const [status, setStatus] = useState(null);
   const [sub, setSub] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const handleSubmit = () => {
     const errs = {};
     if (!form.name.trim()) errs.name='Required';
@@ -2284,7 +2298,7 @@ function ContactPage() {
   };
   return (
     <div style={{background:'var(--ink)'}}>
-      <div style={{minHeight:'40vh',display:'flex',alignItems:'flex-end',padding:'120px 48px 56px',background:'var(--ink)',position:'relative',overflow:'hidden'}}>
+      <div style={{minHeight:isMobile?'34vh':'40vh',display:'flex',alignItems:'flex-end',padding:isMobile?'92px 20px 34px':'120px 48px 56px',background:'var(--ink)',position:'relative',overflow:'hidden'}}>
         <div style={{position:'absolute',top:'20%',right:'8%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(168,230,207,.05) 0%,transparent 65%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1}}>
           <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:'.3em'}}>REACH OUT</p>
@@ -2292,8 +2306,8 @@ function ContactPage() {
         </div>
       </div>
 
-      <div style={{maxWidth:'1100px',margin:'0 auto',padding:'60px 48px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'1.2fr 1fr',gap:'56px',alignItems:'start'}}>
+      <div style={{maxWidth:'1100px',margin:'0 auto',padding:isMobile?'36px 20px 52px':'60px 48px'}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1.2fr 1fr',gap:isMobile?'28px':'56px',alignItems:'start'}}>
           {/* Form */}
           <div>
             {status==='success'&&(
@@ -2303,7 +2317,7 @@ function ContactPage() {
               </div>
             )}
             <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px'}}>
+              <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:'14px'}}>
                 {[{l:'Name',n:'name',p:'Priya Sharma'},{l:'Email',n:'email',p:'priya@email.com',t:'email'}].map(({l,n,p,t='text'})=>(
                   <div key={n}>
                     <label htmlFor={n} style={{display:'block',fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',textTransform:'uppercase',letterSpacing:'.12em',marginBottom:'8px'}}>{l} *</label>
@@ -2323,7 +2337,7 @@ function ContactPage() {
                 <textarea id="message" rows={5} placeholder="Tell us what's on your mind..." value={form.message} onChange={e=>setForm(p=>({...p,message:e.target.value}))} className="dark-field" style={{resize:'vertical'}}/>
                 {errors.message&&<p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'#F87171',marginTop:'4px'}}>{errors.message}</p>}
               </div>
-              <button className="btn-luxury" disabled={sub} style={{alignSelf:'flex-start',padding:'14px 32px',fontSize:'12px',letterSpacing:'.12em',opacity:sub ? 0.65 : 1}}
+              <button className="btn-luxury" disabled={sub} style={{alignSelf:'flex-start',padding:'14px 32px',fontSize:'12px',letterSpacing:'.12em',opacity:sub ? 0.65 : 1,width:isMobile?'100%':'auto',justifyContent:'center'}}
                 onClick={handleSubmit}>
                 {sub?<><span className="animate-spin" style={{display:'inline-block',width:'14px',height:'14px',border:'2px solid rgba(250,250,245,.25)',borderTop:'2px solid var(--cream)',borderRadius:'50%'}}/>  SENDING</>:'SEND MESSAGE -&gt;'}
               </button>
@@ -2334,9 +2348,9 @@ function ContactPage() {
           <div>
             <div className="glass-card" style={{padding:'32px',marginBottom:'20px'}}>
               <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'24px',color:'var(--cream)',marginBottom:'22px'}}>Contact Info</h3>
-              {[{e:'[Phone]',t:'WhatsApp',v:'+91 73512 57315',a:'https://wa.me/917351257315'},{e:'[Email]',t:'Email',v:'hello@urbanjewells.in',a:'mailto:hello@urbanjewells.in'},{e:'[Instagram]',t:'Instagram',v:'@urbanjewells',a:'https://instagram.com'}].map(({e,t,v,a})=>(
+              {[{t:'WhatsApp',v:'+91 73512 57315',a:'https://wa.me/917351257315',e:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.63 2.62a2 2 0 0 1-.45 2.11L8 9.91a16 16 0 0 0 6.09 6.09l1.46-1.29a2 2 0 0 1 2.11-.45c.84.3 1.72.51 2.62.63A2 2 0 0 1 22 16.92z"/></svg>},{t:'Email',v:'hello@urbanjewells.in',a:'mailto:hello@urbanjewells.in',e:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>},{t:'Instagram',v:'@urbanjewells',a:'https://instagram.com/urbanjewells',e:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>}].map(({e,t,v,a})=>(
                 <a key={t} href={a} target="_blank" rel="noopener noreferrer" style={{display:'flex',alignItems:'center',gap:'14px',padding:'14px 0',borderBottom:'1px solid rgba(168,230,207,.06)',textDecoration:'none',transition:'opacity .15s'}} onMouseEnter={el=>el.currentTarget.style.opacity='.8'} onMouseLeave={el=>el.currentTarget.style.opacity='1'}>
-                  <span style={{fontSize:'20px'}}>{e}</span>
+                  <span style={{width:'38px',height:'38px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--gold)',background:'linear-gradient(145deg,rgba(201,168,76,.14),rgba(168,230,207,.06))',border:'1px solid rgba(201,168,76,.18)',flexShrink:0}}>{e}</span>
                   <div>
                     <p className="label-tag" style={{marginBottom:'3px',fontSize:'9px'}}>{t}</p>
                     <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.7)'}}>{v}</p>
