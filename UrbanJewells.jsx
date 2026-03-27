@@ -921,7 +921,7 @@ function Footer({ navigate }) {
               ))}
             </div>
           </div>
-          <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'contents',gap:isMobile?'22px 18px':'0'}}>
+          <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(3,minmax(0,1fr))',gap:isMobile?'22px 18px':'56px',gridColumn:isMobile?'auto':'span 3'}}>
             {cols.map(col=>(
               <div key={col.h}>
                 <p className="label-tag" style={{marginBottom:isMobile?'16px':'22px'}}>{col.h}</p>
@@ -2261,12 +2261,12 @@ function AboutPage({ navigate }) {
                 <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'11px':'14px',color:'rgba(250,250,245,.38)',lineHeight:isMobile?'1.5':'1.8'}}>
                   {isMobile
                     ? (t === 'Quality First'
-                        ? 'Selected for lasting wear.'
+                        ? ''
                         : t === 'Ethically Sourced'
-                          ? 'Conflict-free stones only.'
+                          ? ''
                           : t === 'Community Driven'
-                            ? 'Every customer message matters.'
-                            : 'A lighter footprint, always.')
+                            ? ''
+                            : '')
                     : d}
                 </p>
               </div>
