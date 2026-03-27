@@ -609,6 +609,25 @@ const materializeProductSelection = (product, variant = null) => {
     inStock: getDisplayStock(product, activeVariant),
   };
 };
+const CART_STORAGE_KEY = 'urban-jewells-cart-v1';
+const WISHLIST_STORAGE_KEY = 'urban-jewells-wishlist-v1';
+const readStoredArray = (key) => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+const writeStoredArray = (key, value) => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+};
 
 // =================================================================
 //  APP CONTEXT
@@ -617,8 +636,8 @@ const Ctx = createContext(null);
 const useApp = () => useContext(Ctx);
 
 function AppProvider({ children }) {
-  const [cart, setCart] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
+  const [cart, setCart] = useState(() => readStoredArray(CART_STORAGE_KEY));
+  const [wishlist, setWishlist] = useState(() => readStoredArray(WISHLIST_STORAGE_KEY));
   const [cartOpen, setCartOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -679,6 +698,14 @@ function AppProvider({ children }) {
       document.removeEventListener('visibilitychange', onFocus);
     };
   }, [cmsEnabled, refreshCatalog]);
+
+  useEffect(() => {
+    writeStoredArray(CART_STORAGE_KEY, cart);
+  }, [cart]);
+
+  useEffect(() => {
+    writeStoredArray(WISHLIST_STORAGE_KEY, wishlist);
+  }, [wishlist]);
 
   const toast = useCallback((msg, type="success") => {
     const id = Date.now();
@@ -2338,12 +2365,12 @@ function AboutPage({ navigate, navigateBack }) {
           <div style={{position:'relative'}}>
             <img src="https://res.cloudinary.com/dxw1yg7if/image/upload/v1772515066/IMG_9975_cypxxi.jpg" alt="Our studio" style={{borderRadius:'12px',width:'100%',objectFit:'cover',border:'1px solid rgba(168,230,207,.08)'}}/>
             <div style={{position:'absolute',bottom:isMobile?'12px':'-20px',right:isMobile?'12px':'-20px',padding:isMobile?'14px 16px':'20px 24px',background:'rgba(14,20,16,.95)',backdropFilter:'blur(16px)',border:'1px solid rgba(168,230,207,.12)',borderRadius:'8px'}}>
-              <p style={{fontFamily:"'DM Mono',monospace",fontSize:'28px',color:'var(--gold)',fontWeight:'500',lineHeight:'1'}}>2019</p>
+              <p style={{fontFamily:"'DM Mono',monospace",fontSize:'28px',color:'var(--gold)',fontWeight:'500',lineHeight:'1'}}>2025</p>
               <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',letterSpacing:'.12em',marginTop:'4px'}}>FOUNDED</p>
             </div>
           </div>
           <div>
-            <p className="label-tag" style={{marginBottom:'16px'}}>SINCE 2019 - INDIA</p>
+            <p className="label-tag" style={{marginBottom:'16px'}}>SINCE 2025 - INDIA</p>
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,48px)',color:'var(--cream)',marginBottom:'28px',lineHeight:'1.1'}}>Where Craft Meets Intention</h2>
             {["Urban Jewells was born from the vision of Sudhir Krishan Narula, who believed jewellery should be more than ornamentation - it should be identity, intention, and quiet power.",
               "What began as a passion for refined craftsmanship soon evolved into a brand rooted in purpose. Inspired by timeless artistry and modern sophistication, Sudhir set out to create pieces that feel personal, powerful, and enduring - jewellery designed not just to be worn, but to be experienced.",
@@ -2500,7 +2527,7 @@ function ContactPage({ navigateBack }) {
               </div>
               <button className="btn-luxury" disabled={sub} style={{alignSelf:'flex-start',padding:'14px 32px',fontSize:'12px',letterSpacing:'.12em',opacity:sub ? 0.65 : 1,width:isMobile?'100%':'auto',justifyContent:'center'}}
                 onClick={handleSubmit}>
-                {sub?<><span className="animate-spin" style={{display:'inline-block',width:'14px',height:'14px',border:'2px solid rgba(250,250,245,.25)',borderTop:'2px solid var(--cream)',borderRadius:'50%'}}/>  SENDING</>:'SEND MESSAGE -&gt;'}
+                {sub?<><span className="animate-spin" style={{display:'inline-block',width:'14px',height:'14px',border:'2px solid rgba(250,250,245,.25)',borderTop:'2px solid var(--cream)',borderRadius:'50%'}}/>  SENDING</>:'SEND MESSAGE ->'}
               </button>
             </div>
           </div>
@@ -2716,7 +2743,8 @@ function PrivacyPolicy({ navigate }) {
   return (
     <div style={{background:'var(--ink)'}}>
       {/* Hero */}
-      <div style={{minHeight:'40vh',display:'flex',alignItems:'flex-end',padding:'120px 48px 56px',background:'var(--ink)',position:'relative',overflow:'hidden'}}>n        <div style={{position:'absolute',top:'20%',right:'8%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(168,230,207,.05) 0%,transparent 65%)',pointerEvents:'none'}}/>
+      <div style={{minHeight:'40vh',display:'flex',alignItems:'flex-end',padding:'120px 48px 56px',background:'var(--ink)',position:'relative',overflow:'hidden'}}>
+        <div style={{position:'absolute',top:'20%',right:'8%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(168,230,207,.05) 0%,transparent 65%)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1}}>
           <p className="label-tag fade-up" style={{marginBottom:'14px',letterSpacing:'.3em'}}>YOUR PRIVACY</p>
           <h1 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:'clamp(52px,8vw,96px)',color:'var(--cream)',lineHeight:'.9'}}>Privacy Policy</h1>
