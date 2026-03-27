@@ -255,6 +255,11 @@ const GlobalStyles = () => (
       height:1px;
       background:linear-gradient(90deg, transparent, var(--mint), transparent);
     }
+    .skeleton-shimmer {
+      background:linear-gradient(90deg,rgba(168,230,207,.04) 0%,rgba(250,250,245,.1) 50%,rgba(168,230,207,.04) 100%);
+      background-size:800px 100%;
+      animation:shimmer 1.8s linear infinite;
+    }
     .glow-orb {
       position:absolute; border-radius:50%;
       background:radial-gradient(circle, rgba(168,230,207,.12) 0%, transparent 70%);
@@ -1635,9 +1640,12 @@ function WelcomeBanner() {
 }
 
 function FeaturedProducts({ navigate }) {
-  const {products} = useApp();
+  const {products, catalogLoading} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const featured = products.filter(p=>p.isFeatured).slice(0,6);
+  if (catalogLoading && featured.length === 0) {
+    return <CatalogSectionSkeleton label="HANDPICKED FOR YOU" title="Featured Pieces" actionWidth="112px" count={isMobile ? 4 : 4} card="product"/>;
+  }
   return (
     <section style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink2)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
@@ -1661,8 +1669,11 @@ function FeaturedProducts({ navigate }) {
 }
 
 function CollectionsBand({ navigate }) {
-  const {collections} = useApp();
+  const {collections, catalogLoading} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+  if (catalogLoading && collections.length === 0) {
+    return <CatalogSectionSkeleton label="FIVE WORLDS" title="Our Collections" actionWidth="144px" columns="repeat(auto-fill,minmax(180px,1fr))" count={isMobile ? 4 : 5} card="editorial" cardRatio="2/3"/>;
+  }
   return (
     <section style={{padding:'clamp(52px,7vw,80px) 0',overflow:'hidden',background:'var(--ink)',position:'relative'}}>
       {/* Section header */}
@@ -1702,8 +1713,11 @@ function CollectionsBand({ navigate }) {
 }
 
 function ShopByCategory({ navigate }) {
-  const {categories} = useApp();
+  const {categories, catalogLoading} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+  if (catalogLoading && categories.length === 0) {
+    return <CatalogSectionSkeleton label="BROWSE BY TYPE" title="Shop by Category" actionWidth="0px" columns="repeat(auto-fill,minmax(220px,1fr))" count={isMobile ? 4 : 4} card="editorial" cardRatio="3/2"/>;
+  }
   return (
     <section style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink2)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
@@ -1738,7 +1752,7 @@ function ShopByCategory({ navigate }) {
 }
 
 function AllProductsGrid({ navigate, standalone=false, navigateBack, routeParams={}, onStandaloneFiltersChange }) {
-  const {products, categories, collections} = useApp();
+  const {products, categories, collections, catalogLoading} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const [active, setActive] = useState(routeParams.category || 'all');
   const [sort, setSort] = useState(routeParams.sort || 'popular');
@@ -1820,6 +1834,32 @@ function AllProductsGrid({ navigate, standalone=false, navigateBack, routeParams
     setNewOnly(false);
     setSaleOnly(false);
   };
+  if (catalogLoading && products.length === 0) {
+    return (
+      <section id="all-pieces" style={{padding:standalone ? (isMobile?'28px 20px 48px':'44px 48px 64px') : 'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink)'}}>
+        <div style={{maxWidth:'1200px',margin:'0 auto'}}>
+          <div style={{textAlign:'center',marginBottom:'clamp(28px,5vw,48px)'}}>
+            <SkeletonBlock width="132px" height="10px" radius="999px" style={{margin:'0 auto 12px'}}/>
+            <SkeletonBlock width={isMobile?'210px':'260px'} height={isMobile?'38px':'52px'} radius="12px" style={{margin:'0 auto'}}/>
+          </div>
+          <div style={{marginBottom:'28px',padding:isMobile?'14px':'18px 20px',background:'rgba(255,255,255,.025)',borderRadius:'10px',border:'1px solid rgba(168,230,207,.06)',backdropFilter:'blur(10px)'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:isMobile?'stretch':'center',flexWrap:'wrap',gap:'14px',marginBottom:'14px'}}>
+              <div style={{display:'flex',flexWrap:'wrap',gap:'6px',width:isMobile?'100%':'auto'}}>
+                {Array.from({ length: isMobile ? 4 : 6 }).map((_, index) => <SkeletonBlock key={index} width={isMobile?'78px':'92px'} height="30px" radius="3px"/>)}
+              </div>
+              <SkeletonBlock width={isMobile?'100%':'130px'} height="36px" radius="4px"/>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(5,minmax(0,1fr))',gap:'10px'}}>
+              {Array.from({ length: standalone ? (isMobile ? 3 : 5) : 1 }).map((_, index) => <SkeletonBlock key={index} height="42px" radius="4px"/>)}
+            </div>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(auto-fill,minmax(clamp(170px,42vw,270px),1fr))',gap:isMobile?'12px':'clamp(12px,2vw,20px)'}}>
+            {Array.from({ length: isMobile ? 6 : 8 }).map((_, index) => <ProductCardSkeleton key={index}/>)}
+          </div>
+        </div>
+      </section>
+    );
+  }
   const content = (
     <section id="all-pieces" style={{padding:standalone ? (isMobile?'28px 20px 48px':'44px 48px 64px') : 'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
@@ -2093,6 +2133,70 @@ function PageBackButton({ onClick, label='Back' }) {
   );
 }
 
+function SkeletonBlock({ width='100%', height='16px', radius='10px', style={} }) {
+  return <div className="skeleton-shimmer" style={{width, height, borderRadius:radius, ...style}}/>;
+}
+
+function ProductCardSkeleton() {
+  return (
+    <div style={{border:'1px solid rgba(168,230,207,.06)',borderRadius:'10px',overflow:'hidden',background:'rgba(255,255,255,.02)'}}>
+      <SkeletonBlock height="0" style={{paddingBottom:'100%',borderRadius:0}}/>
+      <div style={{padding:'18px 18px 20px'}}>
+        <SkeletonBlock width="38%" height="10px" radius="999px" style={{marginBottom:'14px'}}/>
+        <SkeletonBlock width="82%" height="20px" radius="8px" style={{marginBottom:'10px'}}/>
+        <SkeletonBlock width="56%" height="12px" radius="8px" style={{marginBottom:'20px'}}/>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
+          <SkeletonBlock width="34%" height="18px" radius="8px"/>
+          <SkeletonBlock width="24%" height="12px" radius="8px"/>
+        </div>
+        <div style={{display:'flex',gap:'10px'}}>
+          <SkeletonBlock width="44px" height="44px" radius="999px"/>
+          <SkeletonBlock width="100%" height="44px" radius="4px"/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditorialCardSkeleton({ ratio='2/3' }) {
+  return (
+    <div style={{position:'relative',aspectRatio:ratio,borderRadius:'12px',overflow:'hidden',border:'1px solid rgba(168,230,207,.06)',background:'rgba(255,255,255,.02)'}}>
+      <SkeletonBlock width="100%" height="100%" radius="0"/>
+      <div style={{position:'absolute',left:0,right:0,bottom:0,padding:'18px'}}>
+        <SkeletonBlock width="36%" height="10px" radius="999px" style={{marginBottom:'10px'}}/>
+        <SkeletonBlock width="68%" height="28px" radius="10px" style={{marginBottom:'10px'}}/>
+        <SkeletonBlock width="40%" height="12px" radius="8px"/>
+      </div>
+    </div>
+  );
+}
+
+function CatalogSectionSkeleton({ label, title, actionWidth='120px', columns='repeat(auto-fill,minmax(220px,1fr))', count=4, card='product', cardRatio='2/3' }) {
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+  const gridColumns = isMobile ? 'repeat(2,minmax(0,1fr))' : columns;
+  const showAction = actionWidth && actionWidth !== '0px';
+  return (
+    <section style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink2)'}}>
+      <div style={{maxWidth:'1200px',margin:'0 auto'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',gap:'14px',flexWrap:'wrap',marginBottom:'clamp(28px,5vw,48px)'}}>
+          <div style={{minWidth:isMobile?'100%':'auto'}}>
+            <SkeletonBlock width="118px" height="10px" radius="999px" style={{marginBottom:'12px'}}/>
+            <SkeletonBlock width={isMobile?'220px':'320px'} height={isMobile?'38px':'52px'} radius="12px"/>
+          </div>
+          {showAction && <SkeletonBlock width={actionWidth} height="40px" radius="4px"/>}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:gridColumns,gap:isMobile?'12px':'18px'}}>
+          {Array.from({ length: count }).map((_, index) => (
+            <div key={`${label}-${title}-${index}`}>
+              {card === 'product' ? <ProductCardSkeleton/> : <EditorialCardSkeleton ratio={cardRatio}/>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function AllPiecesPage({ navigate, navigateBack, params }) {
   const handleFiltersChange = useCallback((nextParams) => {
     navigate('all-pieces', nextParams, { replace:false });
@@ -2101,8 +2205,11 @@ function AllPiecesPage({ navigate, navigateBack, params }) {
 }
 
 function CategoriesPage({ navigate, navigateBack }) {
-  const {categories} = useApp();
+  const {categories, catalogLoading} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+  if (catalogLoading && categories.length === 0) {
+    return <CatalogSectionSkeleton label="URBAN JEWELLS" title="Categories" actionWidth="0px" columns="repeat(auto-fill,minmax(320px,1fr))" count={isMobile ? 4 : 4} card="editorial" cardRatio="4/3"/>;
+  }
   return (
     <div style={{background:'var(--ink)'}}>
       <div style={{minHeight:isMobile?'42vh':'50vh',display:'flex',alignItems:'flex-end',padding:isMobile?'88px 20px 38px':'100px 48px 60px',background:'linear-gradient(to bottom,var(--ink),var(--ink2))',position:'relative',overflow:'hidden'}}>
@@ -2146,8 +2253,11 @@ function CategoriesPage({ navigate, navigateBack }) {
 //  COLLECTIONS PAGE
 // =================================================================
 function CollectionsPage({ navigate, navigateBack }) {
-  const {collections} = useApp();
+  const {collections, catalogLoading} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+  if (catalogLoading && collections.length === 0) {
+    return <CatalogSectionSkeleton label="URBAN JEWELLS" title="Our Collections" actionWidth="0px" columns="repeat(auto-fill,minmax(320px,1fr))" count={isMobile ? 4 : 4} card="editorial" cardRatio={isMobile ? '5/7' : '3/4'}/>;
+  }
   return (
     <div style={{background:'var(--ink)'}}>
       <div style={{minHeight:isMobile?'42vh':'50vh',display:'flex',alignItems:'flex-end',padding:isMobile?'88px 20px 38px':'100px 48px 60px',background:'linear-gradient(to bottom,var(--ink),var(--ink2))',position:'relative',overflow:'hidden'}}>
