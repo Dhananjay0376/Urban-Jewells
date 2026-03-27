@@ -576,9 +576,15 @@ const FAQS = [
 
 // currency code and formatting (Indian rupee)
 const CURRENCY_CODE = 'INR';
+const FREE_SHIPPING_THRESHOLD = 2000;
+const STANDARD_SHIPPING_FEE = 99;
 const formatPrice = n => `${CURRENCY_CODE} ${Number(n).toLocaleString('en-IN')}`;
 const formatDiscount = (o,c) => Math.round(((o-c)/o)*100);
 const genRef = () => `UJ-${Date.now().toString(36).toUpperCase()}`;
+const getShippingAmount = subtotal => subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
+const getShippingMessage = subtotal => subtotal >= FREE_SHIPPING_THRESHOLD
+  ? `Free shipping applied on orders above ${formatPrice(FREE_SHIPPING_THRESHOLD)}`
+  : `Add ${formatPrice(FREE_SHIPPING_THRESHOLD - subtotal)} more to unlock free shipping`;
 const withCollectionCounts = (collections, products) => collections.map(collection => ({
   ...collection,
   productCount: collection.productCount || products.filter(product => product.collection === collection.slug).length,
@@ -745,10 +751,12 @@ function AppProvider({ children }) {
   }, [wishlist, toast]);
 
   const cartTotal = cart.reduce((s,i) => s + i.price * i.quantity, 0);
+  const cartShipping = getShippingAmount(cartTotal);
+  const cartGrandTotal = cartTotal + cartShipping;
   const cartCount = cart.reduce((s,i) => s + i.quantity, 0);
 
   return (
-    <Ctx.Provider value={{cart,setCart,cartOpen,setCartOpen,addToCart,removeFromCart,updateQty,cartTotal,cartCount,wishlist,toggleWishlist,toasts,setToasts,toast,searchOpen,setSearchOpen,products:catalog.products,collections:catalog.collections,categories:catalog.categories,catalogLoading:catalog.loading,catalogSource:catalog.source,catalogError:catalog.error,cmsEnabled}}>
+    <Ctx.Provider value={{cart,setCart,cartOpen,setCartOpen,addToCart,removeFromCart,updateQty,cartTotal,cartShipping,cartGrandTotal,cartCount,wishlist,toggleWishlist,toasts,setToasts,toast,searchOpen,setSearchOpen,products:catalog.products,collections:catalog.collections,categories:catalog.categories,catalogLoading:catalog.loading,catalogSource:catalog.source,catalogError:catalog.error,cmsEnabled}}>
       {children}
     </Ctx.Provider>
   );
@@ -1072,7 +1080,7 @@ function ProductCard({ product, navigate }) {
 //  SIDE CART
 // =================================================================
 function SideCart({ navigate }) {
-  const {cart, cartOpen, setCartOpen, removeFromCart, updateQty, cartTotal} = useApp();
+  const {cart, cartOpen, setCartOpen, removeFromCart, updateQty, cartTotal, cartShipping, cartGrandTotal} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   if (!cartOpen) return null;
   return (
@@ -1144,7 +1152,15 @@ function SideCart({ navigate }) {
               <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.5)'}}>Subtotal</span>
               <span style={{fontFamily:"'DM Mono',monospace",fontSize:'16px',color:'var(--gold)',fontWeight:'500'}}>{formatPrice(cartTotal)}</span>
             </div>
-            <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',opacity:.5,marginBottom:'18px'}}>Free shipping over INR 500</p>
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:'6px'}}>
+              <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.5)'}}>Shipping</span>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:'14px',color:cartShipping===0?'var(--mint)':'rgba(250,250,245,.7)'}}>{cartShipping===0?'FREE':formatPrice(cartShipping)}</span>
+            </div>
+            <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(212,245,233,.82)',marginBottom:'18px',letterSpacing:'.04em'}}>{getShippingMessage(cartTotal)}</p>
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:'18px',paddingTop:'12px',borderTop:'1px solid rgba(168,230,207,.08)'}}>
+              <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.75)',fontWeight:'500'}}>Total</span>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:'17px',color:'var(--gold)',fontWeight:'500'}}>{formatPrice(cartGrandTotal)}</span>
+            </div>
             <div style={{display:'flex',gap:'10px',flexDirection:isMobile?'column':'row'}}>
               <button className="btn-ghost-luxury" style={{flex:1,justifyContent:'center',padding:'12px',fontSize:'11px',letterSpacing:'.1em'}} onClick={()=>{setCartOpen(false);navigate('cart');}}>VIEW CART</button>
               <button className="btn-luxury" style={{flex:1,justifyContent:'center',padding:'12px',fontSize:'11px',letterSpacing:'.1em'}} onClick={()=>{setCartOpen(false);navigate('cart');}}>CHECKOUT</button>
@@ -2053,7 +2069,7 @@ function ProductPage({ slug, navigate, navigateBack }) {
 
             {/* Trust */}
             <div style={{display:'flex',justifyContent:'space-around',padding:'14px',background:'rgba(168,230,207,.03)',border:'1px solid rgba(168,230,207,.06)',borderRadius:'6px',marginBottom:'24px',gap:isMobile?'10px':'0',flexDirection:isMobile?'column':'row'}}>
-              {[{I:TruckIcon,t:'Free Ship INR 500+'},{I:ShieldIcon,t:'Secure Payment'},{I:ReturnIcon,t:'Easy Returns'}].map(({I,t})=>(
+              {[{I:TruckIcon,t:'Free Ship INR 2000+'},{I:ShieldIcon,t:'Secure Payment'},{I:ReturnIcon,t:'Easy Returns'}].map(({I,t})=>(
                 <div key={t} style={{display:'flex',alignItems:'center',gap:'7px'}}>
                   <I/><span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',letterSpacing:'.06em'}}>{t}</span>
                 </div>
@@ -2136,7 +2152,7 @@ function FormField({ label, name, placeholder, type='text', span=1, req=true, ta
 //  CART PAGE
 // =================================================================
 function CartPage({ navigate }) {
-  const {cart, removeFromCart, updateQty, cartTotal, setCart} = useApp();
+  const {cart, removeFromCart, updateQty, cartTotal, cartShipping, cartGrandTotal, setCart} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const [form, setForm] = useState({fullName:'',email:'',whatsapp:'',address1:'',address2:'',city:'',province:'',postalCode:'',country:'India',notes:''});
   const [errors, setErrors] = useState({});
@@ -2186,7 +2202,9 @@ function CartPage({ navigate }) {
       if (item.size) msg += ` (size: ${item.size})`;
       msg += ` x${item.quantity} = ${formatPrice(item.price*item.quantity)}\n`;
     });
-    msg += `\nTotal: ${formatPrice(cartTotal)}`;
+    msg += `\nSubtotal: ${formatPrice(cartTotal)}`;
+    msg += `\nShipping: ${cartShipping === 0 ? 'FREE' : formatPrice(cartShipping)}`;
+    msg += `\nTotal: ${formatPrice(cartGrandTotal)}`;
 
     const encoded = encodeURIComponent(msg);
     window.open(`https://wa.me/917351257315?text=${encoded}`, '_blank');
@@ -2258,13 +2276,13 @@ function CartPage({ navigate }) {
               </div>
               <div style={{display:'flex',justifyContent:'space-between',marginBottom:'18px'}}>
                 <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>Shipping</span>
-                <span style={{fontFamily:"'DM Mono',monospace",fontSize:'13px',color:'var(--mint)',opacity:.7}}>Free</span>
+                <span style={{fontFamily:"'DM Mono',monospace",fontSize:'13px',color:cartShipping===0?'var(--mint)':'rgba(250,250,245,.72)',opacity:.85}}>{cartShipping===0?'FREE':formatPrice(cartShipping)}</span>
               </div>
               <div style={{borderTop:'1px solid rgba(168,230,207,.08)',paddingTop:'18px',display:'flex',justifyContent:'space-between'}}>
                 <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:'500',color:'rgba(250,250,245,.7)'}}>Total</span>
-                <span style={{fontFamily:"'DM Mono',monospace",fontSize:'20px',color:'var(--gold)',fontWeight:'500'}}>{formatPrice(cartTotal)}</span>
+                <span style={{fontFamily:"'DM Mono',monospace",fontSize:'20px',color:'var(--gold)',fontWeight:'500'}}>{formatPrice(cartGrandTotal)}</span>
               </div>
-              <p style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'rgba(250,250,245,.2)',marginTop:'14px',letterSpacing:'.08em'}}>Final total confirmed via WhatsApp before dispatch</p>
+              <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(212,245,233,.82)',marginTop:'14px',letterSpacing:'.04em'}}>{getShippingMessage(cartTotal)}</p>
             </div>
 
             <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'24px',color:'var(--cream)',marginBottom:'20px'}}>Delivery Details</h3>
@@ -2916,7 +2934,7 @@ function ShippingPage({ navigate }) {
           <div style={{background:'rgba(168,230,207,.04)',border:'1px solid rgba(168,230,207,.1)',borderRadius:'8px',padding:'24px',marginBottom:'32px'}}>
             <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'22px',color:'var(--mint)',marginBottom:'16px'}}>Standard Shipping (India)</h3>
             <p style={{marginBottom:'12px'}}><strong>Delivery Time:</strong> 5-8 business days</p>
-            <p style={{marginBottom:'0'}}><strong>Cost:</strong> FREE on orders over INR 500 | INR 99 for orders under INR 500</p>
+            <p style={{marginBottom:'0'}}><strong>Cost:</strong> FREE on orders over INR 2000 | INR 99 for orders under INR 2000</p>
           </div>
 
           <div style={{background:'rgba(168,230,207,.04)',border:'1px solid rgba(168,230,207,.1)',borderRadius:'8px',padding:'24px',marginBottom:'32px'}}>
