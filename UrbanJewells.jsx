@@ -2146,11 +2146,24 @@ function ProductPage({ slug, navigate, navigateBack }) {
               </button>
             </div>
 
+            <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(3,minmax(0,1fr))',gap:'10px',marginBottom:'22px'}}>
+              {[
+                {title:'Dispatch Window', text:'Order confirmation on WhatsApp within a few hours. Dispatch usually follows in 1-2 working days.'},
+                {title:'Shipping', text:`Shipping is free above ${formatPrice(FREE_SHIPPING_THRESHOLD)} and ${formatPrice(STANDARD_SHIPPING_FEE)} below that threshold, with tracked delivery across India.`},
+                {title:'Care', text:'Store in the provided pouch and keep away from perfume, chlorine, and lotion for longer-lasting finish.'},
+              ].map(item => (
+                <div key={item.title} style={{padding:'14px 14px 15px',borderRadius:'8px',background:'rgba(255,255,255,.02)',border:'1px solid rgba(168,230,207,.08)'}}>
+                  <p className="label-tag" style={{marginBottom:'8px',fontSize:'9px'}}>{item.title}</p>
+                  <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.46)',lineHeight:'1.65'}}>{item.text}</p>
+                </div>
+              ))}
+            </div>
+
             {/* Trust */}
             <div style={{display:'flex',justifyContent:'space-around',padding:'14px',background:'rgba(168,230,207,.03)',border:'1px solid rgba(168,230,207,.06)',borderRadius:'6px',marginBottom:'24px',gap:isMobile?'10px':'0',flexDirection:isMobile?'column':'row'}}>
-              {[{I:TruckIcon,t:'Free Ship INR 2000+'},{I:ShieldIcon,t:'Secure Payment'},{I:ReturnIcon,t:'Easy Returns'}].map(({I,t})=>(
+              {[{I:TruckIcon,t:'Tracked Delivery'},{I:ShieldIcon,t:'WhatsApp Order Confirmation'},{I:ReturnIcon,t:'Defect Support Within 48 Hours'}].map(({I,t})=>(
                 <div key={t} style={{display:'flex',alignItems:'center',gap:'7px'}}>
-                  <I/><span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',letterSpacing:'.06em'}}>{t}</span>
+                  <I/><span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.38)',letterSpacing:'.06em'}}>{t}</span>
                 </div>
               ))}
             </div>
@@ -2158,7 +2171,7 @@ function ProductPage({ slug, navigate, navigateBack }) {
             {/* Accordion */}
             {[{t:'Full Description',c:'This piece is finished to exacting standards, ensuring lasting beauty with everyday wear. Each Urban Jewells piece arrives in signature packaging, ready to gift or treasure.'},
               {t:'Materials & Care',c:`Materials: ${product.materials.join(', ')}. Store in the provided pouch. Avoid perfume, chlorine, and lotions. Clean gently with a soft dry cloth after wearing.`},
-              {t:'Shipping & Returns',c:'Standard delivery 5-8 business days across India. Express available on select pincodes. Returns within 14 days on unworn items - contact via WhatsApp to initiate.'}
+              {t:'Shipping & Returns',c:`Tracked shipping across India. Shipping is free above ${formatPrice(FREE_SHIPPING_THRESHOLD)} and ${formatPrice(STANDARD_SHIPPING_FEE)} below that threshold. Defects or transit damage should be reported within 48 hours via WhatsApp with parcel-opening evidence.`}
             ].map(({t,c})=>(
               <div key={t} style={{borderBottom:'1px solid rgba(168,230,207,.06)'}}>
                 <button onClick={()=>setAcc(acc===t?null:t)}
