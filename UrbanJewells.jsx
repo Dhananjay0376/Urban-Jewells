@@ -935,6 +935,7 @@ function Footer({ navigate }) {
 // =================================================================
 function ProductCard({ product, navigate }) {
   const {addToCart, toggleWishlist, wishlist} = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const inWish = wishlist.some(i => i.id === product.id);
   return (
     <div className="pcard" style={{fontFamily:"'DM Sans',sans-serif"}}>
@@ -969,13 +970,13 @@ function ProductCard({ product, navigate }) {
         </div>
       </div>
 
-      <div style={{padding:'18px 18px 20px',position:'relative',zIndex:1,cursor:'none'}} onClick={()=>navigate('product',{slug:product.slug})}>
+      <div style={{padding:isMobile?'15px 14px 18px':'18px 18px 20px',position:'relative',zIndex:1,cursor:'none'}} onClick={()=>navigate('product',{slug:product.slug})}>
         <p className="label-tag" style={{marginBottom:'5px'}}>{product.category}</p>
-        <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'20px',color:'rgba(250,250,245,.88)',lineHeight:'1.2',marginBottom:'10px'}}>{product.name}</h3>
-        <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'8px'}}>
-          <span style={{fontFamily:"'DM Mono',monospace",fontSize:'14px',color:'var(--gold)',fontWeight:'500'}}>{formatPrice(product.price)}</span>
+        <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'18px':'20px',color:'rgba(250,250,245,.88)',lineHeight:'1.2',marginBottom:'10px'}}>{product.name}</h3>
+        <div style={{display:'flex',alignItems:'center',gap:isMobile?'8px':'10px',marginBottom:'8px',flexWrap:'wrap'}}>
+          <span style={{fontFamily:"'DM Mono',monospace",fontSize:isMobile?'13px':'14px',color:'var(--gold)',fontWeight:'500'}}>{formatPrice(product.price)}</span>
           {product.originalPrice&&<>
-            <span style={{fontFamily:"'DM Mono',monospace",fontSize:'12px',color:'rgba(250,250,245,.25)',textDecoration:'line-through'}}>{formatPrice(product.originalPrice)}</span>
+            <span style={{fontFamily:"'DM Mono',monospace",fontSize:isMobile?'11px':'12px',color:'rgba(250,250,245,.25)',textDecoration:'line-through'}}>{formatPrice(product.originalPrice)}</span>
             <span style={{background:'rgba(220,38,38,.15)',color:'#F87171',fontFamily:"'DM Mono',monospace",fontSize:'9px',padding:'3px 7px',borderRadius:'2px'}}>-{formatDiscount(product.originalPrice,product.price)}%</span>
           </>}
         </div>
@@ -1180,45 +1181,47 @@ function SearchModal({ navigate }) {
 // =================================================================
 function HeroSection({ navigate }) {
   const w = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const isMobile = w < 768;
+  const isTablet = w < 900;
   return (
-    <section id="main" style={{minHeight:'100vh',background:'var(--ink)',display:'flex',alignItems:'center',position:'relative',overflow:'hidden',paddingTop:'70px'}}>
+    <section id="main" style={{minHeight:isMobile?'auto':'100vh',background:'var(--ink)',display:'flex',alignItems:'center',position:'relative',overflow:'hidden',paddingTop:isMobile?'94px':'70px',paddingBottom:isMobile?'38px':'0'}}>
       {/* Radial glow backgrounds */}
-      <div style={{position:'absolute',top:'10%',right:'5%',width:'600px',height:'600px',background:'radial-gradient(circle,rgba(168,230,207,.06) 0%,transparent 65%)',pointerEvents:'none'}}/>
-      <div style={{position:'absolute',bottom:'20%',left:'10%',width:'400px',height:'400px',background:'radial-gradient(circle,rgba(201,168,76,.04) 0%,transparent 65%)',pointerEvents:'none'}}/>
+      <div style={{position:'absolute',top:isMobile?'2%':'10%',right:isMobile?'-20%':'5%',width:isMobile?'340px':'600px',height:isMobile?'340px':'600px',background:'radial-gradient(circle,rgba(168,230,207,.06) 0%,transparent 65%)',pointerEvents:'none'}}/>
+      <div style={{position:'absolute',bottom:isMobile?'8%':'20%',left:isMobile?'-10%':'10%',width:isMobile?'220px':'400px',height:isMobile?'220px':'400px',background:'radial-gradient(circle,rgba(201,168,76,.04) 0%,transparent 65%)',pointerEvents:'none'}}/>
 
       {/* Grid line texture */}
       <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(168,230,207,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(168,230,207,.025) 1px,transparent 1px)',backgroundSize:'80px 80px',pointerEvents:'none'}}/>
 
-      <div style={{maxWidth:'1200px',margin:'0 auto',padding:'0 48px',display:'grid',gridTemplateColumns: w<900?'1fr':'1fr 1fr',gap:'60px',alignItems:'center',width:'100%',zIndex:2,position:'relative'}}>
+      <div style={{maxWidth:'1200px',margin:'0 auto',padding:isMobile?'0 20px':'0 48px',display:'grid',gridTemplateColumns:isTablet?'1fr':'1fr 1fr',gap:isMobile?'26px':'60px',alignItems:'center',width:'100%',zIndex:2,position:'relative'}}>
         {/* TEXT */}
         <div>
-          <div className="fade-up-1" style={{display:'inline-flex',alignItems:'center',gap:'8px',marginBottom:'32px',padding:'6px 14px',border:'1px solid rgba(168,230,207,.15)',borderRadius:'2px',background:'rgba(168,230,207,.04)'}}>
+          <div className="fade-up-1" style={{display:'inline-flex',alignItems:'center',gap:'8px',marginBottom:isMobile?'22px':'32px',padding:isMobile?'6px 12px':'6px 14px',border:'1px solid rgba(168,230,207,.15)',borderRadius:'2px',background:'rgba(168,230,207,.04)',maxWidth:'100%'}}>
             <span style={{width:'6px',height:'6px',borderRadius:'50%',background:'var(--mint)',boxShadow:'0 0 8px var(--mint)',display:'inline-block'}}/>
-            <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',letterSpacing:'.22em'}}>PREMIUM HANDCRAFTED JEWELLERY - INDIA</span>
+            <span style={{fontFamily:"'DM Mono',monospace",fontSize:isMobile?'9px':'10px',color:'var(--mint)',letterSpacing:isMobile?'.14em':'.22em'}}>PREMIUM HANDCRAFTED JEWELLERY - INDIA</span>
           </div>
 
           <div className="fade-up-2" style={{overflow:'hidden',marginBottom:'4px'}}>
-            <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:'clamp(62px,8vw,110px)',lineHeight:'.88',color:'var(--cream)',letterSpacing:'-.02em'}}>Crafted</h1>
+            <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontSize:isMobile?'clamp(48px,16vw,64px)':'clamp(62px,8vw,110px)',lineHeight:isMobile?'.92':'.88',color:'var(--cream)',letterSpacing:'-.02em'}}>Crafted</h1>
           </div>
-          <div className="fade-up-3" style={{overflow:'hidden',marginBottom:'28px'}}>
-            <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontStyle:'italic',fontSize:'clamp(62px,8vw,110px)',lineHeight:'.88',color:'var(--mint)',letterSpacing:'-.02em'}}>for the Bold.</h1>
+          <div className="fade-up-3" style={{overflow:'hidden',marginBottom:isMobile?'22px':'28px'}}>
+            <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:'300',fontStyle:'italic',fontSize:isMobile?'clamp(48px,16vw,64px)':'clamp(62px,8vw,110px)',lineHeight:isMobile?'.92':'.88',color:'var(--mint)',letterSpacing:'-.02em'}}>for the Bold.</h1>
           </div>
 
-          <div className="fade-up-4" style={{width:'48px',height:'1px',background:'linear-gradient(90deg,var(--mint),transparent)',marginBottom:'24px'}}/>
+          <div className="fade-up-4" style={{width:isMobile?'42px':'48px',height:'1px',background:'linear-gradient(90deg,var(--mint),transparent)',marginBottom:isMobile?'18px':'24px'}}/>
 
-          <p className="fade-up-4" style={{fontFamily:"'DM Sans',sans-serif",fontSize:'16px',color:'rgba(250,250,245,.5)',lineHeight:'1.85',maxWidth:'420px',marginBottom:'40px'}}>
+          <p className="fade-up-4" style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'15px':'16px',color:'rgba(250,250,245,.5)',lineHeight:isMobile?'1.75':'1.85',maxWidth:isMobile?'100%':'420px',marginBottom:isMobile?'28px':'40px'}}>
             Every piece in our collection is handcrafted with intention - from the first sketch to the final polish. Wear jewellery that tells your story.
           </p>
 
-          <div className="fade-up-5" style={{display:'flex',gap:'14px',flexWrap:'wrap'}}>
-            <button className="btn-luxury" onClick={()=>navigate('collections')}>SHOP NOW <ArrowRightIcon/></button>
-            <button className="btn-ghost-luxury" onClick={()=>navigate('collections')}>EXPLORE COLLECTIONS</button>
+          <div className="fade-up-5" style={{display:'flex',gap:isMobile?'10px':'14px',flexWrap:'wrap',flexDirection:isMobile?'column':'row'}}>
+            <button className="btn-luxury" onClick={()=>navigate('collections')} style={isMobile?{width:'100%',justifyContent:'center'}:undefined}>SHOP NOW <ArrowRightIcon/></button>
+            <button className="btn-ghost-luxury" onClick={()=>navigate('collections')} style={isMobile?{width:'100%',justifyContent:'center'}:undefined}>EXPLORE COLLECTIONS</button>
           </div>
 
-          <div className="fade-up-6" style={{display:'flex',gap:'32px',marginTop:'56px',paddingTop:'32px',borderTop:'1px solid rgba(168,230,207,.06)'}}>
+          <div className="fade-up-6" style={{display:'flex',gap:isMobile?'18px':'32px',marginTop:isMobile?'32px':'56px',paddingTop:isMobile?'20px':'32px',borderTop:'1px solid rgba(168,230,207,.06)',flexWrap:'wrap'}}>
             {[{n:'400+',l:'Unique Designs'},{n:'12K+',l:'Happy Customers'},{n:'5*',l:'Average Rating'}].map(({n,l})=>(
-              <div key={l}>
-                <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'28px',color:'var(--gold)',lineHeight:'1'}}>{n}</p>
+              <div key={l} style={isMobile?{minWidth:'92px'}:undefined}>
+                <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'24px':'28px',color:'var(--gold)',lineHeight:'1'}}>{n}</p>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',letterSpacing:'.1em',marginTop:'4px'}}>{l}</p>
               </div>
             ))}
@@ -1226,13 +1229,13 @@ function HeroSection({ navigate }) {
         </div>
 
         {/* Editorial image frame */}
-        <div style={{display:'flex',justifyContent:'center',alignItems:'center',position:'relative',minHeight:w<900?'auto':'720px'}}>
-          <div style={{position:'absolute',width:w<900?'88vw':'520px',height:w<900?'88vw':'640px',maxWidth:'560px',maxHeight:'700px',background:'radial-gradient(circle,rgba(168,230,207,.12) 0%,rgba(201,168,76,.08) 35%,transparent 72%)',filter:'blur(8px)',pointerEvents:'none'}}/>
-          <div className="fade-up-3" style={{position:'relative',zIndex:2,width:'min(88vw, 520px)'}}>
-            <div style={{position:'absolute',inset:'-18px',border:'1px solid rgba(201,168,76,.18)',borderRadius:'28px',pointerEvents:'none'}}/>
-            <div style={{position:'absolute',inset:'-34px 28px auto auto',width:'120px',height:'120px',border:'1px solid rgba(168,230,207,.16)',borderRadius:'50%',pointerEvents:'none'}}/>
-            <div style={{position:'absolute',left:'-24px',bottom:'82px',width:'90px',height:'90px',background:'linear-gradient(135deg,rgba(201,168,76,.14),rgba(168,230,207,.06))',border:'1px solid rgba(201,168,76,.12)',borderRadius:'20px',backdropFilter:'blur(8px)',pointerEvents:'none'}}/>
-            <div style={{position:'relative',padding:'18px',borderRadius:'28px',background:'linear-gradient(145deg,rgba(8,10,8,.9),rgba(18,26,15,.82))',border:'1px solid rgba(201,168,76,.24)',boxShadow:'0 28px 90px rgba(0,0,0,.55), 0 0 0 1px rgba(168,230,207,.08)'}}>
+        <div style={{display:'flex',justifyContent:'center',alignItems:'center',position:'relative',minHeight:isTablet?'auto':'720px',paddingTop:isMobile?'8px':'0'}}>
+          <div style={{position:'absolute',width:isTablet?'82vw':'520px',height:isTablet?(isMobile?'94vw':'88vw'):'640px',maxWidth:isMobile?'360px':'560px',maxHeight:isMobile?'440px':'700px',background:'radial-gradient(circle,rgba(168,230,207,.12) 0%,rgba(201,168,76,.08) 35%,transparent 72%)',filter:'blur(8px)',pointerEvents:'none'}}/>
+          <div className="fade-up-3" style={{position:'relative',zIndex:2,width:isMobile?'min(82vw, 340px)':'min(88vw, 520px)'}}>
+            <div style={{position:'absolute',inset:isMobile?'-10px':'-18px',border:'1px solid rgba(201,168,76,.18)',borderRadius:isMobile?'22px':'28px',pointerEvents:'none'}}/>
+            {!isMobile && <div style={{position:'absolute',inset:'-34px 28px auto auto',width:'120px',height:'120px',border:'1px solid rgba(168,230,207,.16)',borderRadius:'50%',pointerEvents:'none'}}/>}
+            {!isMobile && <div style={{position:'absolute',left:'-24px',bottom:'82px',width:'90px',height:'90px',background:'linear-gradient(135deg,rgba(201,168,76,.14),rgba(168,230,207,.06))',border:'1px solid rgba(201,168,76,.12)',borderRadius:'20px',backdropFilter:'blur(8px)',pointerEvents:'none'}}/>}
+            <div style={{position:'relative',padding:isMobile?'12px':'18px',borderRadius:isMobile?'22px':'28px',background:'linear-gradient(145deg,rgba(8,10,8,.9),rgba(18,26,15,.82))',border:'1px solid rgba(201,168,76,.24)',boxShadow:'0 28px 90px rgba(0,0,0,.55), 0 0 0 1px rgba(168,230,207,.08)'}}>
               <div style={{position:'relative',borderRadius:'20px',overflow:'hidden',background:'var(--ink2)',aspectRatio:'4/5'}}>
                 <img
                   src="https://res.cloudinary.com/dxw1yg7if/image/upload/v1774376772/Model_p0p9uk.jpg"
@@ -1246,12 +1249,12 @@ function HeroSection({ navigate }) {
                   style={{position:'relative',zIndex:1,width:'100%',height:'100%',objectFit:'cover',objectPosition:'39% 10%',display:'block'}}
                 />
                 <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(8,10,8,.05) 0%,rgba(8,10,8,0) 30%,rgba(8,10,8,.28) 100%)'}}/>
-                <div style={{position:'absolute',bottom:'18px',left:'18px',right:'18px',display:'flex',justifyContent:'space-between',alignItems:'flex-end',gap:'16px'}}>
+                <div style={{position:'absolute',bottom:isMobile?'14px':'18px',left:isMobile?'14px':'18px',right:isMobile?'14px':'18px',display:'flex',justifyContent:'space-between',alignItems:'flex-end',gap:isMobile?'10px':'16px'}}>
                   <div style={{maxWidth:'220px'}}>
-                    <p style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',letterSpacing:'.18em',color:'var(--mint)',marginBottom:'7px'}}>URBAN JEWELLS</p>
-                    <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(24px,3.2vw,34px)',lineHeight:'1.02',color:'var(--cream)'}}>Modern heirlooms for the bold.</p>
+                    <p style={{fontFamily:"'DM Mono',monospace",fontSize:isMobile?'8px':'9px',letterSpacing:isMobile?'.14em':'.18em',color:'var(--mint)',marginBottom:'7px'}}>URBAN JEWELLS</p>
+                    <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'22px':'clamp(24px,3.2vw,34px)',lineHeight:'1.02',color:'var(--cream)'}}>Modern heirlooms for the bold.</p>
                   </div>
-                  <div style={{padding:'10px 12px',border:'1px solid rgba(201,168,76,.2)',background:'rgba(8,10,8,.46)',backdropFilter:'blur(12px)',borderRadius:'16px',fontFamily:"'DM Mono',monospace",fontSize:'9px',letterSpacing:'.14em',color:'rgba(250,250,245,.62)',textAlign:'right'}}>
+                  <div style={{padding:isMobile?'8px 10px':'10px 12px',border:'1px solid rgba(201,168,76,.2)',background:'rgba(8,10,8,.46)',backdropFilter:'blur(12px)',borderRadius:isMobile?'12px':'16px',fontFamily:"'DM Mono',monospace",fontSize:isMobile?'8px':'9px',letterSpacing:'.14em',color:'rgba(250,250,245,.62)',textAlign:'right'}}>
                     <div>STERLING</div>
                     <div>GOLD</div>
                     <div>CRYSTAL</div>
@@ -1260,28 +1263,29 @@ function HeroSection({ navigate }) {
               </div>
             </div>
           </div>
-          <div style={{position:'absolute',top:'14%',right:'0',fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'rgba(168,230,207,.32)',letterSpacing:'.18em',writingMode:'vertical-lr',pointerEvents:'none'}}>CURATED IN INDIA</div>
+          {!isMobile && <div style={{position:'absolute',top:'14%',right:'0',fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'rgba(168,230,207,.32)',letterSpacing:'.18em',writingMode:'vertical-lr',pointerEvents:'none'}}>CURATED IN INDIA</div>}
         </div>
       </div>
 
       {/* Scroll hint */}
-      <div className="fade-up-6" style={{position:'absolute',bottom:'32px',left:'50%',transform:'translateX(-50%)',display:'flex',flexDirection:'column',alignItems:'center',gap:'8px',zIndex:2}}>
+      {!isMobile && <div className="fade-up-6" style={{position:'absolute',bottom:'32px',left:'50%',transform:'translateX(-50%)',display:'flex',flexDirection:'column',alignItems:'center',gap:'8px',zIndex:2}}>
         <div style={{width:'1px',height:'48px',background:'linear-gradient(to bottom,transparent,var(--mint))',animation:'pulseGlow 2s ease-in-out infinite'}}/>
         <span style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'rgba(168,230,207,.35)',letterSpacing:'.22em'}}>SCROLL</span>
-      </div>
+      </div>}
     </section>
   );
 }
 
 function WelcomeBanner() {
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   return (
-    <section style={{padding:'96px 24px',background:'linear-gradient(to bottom,var(--ink),var(--ink2))',textAlign:'center',position:'relative',overflow:'hidden'}}>
+    <section style={{padding:isMobile?'68px 20px':'96px 24px',background:'linear-gradient(to bottom,var(--ink),var(--ink2))',textAlign:'center',position:'relative',overflow:'hidden'}}>
       <div style={{position:'absolute',inset:0,backgroundImage:'repeating-linear-gradient(0deg,transparent,transparent 79px,rgba(168,230,207,.02) 79px,rgba(168,230,207,.02) 80px)',pointerEvents:'none'}}/>
       <div style={{maxWidth:'640px',margin:'0 auto',position:'relative',zIndex:1}}>
         <p className="label-tag fade-up" style={{marginBottom:'20px',letterSpacing:'.3em'}}>WELCOME</p>
-        <h2 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(36px,5vw,58px)',color:'var(--cream)',marginBottom:'24px',lineHeight:'1.1'}}>Urban Jewells</h2>
+        <h2 className="fade-up-1" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?'clamp(32px,10vw,44px)':'clamp(36px,5vw,58px)',color:'var(--cream)',marginBottom:isMobile?'18px':'24px',lineHeight:'1.1'}}>Urban Jewells</h2>
         <div style={{width:'60px',height:'1px',background:'linear-gradient(90deg,transparent,var(--mint),transparent)',margin:'0 auto 28px'}}/>
-        <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:'16px',color:'rgba(250,250,245,.45)',lineHeight:'1.9'}}>
+        <p className="fade-up-2" style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'15px':'16px',color:'rgba(250,250,245,.45)',lineHeight:isMobile?'1.8':'1.9'}}>
           We believe jewellery is never just decoration - it's a language. Every ring, necklace, and bracelet we create speaks of intention, of craft, of the woman who wears it.
         </p>
       </div>
@@ -1291,6 +1295,7 @@ function WelcomeBanner() {
 
 function FeaturedProducts({ navigate }) {
   const {products} = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const featured = products.filter(p=>p.isFeatured).slice(0,6);
   return (
     <section style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink2)'}}>
@@ -1302,7 +1307,7 @@ function FeaturedProducts({ navigate }) {
           </div>
           <button className="btn-ghost-luxury" style={{fontSize:'11px',letterSpacing:'.12em',padding:'11px 22px'}} onClick={()=>navigate('collections')}>VIEW ALL -&gt;</button>
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(clamp(170px,42vw,270px),1fr))',gap:'clamp(12px,2vw,20px)'}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(auto-fill,minmax(clamp(170px,42vw,270px),1fr))',gap:isMobile?'12px':'clamp(12px,2vw,20px)'}}>
           {featured.map((p,i)=>(
             <div key={p.id} className="fade-up" style={{animationDelay:`${i*.07}s`}}>
               <ProductCard product={p} navigate={navigate}/>
@@ -1316,6 +1321,7 @@ function FeaturedProducts({ navigate }) {
 
 function CollectionsBand({ navigate }) {
   const {collections} = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   return (
     <section style={{padding:'clamp(52px,7vw,80px) 0',overflow:'hidden',background:'var(--ink)',position:'relative'}}>
       {/* Section header */}
@@ -1330,9 +1336,9 @@ function CollectionsBand({ navigate }) {
       </div>
 
       {/* Horizontal scroll */}
-      <div style={{display:'flex',gap:'clamp(8px,1.3vw,12px)',overflowX:'auto',padding:'0 clamp(18px,4vw,48px)',scrollbarWidth:'none',msOverflowStyle:'none'}}>
+      <div style={{display:'flex',gap:isMobile?'10px':'clamp(8px,1.3vw,12px)',overflowX:'auto',padding:isMobile?'0 20px':'0 clamp(18px,4vw,48px)',scrollbarWidth:'none',msOverflowStyle:'none',scrollSnapType:isMobile?'x mandatory':'none'}}>
         {collections.map((col,i)=>(
-          <div key={col.id} className="fade-up" style={{animationDelay:`${i*.08}s`,width:'clamp(150px,22vw,205px)',maxWidth:'205px',borderRadius:'12px',overflow:'hidden',position:'relative',aspectRatio:'2/3',cursor:'none',flex:'0 0 auto',border:'1px solid rgba(168,230,207,.06)',transition:'all .4s cubic-bezier(.16,1,.3,1)'}}
+          <div key={col.id} className="fade-up" style={{animationDelay:`${i*.08}s`,width:isMobile?'min(58vw, 212px)':'clamp(150px,22vw,205px)',maxWidth:isMobile?'212px':'205px',borderRadius:'12px',overflow:'hidden',position:'relative',aspectRatio:'2/3',cursor:'none',flex:'0 0 auto',border:'1px solid rgba(168,230,207,.06)',transition:'all .4s cubic-bezier(.16,1,.3,1)',scrollSnapAlign:isMobile?'start':'none'}}
             onClick={()=>navigate('collection-detail',{slug:col.slug})}
             onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.2)';e.currentTarget.style.transform='translateY(-8px)';e.currentTarget.style.boxShadow='0 24px 60px rgba(0,0,0,.7), var(--glow-mint)';e.currentTarget.querySelector('.col-reveal').style.opacity='1';e.currentTarget.querySelector('.col-reveal').style.transform='translateY(0)';e.currentTarget.querySelector('.col-img').style.transform='scale(1.07)';}}
             onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(168,230,207,.06)';e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='none';e.currentTarget.querySelector('.col-reveal').style.opacity='0';e.currentTarget.querySelector('.col-reveal').style.transform='translateY(12px)';e.currentTarget.querySelector('.col-img').style.transform='scale(1)';}}>
@@ -1342,7 +1348,7 @@ function CollectionsBand({ navigate }) {
               <p style={{fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',letterSpacing:'.2em',marginBottom:'8px'}}>{col.mood}</p>
               <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(18px,3vw,23px)',color:'var(--cream)',marginBottom:'3px',lineHeight:'1.1'}}>{col.name}</h3>
               <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.35)'}}>{col.productCount} pieces</p>
-              <div className="col-reveal" style={{opacity:0,transform:'translateY(12px)',transition:'opacity .3s,transform .3s',marginTop:'10px',display:'flex',alignItems:'center',gap:'6px',color:'var(--mint)'}}>
+              <div className="col-reveal" style={{opacity:isMobile?1:0,transform:isMobile?'translateY(0)':'translateY(12px)',transition:'opacity .3s,transform .3s',marginTop:'10px',display:'flex',alignItems:'center',gap:'6px',color:'var(--mint)'}}>
                 <span style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.14em'}}>EXPLORE</span>
                 <ArrowRightIcon/>
               </div>
@@ -1356,6 +1362,7 @@ function CollectionsBand({ navigate }) {
 
 function ShopByCategory({ navigate }) {
   const {categories} = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   return (
     <section style={{padding:'clamp(52px,7vw,80px) clamp(18px,4vw,48px)',background:'var(--ink2)'}}>
       <div style={{maxWidth:'1200px',margin:'0 auto'}}>
@@ -1363,7 +1370,7 @@ function ShopByCategory({ navigate }) {
           <p className="label-tag" style={{marginBottom:'12px'}}>BROWSE BY TYPE</p>
           <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,52px)',color:'var(--cream)'}}>Shop by Category</h2>
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(clamp(165px,43vw,260px),1fr))',gap:'clamp(10px,2vw,16px)'}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(auto-fill,minmax(clamp(165px,43vw,260px),1fr))',gap:isMobile?'12px':'clamp(10px,2vw,16px)'}}>
           {categories.map((cat,i)=>(
             <div key={cat.id} className="fade-up" style={{animationDelay:`${i*.06}s`,borderRadius:'10px',overflow:'hidden',aspectRatio:'3/2',cursor:'none',position:'relative',border:'1px solid rgba(168,230,207,.06)',transition:'all .35s cubic-bezier(.16,1,.3,1)'}}
               onClick={()=>navigate('category',{slug:cat.slug})}
@@ -1373,7 +1380,7 @@ function ShopByCategory({ navigate }) {
               <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,rgba(5,8,5,.75) 0%,rgba(5,8,5,.45) 100%)'}}/>
               <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',justifyContent:'flex-end',padding:'clamp(12px,3vw,20px)'}}>
                 <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'4px'}}>
-                  <span style={{fontSize:'18px'}}>{cat.icon}</span>
+                  {cat.icon && <span style={{fontSize:'18px'}}>{cat.icon}</span>}
                   <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(19px,5vw,24px)',color:'var(--cream)'}}>{cat.name}</h3>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:'4px',color:'var(--mint)',opacity:.6}}>
@@ -1391,6 +1398,7 @@ function ShopByCategory({ navigate }) {
 
 function AllProductsGrid({ navigate }) {
   const {products, categories} = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const [active, setActive] = useState('all');
   const [sort, setSort] = useState('popular');
   const [vis, setVis] = useState(8);
@@ -1411,8 +1419,8 @@ function AllProductsGrid({ navigate }) {
         </div>
 
         {/* Filter bar */}
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'28px',flexWrap:'wrap',gap:'14px',padding:'16px 20px',background:'rgba(255,255,255,.025)',borderRadius:'8px',border:'1px solid rgba(168,230,207,.06)',backdropFilter:'blur(10px)'}}>
-          <div style={{display:'flex',flexWrap:'wrap',gap:'6px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:isMobile?'stretch':'center',marginBottom:'28px',flexWrap:'wrap',gap:'14px',padding:isMobile?'14px':'16px 20px',background:'rgba(255,255,255,.025)',borderRadius:'8px',border:'1px solid rgba(168,230,207,.06)',backdropFilter:'blur(10px)'}}>
+          <div style={{display:'flex',flexWrap:'wrap',gap:'6px',width:isMobile?'100%':'auto'}}>
             {cats.map(c=>(
               <button key={c} onClick={()=>{setActive(c);setVis(8);}}
                 style={{padding:'7px 15px',borderRadius:'3px',border:`1px solid ${active===c?'rgba(168,230,207,.5)':'rgba(168,230,207,.12)'}`,
@@ -1427,7 +1435,7 @@ function AllProductsGrid({ navigate }) {
           <select value={sort} onChange={e=>setSort(e.target.value)}
             style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'8px 12px',
               fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',
-              background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.5)',outline:'none',cursor:'none'}}>
+              background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.5)',outline:'none',cursor:'none',width:isMobile?'100%':'auto'}}>
             <option value="popular">MOST POPULAR</option>
             <option value="price-low">PRICE: LOW -&gt; HIGH</option>
             <option value="price-high">PRICE: HIGH -&gt; LOW</option>
@@ -1438,7 +1446,7 @@ function AllProductsGrid({ navigate }) {
           Showing {Math.min(vis,filtered.length)} of {filtered.length} pieces
         </p>
 
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(clamp(160px,42vw,250px),1fr))',gap:'clamp(12px,2vw,18px)'}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(auto-fill,minmax(clamp(160px,42vw,250px),1fr))',gap:isMobile?'12px':'clamp(12px,2vw,18px)'}}>
           {filtered.slice(0,vis).map((p,i)=>(
             <div key={p.id} className="fade-up" style={{animationDelay:`${(i%4)*.05}s`}}>
               <ProductCard product={p} navigate={navigate}/>
@@ -1459,21 +1467,22 @@ function AllProductsGrid({ navigate }) {
 }
 
 function TestimonialsSection() {
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const doubled = [...TESTIMONIALS,...TESTIMONIALS];
   return (
-    <section style={{padding:'80px 0',background:'linear-gradient(to bottom,var(--ink2),var(--ink))',overflow:'hidden',position:'relative'}}>
+    <section style={{padding:isMobile?'64px 0':'80px 0',background:'linear-gradient(to bottom,var(--ink2),var(--ink))',overflow:'hidden',position:'relative'}}>
       <div style={{position:'absolute',top:'50%',left:'0',right:'0',height:'1px',background:'radial-gradient(ellipse at center,rgba(168,230,207,.12),transparent)',transform:'translateY(-50%)',pointerEvents:'none'}}/>
-      <div style={{textAlign:'center',marginBottom:'56px',padding:'0 48px',position:'relative',zIndex:1}}>
+      <div style={{textAlign:'center',marginBottom:isMobile?'36px':'56px',padding:isMobile?'0 20px':'0 48px',position:'relative',zIndex:1}}>
         <p className="label-tag" style={{marginBottom:'12px'}}>CUSTOMER VOICES</p>
         <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(32px,4vw,52px)',color:'var(--cream)'}}>What They Say</h2>
       </div>
-      <div className="marquee-track" style={{display:'flex',gap:'20px',width:'max-content'}}>
+      <div className="marquee-track" style={{display:'flex',gap:isMobile?'14px':'20px',width:'max-content'}}>
         {doubled.map((t,i)=>(
-          <div key={i} className="glass-card" style={{minWidth:'360px',maxWidth:'360px',padding:'28px',flexShrink:0}}>
+          <div key={i} className="glass-card" style={{minWidth:isMobile?'82vw':'360px',maxWidth:isMobile?'82vw':'360px',padding:isMobile?'20px':'28px',flexShrink:0}}>
             <div style={{display:'flex',gap:'3px',marginBottom:'14px'}}>
               {[1,2,3,4,5].map(s=><StarIcon key={s} filled={s<=t.rating}/>)}
             </div>
-            <p style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:'italic',fontSize:'17px',color:'rgba(250,250,245,.7)',lineHeight:'1.75',marginBottom:'20px'}}>"{t.text}"</p>
+            <p style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:'italic',fontSize:isMobile?'16px':'17px',color:'rgba(250,250,245,.7)',lineHeight:'1.75',marginBottom:'20px'}}>"{t.text}"</p>
             <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
               <div style={{width:'40px',height:'40px',borderRadius:'50%',background:'linear-gradient(135deg,var(--sg),var(--dg))',border:'1px solid rgba(168,230,207,.2)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                 <span style={{fontFamily:"'DM Mono',monospace",fontSize:'13px',color:'var(--mint)',fontWeight:'500'}}>{t.name.split(' ').map(n=>n[0]).join('')}</span>
@@ -1482,7 +1491,7 @@ function TestimonialsSection() {
                 <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',fontWeight:'500',color:'rgba(250,250,245,.8)'}}>{t.name}</p>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)'}}>{t.location}</p>
               </div>
-              <span style={{marginLeft:'auto',fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',background:'rgba(168,230,207,.08)',padding:'3px 8px',borderRadius:'2px',border:'1px solid rgba(168,230,207,.15)',letterSpacing:'.1em'}}>OK VERIFIED</span>
+              {!isMobile && <span style={{marginLeft:'auto',fontFamily:"'DM Mono',monospace",fontSize:'9px',color:'var(--mint)',background:'rgba(168,230,207,.08)',padding:'3px 8px',borderRadius:'2px',border:'1px solid rgba(168,230,207,.15)',letterSpacing:'.1em'}}>OK VERIFIED</span>}
             </div>
           </div>
         ))}
@@ -1492,8 +1501,9 @@ function TestimonialsSection() {
 }
 
 function ContactTeaser({ navigate }) {
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   return (
-    <section style={{padding:'96px 48px',background:'var(--ink)',position:'relative',overflow:'hidden'}}>
+    <section style={{padding:isMobile?'68px 20px':'96px 48px',background:'var(--ink)',position:'relative',overflow:'hidden'}}>
       <div style={{position:'absolute',inset:0,background:'radial-gradient(ellipse at center,rgba(30,58,15,.4) 0%,transparent 65%)',pointerEvents:'none'}}/>
       <div style={{maxWidth:'700px',margin:'0 auto',textAlign:'center',position:'relative',zIndex:1}}>
         <p className="label-tag" style={{marginBottom:'16px',letterSpacing:'.28em'}}>REACH OUT</p>
@@ -1501,11 +1511,11 @@ function ContactTeaser({ navigate }) {
           Get in<br/><em style={{color:'var(--mint)'}}>Touch</em>
         </h2>
         <div className="shimmer-line" style={{width:'60px',margin:'0 auto 28px'}}/>
-        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'16px',color:'rgba(250,250,245,.45)',lineHeight:'1.9',marginBottom:'40px'}}>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:isMobile?'15px':'16px',color:'rgba(250,250,245,.45)',lineHeight:isMobile?'1.8':'1.9',marginBottom:isMobile?'30px':'40px'}}>
           Have a question about a piece, want a custom design, or just want to say hello? Every message is answered personally.
         </p>
-        <button className="btn-gold" onClick={()=>navigate('contact')} style={{padding:'17px 44px',fontSize:'13px',letterSpacing:'.1em'}}>CONTACT US</button>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:'16px',marginTop:'56px'}}>
+        <button className="btn-gold" onClick={()=>navigate('contact')} style={{padding:'17px 44px',fontSize:'13px',letterSpacing:'.1em',width:isMobile?'100%':'auto',justifyContent:'center'}}>CONTACT US</button>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fit,minmax(170px,1fr))',gap:'16px',marginTop:isMobile?'30px':'56px'}}>
           {[
             {
               l:'WhatsApp',
