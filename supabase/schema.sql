@@ -111,6 +111,13 @@ to authenticated
 using (true)
 with check (true);
 
+drop policy if exists "admins can delete cancelled orders" on public.orders;
+create policy "admins can delete cancelled orders"
+on public.orders
+for delete
+to authenticated
+using (status = 'cancelled');
+
 drop policy if exists "admins can read order items" on public.order_items;
 create policy "admins can read order items"
 on public.order_items

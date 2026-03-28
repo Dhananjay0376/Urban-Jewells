@@ -215,6 +215,24 @@ export async function updateOrderStatus(orderId, status) {
   if (error) throw error;
 }
 
+export async function deleteCancelledOrder(orderId) {
+  const client = ensureClient();
+  const { data: order, error: orderLookupError } = await client
+    .from('orders')
+    .select('id, status')
+    .eq('id', orderId)
+    .single();
+  if (orderLookupError) throw orderLookupError;
+  if (order.status !== 'cancelled') throw new Error('Only cancelled orders can be deleted.');
+
+  const { error } = await client
+    .from('orders')
+    .delete()
+    .eq('id', orderId)
+    .eq('status', 'cancelled');
+  if (error) throw error;
+}
+
 export async function upsertInventoryRecord(record) {
   const client = ensureClient();
   const payload = {

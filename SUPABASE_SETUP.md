@@ -79,3 +79,4 @@ The admin portal lets you save stock quantities manually.
 - Product content still comes from Sanity.
 - Operational data now comes from Supabase.
 - The storefront does not yet auto-sync stock counts back into public product availability; this first version focuses on order capture and admin operations.
+- Cancelled orders are hidden by default in the admin portal and can be permanently deleted there if you no longer want to keep them.

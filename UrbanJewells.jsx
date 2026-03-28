@@ -2,7 +2,7 @@
 import * as THREE from "three";
 import { isSanityConfigured, loadCatalogFromSanity } from "./src/lib/sanityCatalog";
 import { getSupabaseSession, isSupabaseConfigured, onSupabaseAuthChange, signInAdminWithPassword, signOutAdminSession } from "./src/lib/supabaseClient";
-import { ORDER_STATUSES, buildDashboardMetrics, buildWhatsAppOrderMessage, createOrderRequest, fetchAdminSnapshot, upsertInventoryRecord, updateOrderStatus } from "./src/lib/commerceAdmin";
+import { ORDER_STATUSES, buildDashboardMetrics, buildWhatsAppOrderMessage, createOrderRequest, deleteCancelledOrder, fetchAdminSnapshot, upsertInventoryRecord, updateOrderStatus } from "./src/lib/commerceAdmin";
 
 // =================================================================
 // GLOBAL STYLES - Dark Luxury Editorial
@@ -2878,6 +2878,7 @@ function AdminPortalPage({ navigate }) {
   const [loadingData, setLoadingData] = useState(false);
   const [savingOrderId, setSavingOrderId] = useState(null);
   const [inventoryDrafts, setInventoryDrafts] = useState({});
+  const [orderFilter, setOrderFilter] = useState('active');
   const supabaseReady = isSupabaseConfigured();
 
   useEffect(() => {
@@ -2927,6 +2928,11 @@ function AdminPortalPage({ navigate }) {
 
   const metrics = useMemo(() => buildDashboardMetrics(snapshot), [snapshot]);
   const customerRows = metrics.summary.customers || [];
+  const visibleOrders = useMemo(() => {
+    if (orderFilter === 'cancelled') return snapshot.orders.filter(order => order.status === 'cancelled');
+    if (orderFilter === 'all') return snapshot.orders;
+    return snapshot.orders.filter(order => order.status !== 'cancelled');
+  }, [orderFilter, snapshot.orders]);
 
   const inventoryRows = useMemo(() => {
     const inventoryMap = new Map(snapshot.inventory.map(item => [`${item.product_id}::${item.variant_id || 'base'}`, item]));
@@ -2996,6 +3002,24 @@ function AdminPortalPage({ navigate }) {
       toast('Order status updated.');
     } catch (error) {
       toast(error?.message || 'Could not update order status.', 'error');
+    } finally {
+      setSavingOrderId(null);
+    }
+  };
+
+  const handleDeleteCancelledOrder = async (orderId) => {
+    const shouldDelete = typeof window === 'undefined' ? true : window.confirm('Delete this cancelled order permanently?');
+    if (!shouldDelete) return;
+    setSavingOrderId(orderId);
+    try {
+      await deleteCancelledOrder(orderId);
+      setSnapshot(prev => ({
+        ...prev,
+        orders: prev.orders.filter(order => order.id !== orderId),
+      }));
+      toast('Cancelled order deleted.');
+    } catch (error) {
+      toast(error?.message || 'Could not delete the order.', 'error');
     } finally {
       setSavingOrderId(null);
     }
@@ -3114,10 +3138,21 @@ function AdminPortalPage({ navigate }) {
           <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px',gap:'12px',flexWrap:'wrap'}}>
               <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)'}}>Recent Orders</h2>
-              <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.32)',letterSpacing:'.12em'}}>AUTO-CAPTURED FROM CHECKOUT</p>
+              <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
+                <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.32)',letterSpacing:'.12em'}}>AUTO-CAPTURED FROM CHECKOUT</p>
+                <select
+                  value={orderFilter}
+                  onChange={e=>setOrderFilter(e.target.value)}
+                  style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'8px 10px',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.72)',outline:'none',cursor:'none'}}
+                >
+                  <option value="active">ACTIVE ONLY</option>
+                  <option value="all">ALL ORDERS</option>
+                  <option value="cancelled">CANCELLED ONLY</option>
+                </select>
+              </div>
             </div>
             <div style={{display:'grid',gap:'12px'}}>
-              {snapshot.orders.slice(0, 12).map(order => (
+              {visibleOrders.slice(0, 12).map(order => (
                 <div key={order.id} style={{padding:'14px',border:'1px solid rgba(168,230,207,.08)',borderRadius:'10px',background:'rgba(255,255,255,.02)'}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'12px',flexWrap:'wrap',marginBottom:'10px'}}>
                     <div>
@@ -3134,18 +3169,30 @@ function AdminPortalPage({ navigate }) {
                     <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'12px',color:'rgba(250,250,245,.42)'}}>
                       {order.city}, {order.state} • {order.pincode}
                     </p>
-                    <select
-                      value={order.status}
-                      onChange={e=>handleOrderStatusChange(order.id, e.target.value)}
-                      disabled={savingOrderId === order.id}
-                      style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'8px 10px',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.72)',outline:'none',cursor:'none'}}
-                    >
-                      {ORDER_STATUSES.map(status => <option key={status} value={status}>{status.toUpperCase()}</option>)}
-                    </select>
+                    <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
+                      <select
+                        value={order.status}
+                        onChange={e=>handleOrderStatusChange(order.id, e.target.value)}
+                        disabled={savingOrderId === order.id}
+                        style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'8px 10px',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.72)',outline:'none',cursor:'none'}}
+                      >
+                        {ORDER_STATUSES.map(status => <option key={status} value={status}>{status.toUpperCase()}</option>)}
+                      </select>
+                      {order.status === 'cancelled' && (
+                        <button
+                          className="btn-ghost-luxury"
+                          onClick={()=>handleDeleteCancelledOrder(order.id)}
+                          disabled={savingOrderId === order.id}
+                          style={{padding:'8px 12px',fontSize:'10px',letterSpacing:'.1em',color:'#FCA5A5',borderColor:'rgba(248,113,113,.28)'}}
+                        >
+                          {savingOrderId === order.id ? 'DELETING...' : 'DELETE'}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
-              {!snapshot.orders.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>No orders captured yet.</p>}
+              {!visibleOrders.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>No orders in this view yet.</p>}
             </div>
           </div>
 
