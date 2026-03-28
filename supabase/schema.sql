@@ -13,6 +13,7 @@ create table if not exists public.orders (
   state text not null,
   pincode text not null,
   notes text,
+  admin_notes text,
   subtotal numeric not null default 0,
   shipping numeric not null default 0,
   total numeric not null default 0,
@@ -24,6 +25,7 @@ create table if not exists public.orders (
 );
 
 alter table public.orders add column if not exists inventory_adjusted boolean not null default false;
+alter table public.orders add column if not exists admin_notes text;
 
 create table if not exists public.order_items (
   id uuid primary key default gen_random_uuid(),

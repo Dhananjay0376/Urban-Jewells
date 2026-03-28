@@ -2,7 +2,7 @@
 import * as THREE from "three";
 import { isSanityConfigured, loadCatalogFromSanity } from "./src/lib/sanityCatalog";
 import { getSupabaseSession, isSupabaseConfigured, onSupabaseAuthChange, signInAdminWithPassword, signOutAdminSession } from "./src/lib/supabaseClient";
-import { ORDER_STATUSES, buildDashboardMetrics, buildWhatsAppOrderMessage, createOrderRequest, deleteCancelledOrder, fetchAdminSnapshot, upsertInventoryRecord, updateOrderStatus } from "./src/lib/commerceAdmin";
+import { ORDER_STATUSES, buildDashboardMetrics, buildWhatsAppOrderMessage, createOrderRequest, deleteCancelledOrder, fetchAdminSnapshot, updateOrderAdminNotes, upsertInventoryRecord, updateOrderStatus } from "./src/lib/commerceAdmin";
 
 // =================================================================
 // GLOBAL STYLES - Dark Luxury Editorial
@@ -2883,6 +2883,8 @@ function AdminPortalPage({ navigate }) {
   const [dateFilter, setDateFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [adminNoteDraft, setAdminNoteDraft] = useState('');
   const supabaseReady = isSupabaseConfigured();
 
   useEffect(() => {
@@ -2943,6 +2945,13 @@ function AdminPortalPage({ navigate }) {
     return map;
   }, new Map()) || new Map(), [snapshot.orderStatusHistory]);
   const selectedOrder = useMemo(() => snapshot.orders.find(order => order.id === selectedOrderId) || null, [selectedOrderId, snapshot.orders]);
+  const customerOrdersByKey = useMemo(() => snapshot.orders.reduce((map, order) => {
+    const key = order.phone || order.email || order.id;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(order);
+    return map;
+  }, new Map()), [snapshot.orders]);
+  const selectedCustomer = useMemo(() => customerRows.find(customer => customer.id === selectedCustomerId) || null, [customerRows, selectedCustomerId]);
   const visibleOrders = useMemo(() => {
     let orders = snapshot.orders;
     if (orderFilter === 'cancelled') orders = orders.filter(order => order.status === 'cancelled');
@@ -2971,6 +2980,18 @@ function AdminPortalPage({ navigate }) {
       setSelectedOrderId(visibleOrders[0]?.id || null);
     }
   }, [selectedOrderId, visibleOrders]);
+  useEffect(() => {
+    setAdminNoteDraft(selectedOrder?.admin_notes || '');
+  }, [selectedOrder]);
+  useEffect(() => {
+    if (!selectedCustomerId && customerRows.length) {
+      setSelectedCustomerId(customerRows[0].id);
+      return;
+    }
+    if (selectedCustomerId && !customerRows.some(customer => customer.id === selectedCustomerId)) {
+      setSelectedCustomerId(customerRows[0]?.id || null);
+    }
+  }, [customerRows, selectedCustomerId]);
 
   const inventoryRows = useMemo(() => {
     const inventoryMap = new Map(snapshot.inventory.map(item => [`${item.product_id}::${item.variant_id || 'base'}`, item]));
@@ -3033,20 +3054,7 @@ function AdminPortalPage({ navigate }) {
     setSavingOrderId(orderId);
     try {
       await updateOrderStatus(orderId, status);
-      setSnapshot(prev => ({
-        ...prev,
-        orders: prev.orders.map(order => order.id === orderId ? { ...order, status } : order),
-        orderStatusHistory: [
-          {
-            id: `temp-${Date.now()}`,
-            order_id: orderId,
-            previous_status: prev.orders.find(order => order.id === orderId)?.status || null,
-            next_status: status,
-            changed_at: new Date().toISOString(),
-          },
-          ...(prev.orderStatusHistory || []),
-        ],
-      }));
+      await loadSnapshot();
       toast('Order status updated.');
     } catch (error) {
       toast(error?.message || 'Could not update order status.', 'error');
@@ -3068,6 +3076,23 @@ function AdminPortalPage({ navigate }) {
       toast('Cancelled order deleted.');
     } catch (error) {
       toast(error?.message || 'Could not delete the order.', 'error');
+    } finally {
+      setSavingOrderId(null);
+    }
+  };
+
+  const handleAdminNotesSave = async () => {
+    if (!selectedOrder) return;
+    setSavingOrderId(selectedOrder.id);
+    try {
+      await updateOrderAdminNotes(selectedOrder.id, adminNoteDraft);
+      setSnapshot(prev => ({
+        ...prev,
+        orders: prev.orders.map(order => order.id === selectedOrder.id ? { ...order, admin_notes: adminNoteDraft.trim() || null } : order),
+      }));
+      toast('Admin notes saved.');
+    } catch (error) {
+      toast(error?.message || 'Could not save admin notes.', 'error');
     } finally {
       setSavingOrderId(null);
     }
@@ -3315,6 +3340,30 @@ function AdminPortalPage({ navigate }) {
                       {!(orderHistoryByOrderId.get(selectedOrder.id) || []).length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.45)'}}>No status history yet.</p>}
                     </div>
                   </div>
+                  <div>
+                    <p className="label-tag" style={{marginBottom:'8px',fontSize:'9px'}}>Admin Notes</p>
+                    <textarea
+                      className="dark-field"
+                      value={adminNoteDraft}
+                      onChange={e=>setAdminNoteDraft(e.target.value)}
+                      placeholder="Internal notes for payment, dispatch, customer requests..."
+                      rows={4}
+                      style={{resize:'vertical',minHeight:'110px'}}
+                    />
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px',marginTop:'10px',flexWrap:'wrap'}}>
+                      <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'12px',color:'rgba(250,250,245,.42)'}}>
+                        Internal only. Customers do not see these notes.
+                      </p>
+                      <button
+                        className="btn-ghost-luxury"
+                        onClick={handleAdminNotesSave}
+                        disabled={savingOrderId === selectedOrder.id}
+                        style={{padding:'10px 14px',fontSize:'10px'}}
+                      >
+                        {savingOrderId === selectedOrder.id ? 'SAVING...' : 'SAVE NOTES'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ) : <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.45)'}}>Select an order to inspect full details.</p>}
             </div>
@@ -3338,18 +3387,63 @@ function AdminPortalPage({ navigate }) {
 
             <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
               <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)',marginBottom:'12px'}}>Customers</h2>
-              <div style={{display:'grid',gap:'12px'}}>
-                {customerRows.slice(0, 8).map(customer => (
-                  <div key={customer.id} style={{paddingBottom:'10px',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
-                    <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.82)'}}>{customer.name}</p>
-                    <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.28)',marginTop:'4px'}}>{customer.phone || customer.email || 'No contact'}</p>
-                    <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',marginTop:'6px'}}>
-                      {customer.order_count} orders • {formatPrice(customer.total_spend || 0)}
-                    </p>
+              {customerRows.length ? (
+                <div style={{display:'grid',gap:'14px'}}>
+                  <div style={{display:'grid',gap:'10px',maxHeight:isMobile?'none':'240px',overflowY:isMobile?'visible':'auto',paddingRight:isMobile?0:'4px'}}>
+                    {customerRows.slice(0, 10).map(customer => (
+                      <button
+                        key={customer.id}
+                        onClick={()=>setSelectedCustomerId(customer.id)}
+                        style={{
+                          textAlign:'left',
+                          padding:'12px',
+                          border:`1px solid ${selectedCustomerId===customer.id?'rgba(201,168,76,.28)':'rgba(168,230,207,.08)'}`,
+                          borderRadius:'10px',
+                          background:selectedCustomerId===customer.id?'rgba(201,168,76,.05)':'rgba(255,255,255,.02)',
+                          cursor:'none'
+                        }}
+                      >
+                        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.82)'}}>{customer.name}</p>
+                        <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.28)',marginTop:'4px'}}>{customer.phone || customer.email || 'No contact'}</p>
+                        <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',marginTop:'6px'}}>
+                          {customer.order_count} orders • {formatPrice(customer.total_spend || 0)}
+                        </p>
+                      </button>
+                    ))}
                   </div>
-                ))}
-                {!customerRows.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>Customer profiles will appear once orders are captured.</p>}
-              </div>
+                  {selectedCustomer && (
+                    <div style={{paddingTop:'6px',borderTop:'1px solid rgba(168,230,207,.06)',display:'grid',gap:'10px'}}>
+                      <div>
+                        <p className="label-tag" style={{marginBottom:'8px',fontSize:'9px'}}>Customer Detail</p>
+                        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'15px',color:'rgba(250,250,245,.86)'}}>{selectedCustomer.name}</p>
+                        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.62)',marginTop:'4px'}}>{selectedCustomer.phone || 'No phone'}</p>
+                        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.52)',marginTop:'2px'}}>{selectedCustomer.email || 'No email'}</p>
+                        <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.28)',marginTop:'8px'}}>
+                          Last order: {selectedCustomer.last_order_at ? new Date(selectedCustomer.last_order_at).toLocaleString('en-IN') : 'No orders yet'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="label-tag" style={{marginBottom:'8px',fontSize:'9px'}}>Recent Orders</p>
+                        <div style={{display:'grid',gap:'10px'}}>
+                          {(customerOrdersByKey.get(selectedCustomer.id) || []).slice(0, 5).map(order => (
+                            <button
+                              key={order.id}
+                              onClick={()=>setSelectedOrderId(order.id)}
+                              style={{textAlign:'left',padding:'10px 0',borderBottom:'1px solid rgba(168,230,207,.06)',background:'transparent',cursor:'none'}}
+                            >
+                              <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)'}}>{order.order_ref}</p>
+                              <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.72)',marginTop:'4px'}}>
+                                {formatPrice(order.total)} • {order.status}
+                              </p>
+                            </button>
+                          ))}
+                          {!(customerOrdersByKey.get(selectedCustomer.id) || []).length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.45)'}}>No orders tied to this customer yet.</p>}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>Customer profiles will appear once orders are captured.</p>}
             </div>
           </div>
         </div>

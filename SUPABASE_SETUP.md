@@ -37,7 +37,11 @@ That creates:
 - `customers`
 - `inventory`
 
-If you already ran an older version of the schema, run the updated file again so `orders.inventory_adjusted` is added for automatic stock reduction on paid orders.
+If you already ran an older version of the schema, run the updated file again so new fields/tables are added, including:
+
+- `orders.inventory_adjusted`
+- `orders.admin_notes`
+- `order_status_history`
 
 ## 3. Admin Auth
 
@@ -66,6 +70,7 @@ Inventory is reduced automatically when an admin changes an order status to `pai
 - it reduces only once per order
 - it does not reduce stock at initial order creation
 - it uses `variant_id` when present, otherwise `base`
+- if a stock-adjusted order is later changed to `cancelled`, the inventory is restored
 
 ## 6. Inventory
 

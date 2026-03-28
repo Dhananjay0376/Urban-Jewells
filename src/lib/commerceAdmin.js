@@ -143,6 +143,49 @@ async function applyInventoryAdjustmentForOrder(client, orderId) {
   }
 }
 
+async function restoreInventoryAdjustmentForOrder(client, orderId) {
+  const { data: orderItems, error: itemsError } = await client
+    .from('order_items')
+    .select('product_id, variant_id, quantity')
+    .eq('order_id', orderId);
+  if (itemsError) throw itemsError;
+
+  for (const item of orderItems || []) {
+    const variantId = item.variant_id || 'base';
+    const quantity = Number(item.quantity || 0);
+    const { data: inventoryRow, error: inventoryError } = await client
+      .from('inventory')
+      .select('id, stock_quantity, low_stock_threshold')
+      .eq('product_id', item.product_id)
+      .eq('variant_id', variantId)
+      .maybeSingle();
+    if (inventoryError) throw inventoryError;
+
+    const nextStock = Number(inventoryRow?.stock_quantity || 0) + quantity;
+    if (inventoryRow?.id) {
+      const { error: updateInventoryError } = await client
+        .from('inventory')
+        .update({
+          stock_quantity: nextStock,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', inventoryRow.id);
+      if (updateInventoryError) throw updateInventoryError;
+    } else {
+      const { error: insertInventoryError } = await client
+        .from('inventory')
+        .insert({
+          product_id: item.product_id,
+          variant_id: variantId,
+          stock_quantity: quantity,
+          low_stock_threshold: 2,
+          updated_at: new Date().toISOString(),
+        });
+      if (insertInventoryError) throw insertInventoryError;
+    }
+  }
+}
+
 export function buildDashboardMetrics({ orders = [], inventory = [], customers = [] }) {
   const now = new Date();
   const activeOrders = orders.filter(order => order.status !== 'cancelled');
@@ -216,6 +259,9 @@ export async function updateOrderStatus(orderId, status) {
   if (status === 'paid' && !order.inventory_adjusted) {
     await applyInventoryAdjustmentForOrder(client, orderId);
   }
+  if (status === 'cancelled' && order.inventory_adjusted) {
+    await restoreInventoryAdjustmentForOrder(client, orderId);
+  }
 
   const { error: historyError } = await client
     .from('order_status_history')
@@ -231,7 +277,18 @@ export async function updateOrderStatus(orderId, status) {
     .from('orders')
     .update({
       status,
-      inventory_adjusted: order.inventory_adjusted || status === 'paid',
+      inventory_adjusted: status === 'cancelled' ? false : (order.inventory_adjusted || status === 'paid'),
+    })
+    .eq('id', orderId);
+  if (error) throw error;
+}
+
+export async function updateOrderAdminNotes(orderId, adminNotes) {
+  const client = ensureClient();
+  const { error } = await client
+    .from('orders')
+    .update({
+      admin_notes: adminNotes?.trim() || null,
     })
     .eq('id', orderId);
   if (error) throw error;
