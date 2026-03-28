@@ -15,6 +15,13 @@ const startOfWeek = (date) => {
 };
 const startOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1);
 const startOfYear = (date) => new Date(date.getFullYear(), 0, 1);
+const getCustomerLookupKey = (entry = {}) => {
+  const phone = String(entry.phone || '').trim();
+  if (phone) return `phone:${phone}`;
+  const email = String(entry.email || '').trim().toLowerCase();
+  if (email) return `email:${email}`;
+  return `id:${entry.id || Math.random().toString(36).slice(2)}`;
+};
 
 export const ORDER_STATUSES = ['new', 'pending', 'confirmed', 'paid', 'dispatched', 'delivered', 'cancelled'];
 
@@ -65,6 +72,32 @@ export async function createOrderRequest({ orderRef, customer, cart, subtotal, s
 
   const { error: itemsError } = await client.from('order_items').insert(orderItemsPayload);
   if (itemsError) throw itemsError;
+
+  const customerPayload = {
+    phone,
+    email: customer.email.trim() || null,
+    name: customer.fullName.trim(),
+    created_at: new Date().toISOString(),
+    last_order_at: new Date().toISOString(),
+    order_count: 1,
+    total_spend: total,
+  };
+  const { data: existingCustomer, error: existingCustomerError } = await client
+    .from('customers')
+    .select('id, order_count, total_spend, created_at')
+    .eq('phone', phone)
+    .maybeSingle();
+  if (existingCustomerError) throw existingCustomerError;
+
+  const { error: customerError } = await client
+    .from('customers')
+    .upsert({
+      ...customerPayload,
+      created_at: existingCustomer?.created_at || customerPayload.created_at,
+      order_count: Number(existingCustomer?.order_count || 0) + 1,
+      total_spend: Number(existingCustomer?.total_spend || 0) + total,
+    }, { onConflict: 'phone' });
+  if (customerError) throw customerError;
 
   return orderData;
 }
@@ -201,11 +234,12 @@ export function buildDashboardMetrics({ orders = [], inventory = [], customers =
   const monthOrders = after(activeOrders, monthStart);
   const yearOrders = after(activeOrders, yearStart);
 
-  const derivedCustomers = customers.length ? customers : Array.from(activeOrders.reduce((map, order) => {
-    const key = order.phone || order.email || order.id;
+  const derivedCustomerMap = activeOrders.reduce((map, order) => {
+    const key = getCustomerLookupKey(order);
     if (!map.has(key)) {
       map.set(key, {
         id: key,
+        sourceId: null,
         name: order.customer_name,
         phone: order.phone,
         email: order.email,
@@ -220,7 +254,37 @@ export function buildDashboardMetrics({ orders = [], inventory = [], customers =
     entry.total_spend += Number(order.total || 0);
     if (new Date(order.created_at) > new Date(entry.last_order_at)) entry.last_order_at = order.created_at;
     return map;
-  }, new Map()).values());
+  }, new Map());
+
+  customers.forEach(customer => {
+    const key = getCustomerLookupKey(customer);
+    const existing = derivedCustomerMap.get(key);
+    if (existing) {
+      derivedCustomerMap.set(key, {
+        ...existing,
+        sourceId: customer.id,
+        name: customer.name || existing.name,
+        phone: customer.phone || existing.phone,
+        email: customer.email || existing.email,
+        created_at: customer.created_at || existing.created_at,
+        last_order_at: customer.last_order_at || existing.last_order_at,
+      });
+      return;
+    }
+    derivedCustomerMap.set(key, {
+      id: key,
+      sourceId: customer.id,
+      name: customer.name,
+      phone: customer.phone,
+      email: customer.email,
+      created_at: customer.created_at,
+      last_order_at: customer.last_order_at,
+      order_count: Number(customer.order_count || 0),
+      total_spend: Number(customer.total_spend || 0),
+    });
+  });
+
+  const derivedCustomers = Array.from(derivedCustomerMap.values()).sort((a, b) => new Date(b.last_order_at || 0) - new Date(a.last_order_at || 0));
   const lowStock = inventory.filter(item => Number(item.stock_quantity || 0) > 0 && Number(item.stock_quantity || 0) <= Number(item.low_stock_threshold || 0));
   const outOfStock = inventory.filter(item => Number(item.stock_quantity || 0) <= 0);
   const repeatCustomers = derivedCustomers.filter(item => Number(item.order_count || 0) > 1);

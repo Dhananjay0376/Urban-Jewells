@@ -2866,6 +2866,14 @@ function AdminMetricCard({ label, value }) {
   );
 }
 
+const getCustomerLookupKey = (entry = {}) => {
+  const phone = String(entry.phone || '').trim();
+  if (phone) return `phone:${phone}`;
+  const email = String(entry.email || '').trim().toLowerCase();
+  if (email) return `email:${email}`;
+  return `id:${entry.id || ''}`;
+};
+
 function AdminPortalPage({ navigate }) {
   const { products, toast } = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 900 : false;
@@ -2952,7 +2960,7 @@ function AdminPortalPage({ navigate }) {
   }, new Map()) || new Map(), [snapshot.orderStatusHistory]);
   const selectedOrder = useMemo(() => snapshot.orders.find(order => order.id === selectedOrderId) || null, [selectedOrderId, snapshot.orders]);
   const customerOrdersByKey = useMemo(() => snapshot.orders.reduce((map, order) => {
-    const key = order.phone || order.email || order.id;
+    const key = getCustomerLookupKey(order);
     if (!map.has(key)) map.set(key, []);
     map.get(key).push(order);
     return map;
