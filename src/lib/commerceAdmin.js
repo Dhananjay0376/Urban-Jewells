@@ -15,11 +15,13 @@ const startOfWeek = (date) => {
 };
 const startOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1);
 const startOfYear = (date) => new Date(date.getFullYear(), 0, 1);
+const normalizeCustomerName = (name) => String(name || '').trim().toLowerCase().replace(/\s+/g, ' ');
 const getCustomerLookupKey = (entry = {}) => {
-  const phone = String(entry.phone || '').trim();
-  if (phone) return `phone:${phone}`;
   const email = String(entry.email || '').trim().toLowerCase();
   if (email) return `email:${email}`;
+  const phone = String(entry.phone || '').trim();
+  const normalizedName = normalizeCustomerName(entry.name || entry.customer_name);
+  if (phone) return `phone:${phone}::${normalizedName || 'unknown'}`;
   return `id:${entry.id || Math.random().toString(36).slice(2)}`;
 };
 

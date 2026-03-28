@@ -2867,10 +2867,11 @@ function AdminMetricCard({ label, value }) {
 }
 
 const getCustomerLookupKey = (entry = {}) => {
-  const phone = String(entry.phone || '').trim();
-  if (phone) return `phone:${phone}`;
   const email = String(entry.email || '').trim().toLowerCase();
   if (email) return `email:${email}`;
+  const phone = String(entry.phone || '').trim();
+  const normalizedName = String(entry.name || entry.customer_name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  if (phone) return `phone:${phone}::${normalizedName || 'unknown'}`;
   return `id:${entry.id || ''}`;
 };
 
