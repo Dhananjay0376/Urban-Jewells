@@ -221,9 +221,10 @@ async function restoreInventoryAdjustmentForOrder(client, orderId) {
   }
 }
 
-export function buildDashboardMetrics({ orders = [], inventory = [], customers = [] }) {
+export function buildDashboardMetrics({ orders = [], inventory = [], customers = [], orderItems = [] }) {
   const now = new Date();
   const activeOrders = orders.filter(order => order.status !== 'cancelled');
+  const cancelledOrders = orders.filter(order => order.status === 'cancelled');
   const sumRevenue = (items) => items.reduce((sum, item) => sum + Number(item.total || 0), 0);
   const todayStart = startOfDay(now);
   const weekStart = startOfWeek(now);
@@ -290,6 +291,49 @@ export function buildDashboardMetrics({ orders = [], inventory = [], customers =
   const lowStock = inventory.filter(item => Number(item.stock_quantity || 0) > 0 && Number(item.stock_quantity || 0) <= Number(item.low_stock_threshold || 0));
   const outOfStock = inventory.filter(item => Number(item.stock_quantity || 0) <= 0);
   const repeatCustomers = derivedCustomers.filter(item => Number(item.order_count || 0) > 1);
+  const orderIdsByStatus = new Map(orders.map(order => [order.id, order.status]));
+  const activeOrderItems = orderItems.filter(item => orderIdsByStatus.get(item.order_id) !== 'cancelled');
+  const topProducts = Array.from(activeOrderItems.reduce((map, item) => {
+    const key = item.product_id || item.product_name;
+    if (!map.has(key)) {
+      map.set(key, {
+        id: key,
+        name: item.product_name,
+        units: 0,
+        revenue: 0,
+      });
+    }
+    const entry = map.get(key);
+    entry.units += Number(item.quantity || 0);
+    entry.revenue += Number(item.line_total || 0);
+    return map;
+  }, new Map()).values()).sort((a, b) => b.units - a.units || b.revenue - a.revenue).slice(0, 5);
+  const topVariants = Array.from(activeOrderItems.reduce((map, item) => {
+    const colorLabel = item.variant_color_name || 'Base';
+    const key = `${item.product_id || item.product_name}::${colorLabel}`;
+    if (!map.has(key)) {
+      map.set(key, {
+        id: key,
+        name: item.product_name,
+        variant: colorLabel,
+        units: 0,
+        revenue: 0,
+      });
+    }
+    const entry = map.get(key);
+    entry.units += Number(item.quantity || 0);
+    entry.revenue += Number(item.line_total || 0);
+    return map;
+  }, new Map()).values()).sort((a, b) => b.units - a.units || b.revenue - a.revenue).slice(0, 5);
+  const pendingOrders = orders.filter(order => ['new', 'pending', 'confirmed'].includes(order.status));
+  const ageing = pendingOrders.reduce((acc, order) => {
+    const ageHours = (now.getTime() - new Date(order.created_at).getTime()) / (1000 * 60 * 60);
+    if (ageHours >= 72) acc.over72 += 1;
+    else if (ageHours >= 24) acc.over24 += 1;
+    else acc.fresh += 1;
+    return acc;
+  }, { fresh: 0, over24: 0, over72: 0 });
+  const cancellationRate = orders.length ? Math.round((cancelledOrders.length / orders.length) * 100) : 0;
 
   return {
     cards: [
@@ -309,6 +353,10 @@ export function buildDashboardMetrics({ orders = [], inventory = [], customers =
       outOfStock,
       repeatCustomers,
       customers: derivedCustomers,
+      topProducts,
+      topVariants,
+      cancellationRate,
+      ageing,
     },
   };
 }

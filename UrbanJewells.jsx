@@ -3447,6 +3447,7 @@ function AdminPortalPage({ navigate }) {
                   { label:'Low Stock SKUs', value: metrics.summary.lowStock.length },
                   { label:'Out of Stock SKUs', value: metrics.summary.outOfStock.length },
                   { label:'Repeat Customers', value: metrics.summary.repeatCustomers.length },
+                  { label:'Cancellation Rate', value: `${metrics.summary.cancellationRate}%` },
                 ].map(item => (
                   <div key={item.label} style={{display:'flex',justifyContent:'space-between',padding:'10px 0',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
                     <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.45)'}}>{item.label}</span>
@@ -3531,6 +3532,55 @@ function AdminPortalPage({ navigate }) {
                 </div>
               ) : <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>Customer profiles will appear once orders are captured.</p>}
             </div>
+          </div>
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(3,minmax(0,1fr))',gap:'18px',marginBottom:'18px'}}>
+          <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)',marginBottom:'12px'}}>Top Products</h2>
+            <div style={{display:'grid',gap:'12px'}}>
+              {metrics.summary.topProducts.map(product => (
+                <div key={product.id} style={{paddingBottom:'10px',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
+                  <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.84)'}}>{product.name}</p>
+                  <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',marginTop:'4px'}}>{product.units} units sold</p>
+                  <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'var(--gold)',marginTop:'6px'}}>{formatPrice(product.revenue)}</p>
+                </div>
+              ))}
+              {!metrics.summary.topProducts.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>Top products will appear once orders are captured.</p>}
+            </div>
+          </div>
+
+          <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)',marginBottom:'12px'}}>Top Variants</h2>
+            <div style={{display:'grid',gap:'12px'}}>
+              {metrics.summary.topVariants.map(variant => (
+                <div key={variant.id} style={{paddingBottom:'10px',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
+                  <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.84)'}}>{variant.name}</p>
+                  <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',marginTop:'4px'}}>{variant.variant}</p>
+                  <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',marginTop:'6px'}}>{variant.units} units • {formatPrice(variant.revenue)}</p>
+                </div>
+              ))}
+              {!metrics.summary.topVariants.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>Variant performance will appear once variant orders are captured.</p>}
+            </div>
+          </div>
+
+          <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)',marginBottom:'12px'}}>Pending Ageing</h2>
+            <div style={{display:'grid',gap:'10px'}}>
+              {[
+                { label:'Fresh under 24h', value: metrics.summary.ageing.fresh, color:'var(--mint)' },
+                { label:'Over 24h', value: metrics.summary.ageing.over24, color:'#FBBF24' },
+                { label:'Over 72h', value: metrics.summary.ageing.over72, color:'#F87171' },
+              ].map(item => (
+                <div key={item.label} style={{display:'flex',justifyContent:'space-between',padding:'12px 0',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
+                  <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.5)'}}>{item.label}</span>
+                  <span style={{fontFamily:"'DM Mono',monospace",fontSize:'13px',color:item.color}}>{item.value}</span>
+                </div>
+              ))}
+            </div>
+            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'12px',color:'rgba(250,250,245,.38)',lineHeight:'1.8',marginTop:'14px'}}>
+              Tracks how long `new`, `pending`, and `confirmed` orders have been waiting without a final outcome.
+            </p>
           </div>
         </div>
 
