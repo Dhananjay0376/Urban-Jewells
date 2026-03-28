@@ -80,7 +80,7 @@ export async function fetchAdminSnapshot() {
   ] = await Promise.all([
     client.from('orders').select('*').order('created_at', { ascending: false }).limit(500),
     client.from('inventory').select('*').order('updated_at', { ascending: false }),
-    client.from('customers').select('*').order('last_order_at', { ascending: false }).limit(500),
+    client.from('customers').select('*').order('last_order_at', { ascending: false }).limit(2000),
     client.from('order_items').select('*').limit(2000),
     client.from('order_status_history').select('*').order('changed_at', { ascending: false }).limit(2000),
   ]);

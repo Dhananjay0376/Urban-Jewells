@@ -2884,6 +2884,7 @@ function AdminPortalPage({ navigate }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [customerSearchTerm, setCustomerSearchTerm] = useState('');
   const [adminNoteDraft, setAdminNoteDraft] = useState('');
   const supabaseReady = isSupabaseConfigured();
 
@@ -2934,6 +2935,11 @@ function AdminPortalPage({ navigate }) {
 
   const metrics = useMemo(() => buildDashboardMetrics(snapshot), [snapshot]);
   const customerRows = metrics.summary.customers || [];
+  const visibleCustomers = useMemo(() => {
+    const q = customerSearchTerm.trim().toLowerCase();
+    if (!q) return customerRows;
+    return customerRows.filter(customer => [customer.name, customer.phone, customer.email].some(value => String(value || '').toLowerCase().includes(q)));
+  }, [customerRows, customerSearchTerm]);
   const orderItemsByOrderId = useMemo(() => snapshot.orderItems?.reduce((map, item) => {
     if (!map.has(item.order_id)) map.set(item.order_id, []);
     map.get(item.order_id).push(item);
@@ -2951,7 +2957,7 @@ function AdminPortalPage({ navigate }) {
     map.get(key).push(order);
     return map;
   }, new Map()), [snapshot.orders]);
-  const selectedCustomer = useMemo(() => customerRows.find(customer => customer.id === selectedCustomerId) || null, [customerRows, selectedCustomerId]);
+  const selectedCustomer = useMemo(() => visibleCustomers.find(customer => customer.id === selectedCustomerId) || customerRows.find(customer => customer.id === selectedCustomerId) || null, [customerRows, selectedCustomerId, visibleCustomers]);
   const visibleOrders = useMemo(() => {
     let orders = snapshot.orders;
     if (orderFilter === 'cancelled') orders = orders.filter(order => order.status === 'cancelled');
@@ -2984,14 +2990,14 @@ function AdminPortalPage({ navigate }) {
     setAdminNoteDraft(selectedOrder?.admin_notes || '');
   }, [selectedOrder]);
   useEffect(() => {
-    if (!selectedCustomerId && customerRows.length) {
-      setSelectedCustomerId(customerRows[0].id);
+    if (!selectedCustomerId && visibleCustomers.length) {
+      setSelectedCustomerId(visibleCustomers[0].id);
       return;
     }
-    if (selectedCustomerId && !customerRows.some(customer => customer.id === selectedCustomerId)) {
-      setSelectedCustomerId(customerRows[0]?.id || null);
+    if (selectedCustomerId && !visibleCustomers.some(customer => customer.id === selectedCustomerId)) {
+      setSelectedCustomerId(visibleCustomers[0]?.id || null);
     }
-  }, [customerRows, selectedCustomerId]);
+  }, [selectedCustomerId, visibleCustomers]);
 
   const inventoryRows = useMemo(() => {
     const inventoryMap = new Map(snapshot.inventory.map(item => [`${item.product_id}::${item.variant_id || 'base'}`, item]));
@@ -3386,11 +3392,25 @@ function AdminPortalPage({ navigate }) {
             </div>
 
             <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
-              <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)',marginBottom:'12px'}}>Customers</h2>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'12px',flexWrap:'wrap',marginBottom:'12px'}}>
+                <div>
+                  <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)'}}>Customers</h2>
+                  <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.28)',marginTop:'6px'}}>
+                    {visibleCustomers.length} shown • {customerRows.length} total
+                  </p>
+                </div>
+                <input
+                  className="dark-field"
+                  value={customerSearchTerm}
+                  onChange={e=>setCustomerSearchTerm(e.target.value)}
+                  placeholder="Search name, phone, email"
+                  style={{minWidth:isMobile?'100%':'220px'}}
+                />
+              </div>
               {customerRows.length ? (
                 <div style={{display:'grid',gap:'14px'}}>
-                  <div style={{display:'grid',gap:'10px',maxHeight:isMobile?'none':'240px',overflowY:isMobile?'visible':'auto',paddingRight:isMobile?0:'4px'}}>
-                    {customerRows.slice(0, 10).map(customer => (
+                  <div style={{display:'grid',gap:'10px',maxHeight:isMobile?'none':'420px',overflowY:isMobile?'visible':'auto',paddingRight:isMobile?0:'4px'}}>
+                    {visibleCustomers.map(customer => (
                       <button
                         key={customer.id}
                         onClick={()=>setSelectedCustomerId(customer.id)}
@@ -3442,6 +3462,7 @@ function AdminPortalPage({ navigate }) {
                       </div>
                     </div>
                   )}
+                  {!visibleCustomers.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>No customers match this search yet.</p>}
                 </div>
               ) : <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>Customer profiles will appear once orders are captured.</p>}
             </div>
