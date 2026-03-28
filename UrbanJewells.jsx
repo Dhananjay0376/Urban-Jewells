@@ -2874,11 +2874,15 @@ function AdminPortalPage({ navigate }) {
   const [authForm, setAuthForm] = useState({ email:'', password:'' });
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const [authError, setAuthError] = useState('');
-  const [snapshot, setSnapshot] = useState({ orders:[], inventory:[], customers:[] });
+  const [snapshot, setSnapshot] = useState({ orders:[], inventory:[], customers:[], orderItems:[], orderStatusHistory:[] });
   const [loadingData, setLoadingData] = useState(false);
   const [savingOrderId, setSavingOrderId] = useState(null);
   const [inventoryDrafts, setInventoryDrafts] = useState({});
   const [orderFilter, setOrderFilter] = useState('active');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
   const supabaseReady = isSupabaseConfigured();
 
   useEffect(() => {
@@ -2928,11 +2932,45 @@ function AdminPortalPage({ navigate }) {
 
   const metrics = useMemo(() => buildDashboardMetrics(snapshot), [snapshot]);
   const customerRows = metrics.summary.customers || [];
+  const orderItemsByOrderId = useMemo(() => snapshot.orderItems?.reduce((map, item) => {
+    if (!map.has(item.order_id)) map.set(item.order_id, []);
+    map.get(item.order_id).push(item);
+    return map;
+  }, new Map()) || new Map(), [snapshot.orderItems]);
+  const orderHistoryByOrderId = useMemo(() => snapshot.orderStatusHistory?.reduce((map, item) => {
+    if (!map.has(item.order_id)) map.set(item.order_id, []);
+    map.get(item.order_id).push(item);
+    return map;
+  }, new Map()) || new Map(), [snapshot.orderStatusHistory]);
+  const selectedOrder = useMemo(() => snapshot.orders.find(order => order.id === selectedOrderId) || null, [selectedOrderId, snapshot.orders]);
   const visibleOrders = useMemo(() => {
-    if (orderFilter === 'cancelled') return snapshot.orders.filter(order => order.status === 'cancelled');
-    if (orderFilter === 'all') return snapshot.orders;
-    return snapshot.orders.filter(order => order.status !== 'cancelled');
-  }, [orderFilter, snapshot.orders]);
+    let orders = snapshot.orders;
+    if (orderFilter === 'cancelled') orders = orders.filter(order => order.status === 'cancelled');
+    else if (orderFilter === 'active') orders = orders.filter(order => order.status !== 'cancelled');
+    if (statusFilter !== 'all') orders = orders.filter(order => order.status === statusFilter);
+    if (dateFilter !== 'all') {
+      const now = new Date();
+      const start = new Date(now);
+      if (dateFilter === 'today') start.setHours(0, 0, 0, 0);
+      if (dateFilter === 'week') start.setDate(now.getDate() - 7);
+      if (dateFilter === 'month') start.setMonth(now.getMonth() - 1);
+      orders = orders.filter(order => new Date(order.created_at) >= start);
+    }
+    const q = searchTerm.trim().toLowerCase();
+    if (q) {
+      orders = orders.filter(order => [order.order_ref, order.customer_name, order.phone, order.email, order.city, order.state].some(value => String(value || '').toLowerCase().includes(q)));
+    }
+    return orders;
+  }, [dateFilter, orderFilter, searchTerm, snapshot.orders, statusFilter]);
+  useEffect(() => {
+    if (!selectedOrderId && visibleOrders.length) {
+      setSelectedOrderId(visibleOrders[0].id);
+      return;
+    }
+    if (selectedOrderId && !visibleOrders.some(order => order.id === selectedOrderId)) {
+      setSelectedOrderId(visibleOrders[0]?.id || null);
+    }
+  }, [selectedOrderId, visibleOrders]);
 
   const inventoryRows = useMemo(() => {
     const inventoryMap = new Map(snapshot.inventory.map(item => [`${item.product_id}::${item.variant_id || 'base'}`, item]));
@@ -2998,6 +3036,16 @@ function AdminPortalPage({ navigate }) {
       setSnapshot(prev => ({
         ...prev,
         orders: prev.orders.map(order => order.id === orderId ? { ...order, status } : order),
+        orderStatusHistory: [
+          {
+            id: `temp-${Date.now()}`,
+            order_id: orderId,
+            previous_status: prev.orders.find(order => order.id === orderId)?.status || null,
+            next_status: status,
+            changed_at: new Date().toISOString(),
+          },
+          ...(prev.orderStatusHistory || []),
+        ],
       }));
       toast('Order status updated.');
     } catch (error) {
@@ -3140,6 +3188,13 @@ function AdminPortalPage({ navigate }) {
               <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)'}}>Recent Orders</h2>
               <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.32)',letterSpacing:'.12em'}}>AUTO-CAPTURED FROM CHECKOUT</p>
+                <input
+                  className="dark-field"
+                  value={searchTerm}
+                  onChange={e=>setSearchTerm(e.target.value)}
+                  placeholder="Search order, customer, phone"
+                  style={{minWidth:isMobile?'100%':'220px'}}
+                />
                 <select
                   value={orderFilter}
                   onChange={e=>setOrderFilter(e.target.value)}
@@ -3149,11 +3204,29 @@ function AdminPortalPage({ navigate }) {
                   <option value="all">ALL ORDERS</option>
                   <option value="cancelled">CANCELLED ONLY</option>
                 </select>
+                <select
+                  value={statusFilter}
+                  onChange={e=>setStatusFilter(e.target.value)}
+                  style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'8px 10px',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.72)',outline:'none',cursor:'none'}}
+                >
+                  <option value="all">ANY STATUS</option>
+                  {ORDER_STATUSES.map(status => <option key={status} value={status}>{status.toUpperCase()}</option>)}
+                </select>
+                <select
+                  value={dateFilter}
+                  onChange={e=>setDateFilter(e.target.value)}
+                  style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'8px 10px',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.72)',outline:'none',cursor:'none'}}
+                >
+                  <option value="all">ALL DATES</option>
+                  <option value="today">TODAY</option>
+                  <option value="week">LAST 7 DAYS</option>
+                  <option value="month">LAST 30 DAYS</option>
+                </select>
               </div>
             </div>
             <div style={{display:'grid',gap:'12px'}}>
               {visibleOrders.slice(0, 12).map(order => (
-                <div key={order.id} style={{padding:'14px',border:'1px solid rgba(168,230,207,.08)',borderRadius:'10px',background:'rgba(255,255,255,.02)'}}>
+                <div key={order.id} onClick={()=>setSelectedOrderId(order.id)} style={{padding:'14px',border:`1px solid ${selectedOrderId===order.id?'rgba(201,168,76,.28)':'rgba(168,230,207,.08)'}`,borderRadius:'10px',background:selectedOrderId===order.id?'rgba(201,168,76,.05)':'rgba(255,255,255,.02)',cursor:'none'}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'12px',flexWrap:'wrap',marginBottom:'10px'}}>
                     <div>
                       <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'var(--mint)',letterSpacing:'.08em'}}>{order.order_ref}</p>
@@ -3197,6 +3270,54 @@ function AdminPortalPage({ navigate }) {
           </div>
 
           <div style={{display:'grid',gap:'18px'}}>
+            <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
+              <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)',marginBottom:'12px'}}>Order Detail</h2>
+              {selectedOrder ? (
+                <div style={{display:'grid',gap:'14px'}}>
+                  <div style={{paddingBottom:'10px',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
+                    <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'var(--mint)'}}>{selectedOrder.order_ref}</p>
+                    <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'16px',color:'rgba(250,250,245,.84)',marginTop:'6px'}}>{selectedOrder.customer_name}</p>
+                    <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',marginTop:'6px'}}>{new Date(selectedOrder.created_at).toLocaleString('en-IN')}</p>
+                  </div>
+                  <div>
+                    <p className="label-tag" style={{marginBottom:'8px',fontSize:'9px'}}>Customer</p>
+                    <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.72)',lineHeight:'1.8'}}>{selectedOrder.phone}</p>
+                    <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.72)',lineHeight:'1.8'}}>{selectedOrder.email || 'No email'}</p>
+                    <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.52)',lineHeight:'1.8',marginTop:'4px'}}>
+                      {[selectedOrder.address_line_1, selectedOrder.address_line_2, `${selectedOrder.city}, ${selectedOrder.state} ${selectedOrder.pincode}`].filter(Boolean).join(', ')}
+                    </p>
+                    {selectedOrder.notes && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.52)',lineHeight:'1.8',marginTop:'8px'}}>Note: {selectedOrder.notes}</p>}
+                  </div>
+                  <div>
+                    <p className="label-tag" style={{marginBottom:'8px',fontSize:'9px'}}>Items</p>
+                    <div style={{display:'grid',gap:'10px'}}>
+                      {(orderItemsByOrderId.get(selectedOrder.id) || []).map(item => (
+                        <div key={item.id} style={{padding:'10px 0',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
+                          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.82)'}}>{item.product_name}</p>
+                          <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',marginTop:'4px'}}>
+                            {[item.variant_color_name ? `Color: ${item.variant_color_name}` : null, item.size ? `Size: ${item.size}` : null, `Qty: ${item.quantity}`].filter(Boolean).join(' • ')}
+                          </p>
+                          <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'var(--gold)',marginTop:'6px'}}>{formatPrice(item.line_total)}</p>
+                        </div>
+                      ))}
+                      {!(orderItemsByOrderId.get(selectedOrder.id) || []).length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.45)'}}>No items found for this order.</p>}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="label-tag" style={{marginBottom:'8px',fontSize:'9px'}}>Status History</p>
+                    <div style={{display:'grid',gap:'10px'}}>
+                      {(orderHistoryByOrderId.get(selectedOrder.id) || []).slice(0, 8).map(entry => (
+                        <div key={entry.id} style={{display:'flex',justifyContent:'space-between',gap:'10px',padding:'10px 0',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
+                          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.78)'}}>{entry.previous_status ? `${entry.previous_status} -> ${entry.next_status}` : entry.next_status}</p>
+                          <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)'}}>{new Date(entry.changed_at).toLocaleString('en-IN')}</p>
+                        </div>
+                      ))}
+                      {!(orderHistoryByOrderId.get(selectedOrder.id) || []).length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.45)'}}>No status history yet.</p>}
+                    </div>
+                  </div>
+                </div>
+              ) : <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.45)'}}>Select an order to inspect full details.</p>}
+            </div>
             <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
               <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)',marginBottom:'12px'}}>Operations</h2>
               <div style={{display:'grid',gap:'10px'}}>

@@ -39,6 +39,14 @@ create table if not exists public.order_items (
   line_total numeric not null default 0
 );
 
+create table if not exists public.order_status_history (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references public.orders(id) on delete cascade,
+  previous_status text,
+  next_status text not null,
+  changed_at timestamptz not null default now()
+);
+
 create table if not exists public.customers (
   id uuid primary key default gen_random_uuid(),
   phone text not null unique,
@@ -66,6 +74,7 @@ alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
 alter table public.customers enable row level security;
 alter table public.inventory enable row level security;
+alter table public.order_status_history enable row level security;
 
 drop policy if exists "public can insert orders" on public.orders;
 create policy "public can insert orders"
@@ -124,6 +133,20 @@ on public.order_items
 for select
 to authenticated
 using (true);
+
+drop policy if exists "admins can read order history" on public.order_status_history;
+create policy "admins can read order history"
+on public.order_status_history
+for select
+to authenticated
+using (true);
+
+drop policy if exists "admins can insert order history" on public.order_status_history;
+create policy "admins can insert order history"
+on public.order_status_history
+for insert
+to authenticated
+with check (true);
 
 drop policy if exists "admins can read customers" on public.customers;
 create policy "admins can read customers"

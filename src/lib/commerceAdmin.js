@@ -71,20 +71,32 @@ export async function createOrderRequest({ orderRef, customer, cart, subtotal, s
 
 export async function fetchAdminSnapshot() {
   const client = ensureClient();
-  const [{ data: orders, error: ordersError }, { data: inventory, error: inventoryError }, { data: customers, error: customersError }] = await Promise.all([
+  const [
+    { data: orders, error: ordersError },
+    { data: inventory, error: inventoryError },
+    { data: customers, error: customersError },
+    { data: orderItems, error: orderItemsError },
+    { data: orderStatusHistory, error: orderStatusHistoryError },
+  ] = await Promise.all([
     client.from('orders').select('*').order('created_at', { ascending: false }).limit(500),
     client.from('inventory').select('*').order('updated_at', { ascending: false }),
     client.from('customers').select('*').order('last_order_at', { ascending: false }).limit(500),
+    client.from('order_items').select('*').limit(2000),
+    client.from('order_status_history').select('*').order('changed_at', { ascending: false }).limit(2000),
   ]);
 
   if (ordersError) throw ordersError;
   if (inventoryError) throw inventoryError;
   if (customersError) throw customersError;
+  if (orderItemsError) throw orderItemsError;
+  if (orderStatusHistoryError) throw orderStatusHistoryError;
 
   return {
     orders: Array.isArray(orders) ? orders : [],
     inventory: Array.isArray(inventory) ? inventory : [],
     customers: Array.isArray(customers) ? customers : [],
+    orderItems: Array.isArray(orderItems) ? orderItems : [],
+    orderStatusHistory: Array.isArray(orderStatusHistory) ? orderStatusHistory : [],
   };
 }
 
@@ -204,6 +216,16 @@ export async function updateOrderStatus(orderId, status) {
   if (status === 'paid' && !order.inventory_adjusted) {
     await applyInventoryAdjustmentForOrder(client, orderId);
   }
+
+  const { error: historyError } = await client
+    .from('order_status_history')
+    .insert({
+      order_id: orderId,
+      previous_status: order.status,
+      next_status: status,
+      changed_at: new Date().toISOString(),
+    });
+  if (historyError) throw historyError;
 
   const { error } = await client
     .from('orders')
