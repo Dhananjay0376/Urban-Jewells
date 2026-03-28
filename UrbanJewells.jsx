@@ -1,6 +1,8 @@
 ﻿import { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
 import * as THREE from "three";
 import { isSanityConfigured, loadCatalogFromSanity } from "./src/lib/sanityCatalog";
+import { getSupabaseSession, isSupabaseConfigured, onSupabaseAuthChange, signInAdminWithPassword, signOutAdminSession } from "./src/lib/supabaseClient";
+import { ORDER_STATUSES, buildDashboardMetrics, buildWhatsAppOrderMessage, createOrderRequest, fetchAdminSnapshot, upsertInventoryRecord, updateOrderStatus } from "./src/lib/commerceAdmin";
 
 // =================================================================
 // GLOBAL STYLES - Dark Luxury Editorial
@@ -663,6 +665,7 @@ const buildMetaForRoute = ({ page, params = {}, products = [], collections = [],
     image: DEFAULT_SOCIAL_IMAGE,
     url: buildAbsoluteUrl(routeToHash(page, params)),
     type: 'website',
+    robots: 'index,follow',
   };
 
   switch (page) {
@@ -775,6 +778,13 @@ const buildMetaForRoute = ({ page, params = {}, products = [], collections = [],
         ...base,
         title: `Terms & Conditions | ${SITE_NAME}`,
         description: 'Read the terms governing purchases, orders and use of the Urban Jewells website.',
+      };
+    case 'admin':
+      return {
+        ...base,
+        title: `Admin Portal | ${SITE_NAME}`,
+        description: 'Protected Urban Jewells admin portal.',
+        robots: 'noindex,nofollow',
       };
     default:
       return base;
@@ -2644,7 +2654,7 @@ function FormField({ label, name, placeholder, type='text', span=1, req=true, ta
 //  CART PAGE
 // =================================================================
 function CartPage({ navigate }) {
-  const {cart, removeFromCart, updateQty, cartTotal, cartShipping, cartGrandTotal, setCart} = useApp();
+  const {cart, removeFromCart, updateQty, cartTotal, cartShipping, cartGrandTotal, setCart, toast} = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const [form, setForm] = useState({fullName:'',email:'',whatsapp:'',address1:'',address2:'',city:'',province:'',postalCode:'',country:'India',notes:''});
   const [errors, setErrors] = useState({});
@@ -2674,39 +2684,39 @@ function CartPage({ navigate }) {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setSubmitting(true);
-
-    // build message for WhatsApp
-    let msg = `Order reference: ${genRef()}\n`;
-    msg += `Name: ${form.fullName}\n`;
-    msg += `Email: ${form.email}\n`;
-    msg += `WhatsApp: ${form.whatsapp}\n`;
-    msg += `Address 1: ${form.address1}\n`;
-    if (form.address2) msg += `Address 2: ${form.address2}\n`;
-    msg += `City: ${form.city}\n`;
-    if (form.province) msg += `Province/State: ${form.province}\n`;
-    msg += `Postal Code: ${form.postalCode}\n`;
-    msg += `Country: ${form.country}\n`;
-    if (form.notes) msg += `Notes: ${form.notes}\n`;
-    msg += `\nItems:\n`;
-    cart.forEach(item => {
-      msg += `- ${item.name}`;
-      if (item.selectedColorName) msg += ` (color: ${item.selectedColorName})`;
-      if (item.size) msg += ` (size: ${item.size})`;
-      msg += ` x${item.quantity} = ${formatPrice(item.price*item.quantity)}\n`;
-    });
-    msg += `\nSubtotal: ${formatPrice(cartTotal)}`;
-    msg += `\nShipping: ${cartShipping === 0 ? 'FREE' : formatPrice(cartShipping)}`;
-    msg += `\nTotal: ${formatPrice(cartGrandTotal)}`;
-
-    const encoded = encodeURIComponent(msg);
-    window.open(`https://wa.me/917351257315?text=${encoded}`, '_blank');
-
-    await new Promise(r => setTimeout(r, 1600));
-    // Set done FIRST so the done check fires before the cart-empty check
     const orderRef = genRef();
-    setDone({ ref: orderRef, email: form.email });
-    setCart([]);
-    setSubmitting(false);
+    try {
+      if (isSupabaseConfigured()) {
+        await createOrderRequest({
+          orderRef,
+          customer: form,
+          cart,
+          subtotal: cartTotal,
+          shipping: cartShipping,
+          total: cartGrandTotal,
+        });
+      }
+
+      const msg = buildWhatsAppOrderMessage({
+        orderRef,
+        customer: form,
+        cart,
+        subtotal: cartTotal,
+        shipping: cartShipping,
+        total: cartGrandTotal,
+        formatPrice,
+      });
+      window.open(`https://wa.me/917351257315?text=${encodeURIComponent(msg)}`, '_blank');
+
+      setDone({ ref: orderRef, email: form.email });
+      setCart([]);
+      toast(isSupabaseConfigured() ? 'Order captured and sent to WhatsApp.' : 'Order sent to WhatsApp.');
+    } catch (error) {
+      console.error('Order submission failed:', error);
+      toast(error?.message || 'Could not place the order right now.', 'error');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (done) return <ThankYouPage orderRef={done.ref} email={done.email} navigate={navigate}/>;
@@ -2838,6 +2848,378 @@ function ThankYouPage({ orderRef, email, navigate }) {
         <div style={{display:'flex',flexDirection:'column',gap:'8px',alignItems:'center'}}>
           <button onClick={()=>navigate('home')} style={{background:'none',border:'none',cursor:'none',fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'rgba(168,230,207,.4)',letterSpacing:'.12em',transition:'color .2s'}} onMouseEnter={e=>e.target.style.color='var(--mint)'} onMouseLeave={e=>e.target.style.color='rgba(168,230,207,.4)'}>CONTINUE SHOPPING -&gt;</button>
           {email&&<p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.15)'}}>Confirmation sent to {email}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminMetricCard({ label, value }) {
+  const isMoney = /Revenue|Value/.test(label);
+  return (
+    <div className="glass-card" style={{padding:'20px 18px'}}>
+      <p className="label-tag" style={{marginBottom:'10px',fontSize:'9px'}}>{label}</p>
+      <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'34px',color:'var(--cream)',lineHeight:'1'}}>
+        {isMoney ? formatPrice(value) : value}
+      </p>
+    </div>
+  );
+}
+
+function AdminPortalPage({ navigate }) {
+  const { products, toast } = useApp();
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 900 : false;
+  const [session, setSession] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [authForm, setAuthForm] = useState({ email:'', password:'' });
+  const [authSubmitting, setAuthSubmitting] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [snapshot, setSnapshot] = useState({ orders:[], inventory:[], customers:[] });
+  const [loadingData, setLoadingData] = useState(false);
+  const [savingOrderId, setSavingOrderId] = useState(null);
+  const [inventoryDrafts, setInventoryDrafts] = useState({});
+  const supabaseReady = isSupabaseConfigured();
+
+  useEffect(() => {
+    if (!supabaseReady) {
+      setAuthReady(true);
+      return undefined;
+    }
+    let alive = true;
+    getSupabaseSession()
+      .then(currentSession => {
+        if (alive) {
+          setSession(currentSession);
+          setAuthReady(true);
+        }
+      })
+      .catch(error => {
+        console.error('Failed to read admin session:', error);
+        if (alive) setAuthReady(true);
+      });
+    const unsubscribe = onSupabaseAuthChange(nextSession => {
+      setSession(nextSession);
+      setAuthReady(true);
+    });
+    return () => {
+      alive = false;
+      unsubscribe();
+    };
+  }, [supabaseReady]);
+
+  const loadSnapshot = useCallback(async () => {
+    if (!session || !supabaseReady) return;
+    setLoadingData(true);
+    try {
+      const nextSnapshot = await fetchAdminSnapshot();
+      setSnapshot(nextSnapshot);
+    } catch (error) {
+      console.error('Failed to load admin snapshot:', error);
+      toast(error?.message || 'Could not load admin data.', 'error');
+    } finally {
+      setLoadingData(false);
+    }
+  }, [session, supabaseReady, toast]);
+
+  useEffect(() => {
+    loadSnapshot();
+  }, [loadSnapshot]);
+
+  const metrics = useMemo(() => buildDashboardMetrics(snapshot), [snapshot]);
+  const customerRows = metrics.summary.customers || [];
+
+  const inventoryRows = useMemo(() => {
+    const inventoryMap = new Map(snapshot.inventory.map(item => [`${item.product_id}::${item.variant_id || 'base'}`, item]));
+    const rows = [];
+    products.forEach(product => {
+      if (Array.isArray(product.variants) && product.variants.length) {
+        product.variants.forEach(variant => {
+          const key = `${product.id}::${variant.id}`;
+          const record = inventoryMap.get(key);
+          rows.push({
+            key,
+            product_id: product.id,
+            variant_id: variant.id,
+            productName: product.name,
+            variantLabel: variant.colorName,
+            stock_quantity: record?.stock_quantity ?? '',
+            low_stock_threshold: record?.low_stock_threshold ?? 2,
+          });
+        });
+      } else {
+        const key = `${product.id}::base`;
+        const record = inventoryMap.get(key);
+        rows.push({
+          key,
+          product_id: product.id,
+          variant_id: 'base',
+          productName: product.name,
+          variantLabel: 'Base Product',
+          stock_quantity: record?.stock_quantity ?? '',
+          low_stock_threshold: record?.low_stock_threshold ?? 2,
+        });
+      }
+    });
+    return rows;
+  }, [products, snapshot.inventory]);
+
+  const handleLogin = async () => {
+    setAuthSubmitting(true);
+    setAuthError('');
+    try {
+      await signInAdminWithPassword(authForm.email.trim(), authForm.password);
+      toast('Admin session started.');
+    } catch (error) {
+      setAuthError(error?.message || 'Could not sign in.');
+    } finally {
+      setAuthSubmitting(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOutAdminSession();
+      toast('Signed out of admin.');
+    } catch (error) {
+      toast(error?.message || 'Could not sign out.', 'error');
+    }
+  };
+
+  const handleOrderStatusChange = async (orderId, status) => {
+    setSavingOrderId(orderId);
+    try {
+      await updateOrderStatus(orderId, status);
+      setSnapshot(prev => ({
+        ...prev,
+        orders: prev.orders.map(order => order.id === orderId ? { ...order, status } : order),
+      }));
+      toast('Order status updated.');
+    } catch (error) {
+      toast(error?.message || 'Could not update order status.', 'error');
+    } finally {
+      setSavingOrderId(null);
+    }
+  };
+
+  const handleInventoryChange = (key, field, value) => {
+    setInventoryDrafts(prev => ({
+      ...prev,
+      [key]: {
+        ...(prev[key] || {}),
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleInventorySave = async (row) => {
+    const draft = inventoryDrafts[row.key] || {};
+    const nextRecord = {
+      product_id: row.product_id,
+      variant_id: row.variant_id,
+      stock_quantity: draft.stock_quantity ?? row.stock_quantity ?? 0,
+      low_stock_threshold: draft.low_stock_threshold ?? row.low_stock_threshold ?? 2,
+    };
+    setSavingOrderId(row.key);
+    try {
+      await upsertInventoryRecord(nextRecord);
+      toast('Inventory updated.');
+      setInventoryDrafts(prev => {
+        const copy = { ...prev };
+        delete copy[row.key];
+        return copy;
+      });
+      await loadSnapshot();
+    } catch (error) {
+      toast(error?.message || 'Could not update inventory.', 'error');
+    } finally {
+      setSavingOrderId(null);
+    }
+  };
+
+  if (!supabaseReady) {
+    return (
+      <div style={{background:'var(--ink)',minHeight:'100vh',paddingTop:'70px'}}>
+        <div style={{maxWidth:'960px',margin:'0 auto',padding:isMobile?'28px 20px 44px':'48px'}}>
+          <PageBackButton onClick={()=>navigate('home')} label="Back"/>
+          <div className="glass-card" style={{padding:isMobile?'28px 20px':'36px 32px'}}>
+            <p className="label-tag" style={{marginBottom:'12px'}}>ADMIN PORTAL</p>
+            <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(34px,5vw,56px)',color:'var(--cream)',marginBottom:'14px'}}>Supabase setup required</h1>
+            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'15px',color:'rgba(250,250,245,.46)',lineHeight:'1.85',marginBottom:'18px'}}>
+              The admin portal is built, but it needs Supabase credentials and tables before it can capture orders or show metrics.
+            </p>
+            <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'var(--mint)',lineHeight:'1.8'}}>
+              1. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to `.env` and Vercel.
+              <br/>2. Run the SQL in `supabase/schema.sql`.
+              <br/>3. Create an admin user in Supabase Auth.
+              <br/>4. Reopen `#/admin`.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!authReady) return <CatalogLoadingScreen label="Loading admin portal"/>;
+
+  if (!session) {
+    return (
+      <div style={{background:'var(--ink)',minHeight:'100vh',paddingTop:'70px'}}>
+        <div style={{maxWidth:'540px',margin:'0 auto',padding:isMobile?'28px 20px 44px':'56px 24px'}}>
+          <PageBackButton onClick={()=>navigate('home')} label="Back"/>
+          <div className="glass-card" style={{padding:isMobile?'28px 20px':'36px 32px'}}>
+            <p className="label-tag" style={{marginBottom:'12px'}}>ADMIN ACCESS</p>
+            <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(34px,5vw,52px)',color:'var(--cream)',marginBottom:'12px'}}>Sign in</h1>
+            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.42)',lineHeight:'1.8',marginBottom:'24px'}}>
+              Use your admin email and password from Supabase Auth to open the operations dashboard.
+            </p>
+            <div style={{display:'grid',gap:'14px'}}>
+              <div>
+                <label style={{display:'block',fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.35)',textTransform:'uppercase',letterSpacing:'.12em',marginBottom:'8px'}}>Email</label>
+                <input value={authForm.email} onChange={e=>setAuthForm(prev => ({ ...prev, email:e.target.value }))} className="dark-field" placeholder="admin@urbanjewells.in" />
+              </div>
+              <div>
+                <label style={{display:'block',fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.35)',textTransform:'uppercase',letterSpacing:'.12em',marginBottom:'8px'}}>Password</label>
+                <input type="password" value={authForm.password} onChange={e=>setAuthForm(prev => ({ ...prev, password:e.target.value }))} className="dark-field" placeholder="••••••••" />
+              </div>
+              {authError && <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'#F87171'}}>{authError}</p>}
+              <button className="btn-luxury" onClick={handleLogin} disabled={authSubmitting} style={{justifyContent:'center',opacity:authSubmitting?0.65:1,cursor:authSubmitting?'not-allowed':'none'}}>
+                {authSubmitting ? 'SIGNING IN...' : 'OPEN ADMIN PORTAL'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{background:'var(--ink)',minHeight:'100vh',paddingTop:'70px'}}>
+      <div style={{maxWidth:'1320px',margin:'0 auto',padding:isMobile?'28px 20px 44px':'40px 48px 56px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:isMobile?'flex-start':'center',gap:'16px',flexDirection:isMobile?'column':'row',marginBottom:'28px'}}>
+          <div>
+            <p className="label-tag" style={{marginBottom:'10px'}}>ADMIN PORTAL</p>
+            <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'clamp(34px,5vw,56px)',color:'var(--cream)',lineHeight:'1'}}>Store Operations</h1>
+          </div>
+          <div style={{display:'flex',gap:'10px',width:isMobile?'100%':'auto',flexWrap:'wrap'}}>
+            <button className="btn-ghost-luxury" onClick={loadSnapshot} style={{justifyContent:'center',width:isMobile?'100%':'auto'}}>{loadingData ? 'REFRESHING...' : 'REFRESH DATA'}</button>
+            <button className="btn-luxury" onClick={handleLogout} style={{justifyContent:'center',width:isMobile?'100%':'auto'}}>SIGN OUT</button>
+          </div>
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(3,minmax(0,1fr))',gap:'14px',marginBottom:'28px'}}>
+          {metrics.cards.map(card => <AdminMetricCard key={card.label} {...card} />)}
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1.2fr .8fr',gap:'18px',marginBottom:'18px'}}>
+          <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px',gap:'12px',flexWrap:'wrap'}}>
+              <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)'}}>Recent Orders</h2>
+              <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.32)',letterSpacing:'.12em'}}>AUTO-CAPTURED FROM CHECKOUT</p>
+            </div>
+            <div style={{display:'grid',gap:'12px'}}>
+              {snapshot.orders.slice(0, 12).map(order => (
+                <div key={order.id} style={{padding:'14px',border:'1px solid rgba(168,230,207,.08)',borderRadius:'10px',background:'rgba(255,255,255,.02)'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'12px',flexWrap:'wrap',marginBottom:'10px'}}>
+                    <div>
+                      <p style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',color:'var(--mint)',letterSpacing:'.08em'}}>{order.order_ref}</p>
+                      <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'15px',color:'rgba(250,250,245,.86)',marginTop:'4px'}}>{order.customer_name}</p>
+                      <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.32)',marginTop:'4px'}}>{order.phone}</p>
+                    </div>
+                    <div style={{textAlign:isMobile?'left':'right'}}>
+                      <p style={{fontFamily:"'DM Mono',monospace",fontSize:'13px',color:'var(--gold)'}}>{formatPrice(order.total)}</p>
+                      <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.28)',marginTop:'4px'}}>{new Date(order.created_at).toLocaleString('en-IN')}</p>
+                    </div>
+                  </div>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'12px',flexWrap:'wrap'}}>
+                    <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'12px',color:'rgba(250,250,245,.42)'}}>
+                      {order.city}, {order.state} • {order.pincode}
+                    </p>
+                    <select
+                      value={order.status}
+                      onChange={e=>handleOrderStatusChange(order.id, e.target.value)}
+                      disabled={savingOrderId === order.id}
+                      style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'8px 10px',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.72)',outline:'none',cursor:'none'}}
+                    >
+                      {ORDER_STATUSES.map(status => <option key={status} value={status}>{status.toUpperCase()}</option>)}
+                    </select>
+                  </div>
+                </div>
+              ))}
+              {!snapshot.orders.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>No orders captured yet.</p>}
+            </div>
+          </div>
+
+          <div style={{display:'grid',gap:'18px'}}>
+            <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
+              <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)',marginBottom:'12px'}}>Operations</h2>
+              <div style={{display:'grid',gap:'10px'}}>
+                {[
+                  { label:'Orders This Week', value: metrics.summary.weekOrders.length },
+                  { label:'Orders This Year', value: metrics.summary.yearOrders.length },
+                  { label:'Low Stock SKUs', value: metrics.summary.lowStock.length },
+                  { label:'Out of Stock SKUs', value: metrics.summary.outOfStock.length },
+                  { label:'Repeat Customers', value: metrics.summary.repeatCustomers.length },
+                ].map(item => (
+                  <div key={item.label} style={{display:'flex',justifyContent:'space-between',padding:'10px 0',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
+                    <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:'13px',color:'rgba(250,250,245,.45)'}}>{item.label}</span>
+                    <span style={{fontFamily:"'DM Mono',monospace",fontSize:'13px',color:'var(--mint)'}}>{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
+              <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)',marginBottom:'12px'}}>Customers</h2>
+              <div style={{display:'grid',gap:'12px'}}>
+                {customerRows.slice(0, 8).map(customer => (
+                  <div key={customer.id} style={{paddingBottom:'10px',borderBottom:'1px solid rgba(168,230,207,.06)'}}>
+                    <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.82)'}}>{customer.name}</p>
+                    <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.28)',marginTop:'4px'}}>{customer.phone || customer.email || 'No contact'}</p>
+                    <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'var(--mint)',marginTop:'6px'}}>
+                      {customer.order_count} orders • {formatPrice(customer.total_spend || 0)}
+                    </p>
+                  </div>
+                ))}
+                {!customerRows.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>Customer profiles will appear once orders are captured.</p>}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px',gap:'12px',flexWrap:'wrap'}}>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)'}}>Inventory</h2>
+            <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',letterSpacing:'.1em'}}>MANUAL STOCK CONTROL</p>
+          </div>
+          <div style={{display:'grid',gap:'12px'}}>
+            {inventoryRows.slice(0, 24).map(row => {
+              const draft = inventoryDrafts[row.key] || {};
+              return (
+                <div key={row.key} style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1.4fr .8fr .8fr auto',gap:'10px',alignItems:'center',padding:'12px',border:'1px solid rgba(168,230,207,.08)',borderRadius:'10px',background:'rgba(255,255,255,.02)'}}>
+                  <div>
+                    <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.84)'}}>{row.productName}</p>
+                    <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.28)',marginTop:'4px'}}>{row.variantLabel}</p>
+                  </div>
+                  <input
+                    className="dark-field"
+                    value={draft.stock_quantity ?? row.stock_quantity}
+                    onChange={e=>handleInventoryChange(row.key, 'stock_quantity', e.target.value)}
+                    placeholder="Stock"
+                  />
+                  <input
+                    className="dark-field"
+                    value={draft.low_stock_threshold ?? row.low_stock_threshold}
+                    onChange={e=>handleInventoryChange(row.key, 'low_stock_threshold', e.target.value)}
+                    placeholder="Low stock"
+                  />
+                  <button className="btn-ghost-luxury" onClick={()=>handleInventorySave(row)} style={{justifyContent:'center',padding:'12px 18px'}} disabled={savingOrderId === row.key}>
+                    {savingOrderId === row.key ? 'SAVING...' : 'SAVE'}
+                  </button>
+                </div>
+              );
+            })}
+            {!inventoryRows.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>Inventory rows will appear once product data is available.</p>}
+          </div>
         </div>
       </div>
     </div>
@@ -3765,6 +4147,7 @@ function routeToHash(page, params={}) {
     case 'about': return '#/about';
     case 'contact': return '#/contact';
     case 'wishlist': return '#/wishlist';
+    case 'admin': return '#/admin';
     case 'privacy-policy': return '#/privacy-policy';
     case 'shipping': return '#/shipping';
     case 'returns': return '#/returns';
@@ -3805,6 +4188,7 @@ function routeFromHash(hash) {
   if (parts[0] === 'about') return { page:'about', params:{} };
   if (parts[0] === 'contact') return { page:'contact', params:{} };
   if (parts[0] === 'wishlist') return { page:'wishlist', params:{} };
+  if (parts[0] === 'admin') return { page:'admin', params:{} };
   if (parts[0] === 'privacy-policy') return { page:'privacy-policy', params:{} };
   if (parts[0] === 'shipping') return { page:'shipping', params:{} };
   if (parts[0] === 'returns') return { page:'returns', params:{} };
@@ -3825,7 +4209,7 @@ function RouteMetaManager({ page, params }) {
 
     document.title = meta.title;
     ensureMetaTag('meta[name="description"]', { name:'description', content:meta.description });
-    ensureMetaTag('meta[name="robots"]', { name:'robots', content:'index,follow' });
+    ensureMetaTag('meta[name="robots"]', { name:'robots', content:meta.robots || 'index,follow' });
     ensureMetaTag('meta[property="og:title"]', { property:'og:title', content:meta.title });
     ensureMetaTag('meta[property="og:description"]', { property:'og:description', content:meta.description });
     ensureMetaTag('meta[property="og:type"]', { property:'og:type', content:meta.type });
@@ -3915,6 +4299,7 @@ export default function App() {
       case 'about': return <AboutPage navigate={navigate} navigateBack={navigateBack}/>;
       case 'contact': return <ContactPage navigateBack={navigateBack}/>;
       case 'wishlist': return <WishlistPage navigate={navigate}/>;
+      case 'admin': return <AdminPortalPage navigate={navigate}/>;
       case 'privacy-policy': return <PrivacyPolicy navigate={navigate}/>;
       case 'shipping': return <ShippingPage navigate={navigate}/>;
       case 'returns': return <ReturnsPage navigate={navigate}/>;
