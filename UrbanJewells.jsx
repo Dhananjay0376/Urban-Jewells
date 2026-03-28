@@ -2405,7 +2405,16 @@ function ProductPage({ slug, navigate, navigateBack }) {
   const activeOriginalPrice = getDisplayOriginalPrice(product, selectedVariant);
   const activeInStock = getDisplayStock(product, selectedVariant);
   const activeImage = activeImages[img] || activeImages[0] || product?.images?.[0];
-  const related = products.filter(p=>p.category===product?.category&&p.slug!==slug).slice(0,4);
+  const related = useMemo(() => {
+    if (!product) return [];
+    const curated = Array.isArray(product.relatedProductSlugs) && product.relatedProductSlugs.length
+      ? product.relatedProductSlugs
+          .map(relatedSlug => products.find(item => item.slug === relatedSlug))
+          .filter(item => item && item.slug !== slug)
+      : [];
+    if (curated.length) return curated.slice(0, 4);
+    return products.filter(p=>p.category===product.category&&p.slug!==slug).slice(0,4);
+  }, [product, products, slug]);
   const inWish = product ? wishlist.some(i=>i.wishKey===getWishlistKey(product, selectedVariant)) : false;
   if (catalogLoading) return <CatalogLoadingScreen label="Loading product"/>;
   if (!product) return <NotFoundPage navigate={navigate}/>;

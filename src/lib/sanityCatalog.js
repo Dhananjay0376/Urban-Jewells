@@ -43,6 +43,7 @@ const catalogQuery = `{
     rating,
     reviewCount,
     tags,
+    "relatedProductSlugs": array::compact(relatedProducts[]->slug.current),
     "variants": variants[]{
       id,
       colorName,
@@ -111,6 +112,7 @@ const normalizeProduct = (product) => {
     rating: product.rating ? Number(product.rating) : 0,
     reviewCount: product.reviewCount ? Number(product.reviewCount) : 0,
     tags: ensureArray(product.tags),
+    relatedProductSlugs: ensureArray(product.relatedProductSlugs),
     variants,
   };
 };

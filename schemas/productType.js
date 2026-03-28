@@ -258,6 +258,23 @@ export const productType = defineType({
       description: 'Used by storefront search and discovery.',
       of: [{ type: 'string' }],
     }),
+    defineField({
+      name: 'relatedProducts',
+      title: 'Related Products',
+      type: 'array',
+      group: 'marketing',
+      description: 'Optional manual picks for the "You Might Also Like" section. Leave empty to use the automatic same-category fallback.',
+      of: [
+        defineField({
+          type: 'reference',
+          to: [{ type: 'product' }],
+          options: {
+            disableNew: true,
+          },
+        }),
+      ],
+      validation: (rule) => rule.max(4),
+    }),
   ],
   preview: {
     select: {
