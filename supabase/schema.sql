@@ -17,10 +17,13 @@ create table if not exists public.orders (
   shipping numeric not null default 0,
   total numeric not null default 0,
   status text not null default 'new',
+  inventory_adjusted boolean not null default false,
   payment_method text not null default 'whatsapp',
   source text not null default 'website',
   whatsapp_sent boolean not null default false
 );
+
+alter table public.orders add column if not exists inventory_adjusted boolean not null default false;
 
 create table if not exists public.order_items (
   id uuid primary key default gen_random_uuid(),

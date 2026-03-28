@@ -37,6 +37,8 @@ That creates:
 - `customers`
 - `inventory`
 
+If you already ran an older version of the schema, run the updated file again so `orders.inventory_adjusted` is added for automatic stock reduction on paid orders.
+
 ## 3. Admin Auth
 
 Create at least one admin user in Supabase Auth:
@@ -57,14 +59,22 @@ Once Supabase is configured:
 
 If Supabase is not configured, checkout still falls back to the previous WhatsApp-only flow.
 
-## 5. Inventory
+## 5. Automatic Stock Reduction
+
+Inventory is reduced automatically when an admin changes an order status to `paid`.
+
+- it reduces only once per order
+- it does not reduce stock at initial order creation
+- it uses `variant_id` when present, otherwise `base`
+
+## 6. Inventory
 
 The admin portal lets you save stock quantities manually.
 
 - base products use variant id `base`
 - variant rows use their actual variant id
 
-## 6. Notes
+## 7. Notes
 
 - Product content still comes from Sanity.
 - Operational data now comes from Supabase.

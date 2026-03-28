@@ -88,6 +88,49 @@ export async function fetchAdminSnapshot() {
   };
 }
 
+async function applyInventoryAdjustmentForOrder(client, orderId) {
+  const { data: orderItems, error: itemsError } = await client
+    .from('order_items')
+    .select('product_id, variant_id, quantity')
+    .eq('order_id', orderId);
+  if (itemsError) throw itemsError;
+
+  for (const item of orderItems || []) {
+    const variantId = item.variant_id || 'base';
+    const quantity = Number(item.quantity || 0);
+    const { data: inventoryRow, error: inventoryError } = await client
+      .from('inventory')
+      .select('id, stock_quantity, low_stock_threshold')
+      .eq('product_id', item.product_id)
+      .eq('variant_id', variantId)
+      .maybeSingle();
+    if (inventoryError) throw inventoryError;
+
+    const nextStock = Math.max(0, Number(inventoryRow?.stock_quantity || 0) - quantity);
+    if (inventoryRow?.id) {
+      const { error: updateInventoryError } = await client
+        .from('inventory')
+        .update({
+          stock_quantity: nextStock,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', inventoryRow.id);
+      if (updateInventoryError) throw updateInventoryError;
+    } else {
+      const { error: insertInventoryError } = await client
+        .from('inventory')
+        .insert({
+          product_id: item.product_id,
+          variant_id: variantId,
+          stock_quantity: 0,
+          low_stock_threshold: 2,
+          updated_at: new Date().toISOString(),
+        });
+      if (insertInventoryError) throw insertInventoryError;
+    }
+  }
+}
+
 export function buildDashboardMetrics({ orders = [], inventory = [], customers = [] }) {
   const now = new Date();
   const activeOrders = orders.filter(order => order.status !== 'cancelled');
@@ -151,7 +194,24 @@ export function buildDashboardMetrics({ orders = [], inventory = [], customers =
 
 export async function updateOrderStatus(orderId, status) {
   const client = ensureClient();
-  const { error } = await client.from('orders').update({ status }).eq('id', orderId);
+  const { data: order, error: orderLookupError } = await client
+    .from('orders')
+    .select('id, status, inventory_adjusted')
+    .eq('id', orderId)
+    .single();
+  if (orderLookupError) throw orderLookupError;
+
+  if (status === 'paid' && !order.inventory_adjusted) {
+    await applyInventoryAdjustmentForOrder(client, orderId);
+  }
+
+  const { error } = await client
+    .from('orders')
+    .update({
+      status,
+      inventory_adjusted: order.inventory_adjusted || status === 'paid',
+    })
+    .eq('id', orderId);
   if (error) throw error;
 }
 
