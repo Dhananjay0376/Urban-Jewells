@@ -2895,6 +2895,8 @@ function AdminPortalPage({ navigate }) {
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [customerSearchTerm, setCustomerSearchTerm] = useState('');
   const [adminNoteDraft, setAdminNoteDraft] = useState('');
+  const [inventorySearchTerm, setInventorySearchTerm] = useState('');
+  const [inventoryFilter, setInventoryFilter] = useState('all');
   const supabaseReady = isSupabaseConfigured();
 
   useEffect(() => {
@@ -3024,6 +3026,7 @@ function AdminPortalPage({ navigate }) {
             variantLabel: variant.colorName,
             stock_quantity: record?.stock_quantity ?? '',
             low_stock_threshold: record?.low_stock_threshold ?? 2,
+            stockStatus: Number(record?.stock_quantity ?? 0) <= 0 ? 'out' : (Number(record?.stock_quantity ?? 0) <= Number(record?.low_stock_threshold ?? 2) ? 'low' : 'healthy'),
           });
         });
       } else {
@@ -3037,11 +3040,37 @@ function AdminPortalPage({ navigate }) {
           variantLabel: 'Base Product',
           stock_quantity: record?.stock_quantity ?? '',
           low_stock_threshold: record?.low_stock_threshold ?? 2,
+          stockStatus: Number(record?.stock_quantity ?? 0) <= 0 ? 'out' : (Number(record?.stock_quantity ?? 0) <= Number(record?.low_stock_threshold ?? 2) ? 'low' : 'healthy'),
         });
       }
     });
     return rows;
   }, [products, snapshot.inventory]);
+  const visibleInventoryRows = useMemo(() => {
+    const q = inventorySearchTerm.trim().toLowerCase();
+    const priority = { out: 0, low: 1, healthy: 2 };
+    return inventoryRows
+      .filter(row => {
+        if (inventoryFilter === 'out' && row.stockStatus !== 'out') return false;
+        if (inventoryFilter === 'low' && row.stockStatus !== 'low') return false;
+        if (inventoryFilter === 'healthy' && row.stockStatus !== 'healthy') return false;
+        if (inventoryFilter === 'variant' && row.variant_id === 'base') return false;
+        if (inventoryFilter === 'base' && row.variant_id !== 'base') return false;
+        if (!q) return true;
+        return [row.productName, row.variantLabel, row.product_id, row.variant_id].some(value => String(value || '').toLowerCase().includes(q));
+      })
+      .sort((a, b) => {
+        const statusDelta = priority[a.stockStatus] - priority[b.stockStatus];
+        if (statusDelta !== 0) return statusDelta;
+        return a.productName.localeCompare(b.productName);
+      });
+  }, [inventoryFilter, inventoryRows, inventorySearchTerm]);
+  const inventorySummary = useMemo(() => ({
+    total: inventoryRows.length,
+    variants: inventoryRows.filter(row => row.variant_id !== 'base').length,
+    low: inventoryRows.filter(row => row.stockStatus === 'low').length,
+    out: inventoryRows.filter(row => row.stockStatus === 'out').length,
+  }), [inventoryRows]);
 
   const handleLogin = async () => {
     setAuthSubmitting(true);
@@ -3143,6 +3172,33 @@ function AdminPortalPage({ navigate }) {
       await loadSnapshot();
     } catch (error) {
       toast(error?.message || 'Could not update inventory.', 'error');
+    } finally {
+      setSavingOrderId(null);
+    }
+  };
+  const handleInventorySaveAll = async () => {
+    const keys = Object.keys(inventoryDrafts);
+    if (!keys.length) {
+      toast('No inventory edits to save yet.');
+      return;
+    }
+    setSavingOrderId('inventory-bulk');
+    try {
+      for (const row of inventoryRows) {
+        const draft = inventoryDrafts[row.key];
+        if (!draft) continue;
+        await upsertInventoryRecord({
+          product_id: row.product_id,
+          variant_id: row.variant_id,
+          stock_quantity: draft.stock_quantity ?? row.stock_quantity ?? 0,
+          low_stock_threshold: draft.low_stock_threshold ?? row.low_stock_threshold ?? 2,
+        });
+      }
+      setInventoryDrafts({});
+      await loadSnapshot();
+      toast('All inventory edits saved.');
+    } catch (error) {
+      toast(error?.message || 'Could not save all inventory changes.', 'error');
     } finally {
       setSavingOrderId(null);
     }
@@ -3480,17 +3536,70 @@ function AdminPortalPage({ navigate }) {
 
         <div className="glass-card" style={{padding:isMobile?'22px 18px':'24px'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px',gap:'12px',flexWrap:'wrap'}}>
-            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)'}}>Inventory</h2>
-            <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',letterSpacing:'.1em'}}>MANUAL STOCK CONTROL</p>
+            <div>
+              <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)'}}>Inventory</h2>
+              <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',letterSpacing:'.1em',marginTop:'6px'}}>MANUAL STOCK CONTROL</p>
+            </div>
+            <button
+              className="btn-ghost-luxury"
+              onClick={handleInventorySaveAll}
+              disabled={savingOrderId === 'inventory-bulk' || !Object.keys(inventoryDrafts).length}
+              style={{justifyContent:'center',padding:'12px 18px',opacity:(savingOrderId === 'inventory-bulk' || !Object.keys(inventoryDrafts).length) ? 0.5 : 1}}
+            >
+              {savingOrderId === 'inventory-bulk' ? 'SAVING ALL...' : `SAVE ALL${Object.keys(inventoryDrafts).length ? ` (${Object.keys(inventoryDrafts).length})` : ''}`}
+            </button>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(4,minmax(0,1fr))',gap:'10px',marginBottom:'16px'}}>
+            {[
+              { label:'Tracked SKUs', value:inventorySummary.total, tone:'rgba(250,250,245,.82)' },
+              { label:'Variant Rows', value:inventorySummary.variants, tone:'var(--mint)' },
+              { label:'Low Stock', value:inventorySummary.low, tone:'#FBBF24' },
+              { label:'Out of Stock', value:inventorySummary.out, tone:'#F87171' },
+            ].map(item => (
+              <div key={item.label} style={{padding:'14px 12px',border:'1px solid rgba(168,230,207,.08)',borderRadius:'10px',background:'rgba(255,255,255,.02)'}}>
+                <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.32)',letterSpacing:'.08em'}}>{item.label}</p>
+                <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'28px',color:item.tone,marginTop:'8px',lineHeight:'1'}}>{item.value}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{display:'flex',gap:'10px',flexWrap:'wrap',marginBottom:'16px',alignItems:'center'}}>
+            <input
+              className="dark-field"
+              value={inventorySearchTerm}
+              onChange={e=>setInventorySearchTerm(e.target.value)}
+              placeholder="Search product or variant"
+              style={{minWidth:isMobile?'100%':'220px'}}
+            />
+            <select
+              value={inventoryFilter}
+              onChange={e=>setInventoryFilter(e.target.value)}
+              style={{border:'1px solid rgba(168,230,207,.15)',borderRadius:'4px',padding:'8px 10px',fontFamily:"'DM Mono',monospace",fontSize:'10px',letterSpacing:'.08em',background:'rgba(255,255,255,.04)',color:'rgba(250,250,245,.72)',outline:'none',cursor:'none'}}
+            >
+              <option value="all">ALL STOCK</option>
+              <option value="out">OUT OF STOCK</option>
+              <option value="low">LOW STOCK</option>
+              <option value="healthy">HEALTHY</option>
+              <option value="variant">VARIANTS ONLY</option>
+              <option value="base">BASE PRODUCTS</option>
+            </select>
+            <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.28)',letterSpacing:'.08em'}}>
+              {visibleInventoryRows.length} rows in this view
+            </p>
           </div>
           <div style={{display:'grid',gap:'12px'}}>
-            {inventoryRows.slice(0, 24).map(row => {
+            {visibleInventoryRows.slice(0, 80).map(row => {
               const draft = inventoryDrafts[row.key] || {};
+              const badge = row.stockStatus === 'out'
+                ? { label:'OUT', color:'#FCA5A5', border:'rgba(248,113,113,.24)' }
+                : row.stockStatus === 'low'
+                  ? { label:'LOW', color:'#FBBF24', border:'rgba(251,191,36,.22)' }
+                  : { label:'OK', color:'var(--mint)', border:'rgba(168,230,207,.18)' };
               return (
-                <div key={row.key} style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1.4fr .8fr .8fr auto',gap:'10px',alignItems:'center',padding:'12px',border:'1px solid rgba(168,230,207,.08)',borderRadius:'10px',background:'rgba(255,255,255,.02)'}}>
+                <div key={row.key} style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1.4fr .7fr .7fr .7fr auto',gap:'10px',alignItems:'center',padding:'12px',border:`1px solid ${badge.border}`,borderRadius:'10px',background:row.stockStatus==='out'?'rgba(248,113,113,.04)':(row.stockStatus==='low'?'rgba(251,191,36,.04)':'rgba(255,255,255,.02)')}}>
                   <div>
                     <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.84)'}}>{row.productName}</p>
                     <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.28)',marginTop:'4px'}}>{row.variantLabel}</p>
+                    <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:badge.color,marginTop:'6px',letterSpacing:'.08em'}}>{badge.label}</p>
                   </div>
                   <input
                     className="dark-field"
@@ -3504,13 +3613,17 @@ function AdminPortalPage({ navigate }) {
                     onChange={e=>handleInventoryChange(row.key, 'low_stock_threshold', e.target.value)}
                     placeholder="Low stock"
                   />
-                  <button className="btn-ghost-luxury" onClick={()=>handleInventorySave(row)} style={{justifyContent:'center',padding:'12px 18px'}} disabled={savingOrderId === row.key}>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.35)',lineHeight:'1.6'}}>
+                    <div>SKU: {row.variant_id === 'base' ? 'BASE' : row.variant_id}</div>
+                    <div>Threshold: {draft.low_stock_threshold ?? row.low_stock_threshold}</div>
+                  </div>
+                  <button className="btn-ghost-luxury" onClick={()=>handleInventorySave(row)} style={{justifyContent:'center',padding:'12px 18px'}} disabled={savingOrderId === row.key || savingOrderId === 'inventory-bulk'}>
                     {savingOrderId === row.key ? 'SAVING...' : 'SAVE'}
                   </button>
                 </div>
               );
             })}
-            {!inventoryRows.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>Inventory rows will appear once product data is available.</p>}
+            {!visibleInventoryRows.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>No inventory rows match this filter yet.</p>}
           </div>
         </div>
       </div>
