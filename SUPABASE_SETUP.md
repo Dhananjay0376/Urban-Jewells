@@ -17,6 +17,13 @@ VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
+This app also accepts the newer Next-style names if those are what Supabase shows you:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-publishable-key
+```
+
 ## 2. Database Tables
 
 Open the Supabase SQL editor and run:
