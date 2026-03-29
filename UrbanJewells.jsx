@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
 import { lazy as reactLazy, Suspense as ReactSuspense } from "react";
 import * as THREE from "three";
+import { CART_STORAGE_KEY, WISHLIST_STORAGE_KEY, getDefaultVariant, getDisplayImages, getDisplayOriginalPrice, getDisplayPrice, getDisplayStock, getWishlistKey, materializeProductSelection, readStoredArray, writeStoredArray } from "./src/lib/storefrontState";
 import { routeFromHash, routeToHash } from "./src/lib/appRouter";
 import { isSanityConfigured, loadCatalogFromSanity } from "./src/lib/sanityCatalog";
 import { getAdminProfile, getSupabaseSession, isSupabaseConfigured, onSupabaseAuthChange, signInAdminWithPassword, signOutAdminSession } from "./src/lib/supabaseClient";
@@ -798,51 +799,6 @@ const withCollectionCounts = (collections, products) => collections.map(collecti
   ...collection,
   productCount: collection.productCount || products.filter(product => product.collection === collection.slug).length,
 }));
-const getDefaultVariant = product => Array.isArray(product?.variants) && product.variants.length ? product.variants[0] : null;
-const getDisplayImages = (product, variant = null) => {
-  const variantImages = Array.isArray(variant?.images) ? variant.images.filter(Boolean) : [];
-  if (variantImages.length) return variantImages;
-  return Array.isArray(product?.images) ? product.images.filter(Boolean) : [];
-};
-const getDisplayPrice = (product, variant = null) => typeof variant?.price === 'number' ? variant.price : product?.price;
-const getDisplayOriginalPrice = (product, variant = null) => typeof variant?.originalPrice === 'number' ? variant.originalPrice : product?.originalPrice;
-const getDisplayStock = (product, variant = null) => typeof variant?.inStock === 'boolean' ? variant.inStock : product?.inStock !== false;
-const getWishlistKey = (product, variant = null) => {
-  const activeVariant = variant || getDefaultVariant(product);
-  return `${product.id}-${activeVariant?.id || 'base'}`;
-};
-const materializeProductSelection = (product, variant = null) => {
-  const activeVariant = variant || getDefaultVariant(product);
-  return {
-    ...product,
-    selectedVariantId: activeVariant?.id || null,
-    selectedColorName: activeVariant?.colorName || null,
-    selectedColorHex: activeVariant?.colorHex || null,
-    images: getDisplayImages(product, activeVariant),
-    price: getDisplayPrice(product, activeVariant),
-    originalPrice: getDisplayOriginalPrice(product, activeVariant),
-    inStock: getDisplayStock(product, activeVariant),
-  };
-};
-const CART_STORAGE_KEY = 'urban-jewells-cart-v1';
-const WISHLIST_STORAGE_KEY = 'urban-jewells-wishlist-v1';
-const readStoredArray = (key) => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-const writeStoredArray = (key, value) => {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {}
-};
 
 // =================================================================
 //  APP CONTEXT
