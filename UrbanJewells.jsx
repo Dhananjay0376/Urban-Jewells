@@ -1,7 +1,8 @@
 ﻿import { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
 import { lazy as reactLazy, Suspense as ReactSuspense } from "react";
 import * as THREE from "three";
-import { CART_STORAGE_KEY, WISHLIST_STORAGE_KEY, getDefaultVariant, getDisplayImages, getDisplayOriginalPrice, getDisplayPrice, getDisplayStock, getWishlistKey, materializeProductSelection, readStoredArray, writeStoredArray } from "./src/lib/storefrontState";
+import { AppProvider, useApp } from "./src/context/AppContext";
+import { getDefaultVariant, getDisplayImages, getDisplayOriginalPrice, getDisplayPrice, getDisplayStock, getWishlistKey } from "./src/lib/storefrontState";
 import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, formatDiscount, formatPrice, genRef, getOptimizedImageUrl, getShippingAmount, getShippingMessage, withCollectionCounts } from "./src/lib/storefrontUtils";
 import { routeFromHash, routeToHash } from "./src/lib/appRouter";
 import { applyDocumentMeta, buildMetaForRoute } from "./src/lib/seoMeta";
@@ -595,130 +596,6 @@ const FAQS = [
 // =================================================================
 //  APP CONTEXT
 // =================================================================
-const Ctx = createContext(null);
-const useApp = () => useContext(Ctx);
-
-function AppProvider({ children }) {
-  const [cart, setCart] = useState(() => readStoredArray(CART_STORAGE_KEY));
-  const [wishlist, setWishlist] = useState(() => readStoredArray(WISHLIST_STORAGE_KEY));
-  const [cartOpen, setCartOpen] = useState(false);
-  const [toasts, setToasts] = useState([]);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const cmsEnabled = isSanityConfigured();
-  const [catalog, setCatalog] = useState(() => ({
-    products: EMPTY_PRODUCTS,
-    collections: EMPTY_COLLECTIONS,
-    categories: EMPTY_CATEGORIES,
-    loading: cmsEnabled,
-    source: cmsEnabled ? 'loading' : 'unconfigured',
-    error: cmsEnabled ? null : 'Sanity catalog is not configured',
-  }));
-
-  const refreshCatalog = useCallback(async () => {
-    const remoteCatalog = await loadCatalogFromSanity();
-    if (!remoteCatalog) return;
-
-    const products = remoteCatalog.products;
-    const collections = remoteCatalog.collections;
-    const categories = remoteCatalog.categories;
-
-    setCatalog({
-      products,
-      collections: withCollectionCounts(collections, products),
-      categories,
-      loading: false,
-      source: 'sanity',
-      error: null,
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!cmsEnabled) return undefined;
-
-    let cancelled = false;
-    const safeRefresh = async () => {
-      try {
-        await refreshCatalog();
-      } catch (error) {
-        console.error('Failed to load catalog from Sanity:', error);
-        if (cancelled) return;
-        setCatalog(prev => ({ ...prev, loading: false, source: 'error', error: error.message || 'Failed to load catalog' }));
-      }
-    };
-
-    safeRefresh();
-
-    const onFocus = () => {
-      safeRefresh();
-    };
-
-    window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', onFocus);
-
-    return () => {
-      cancelled = true;
-      window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onFocus);
-    };
-  }, [cmsEnabled, refreshCatalog]);
-
-  useEffect(() => {
-    writeStoredArray(CART_STORAGE_KEY, cart);
-  }, [cart]);
-
-  useEffect(() => {
-    writeStoredArray(WISHLIST_STORAGE_KEY, wishlist);
-  }, [wishlist]);
-
-  const toast = useCallback((msg, type="success") => {
-    const id = Date.now();
-    setToasts(t => [...t, {id, msg, type}]);
-    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
-  }, []);
-
-  const addToCart = useCallback((product, size=null, qty=1, variant=null) => {
-    const selectedProduct = materializeProductSelection(product, variant);
-    const key = `${selectedProduct.id}-${selectedProduct.selectedVariantId || 'base'}-${size || 'nosize'}`;
-    setCart(prev => {
-      const ex = prev.find(i => i.cartKey === key);
-      if (ex) return prev.map(i => i.cartKey === key ? {...i, quantity: Math.min(i.quantity+qty,10)} : i);
-      return [...prev, {...selectedProduct, size, quantity:qty, cartKey:key}];
-    });
-    setCartOpen(true);
-    toast(`${selectedProduct.name}${selectedProduct.selectedColorName ? ` (${selectedProduct.selectedColorName})` : ''} added OK`);
-  }, [toast]);
-
-  const removeFromCart = useCallback(key => setCart(p => p.filter(i => i.cartKey !== key)), []);
-  const updateQty = useCallback((key, qty) => {
-    if (qty < 1) { removeFromCart(key); return; }
-    setCart(p => p.map(i => i.cartKey === key ? {...i, quantity:Math.min(qty,10)} : i));
-  }, [removeFromCart]);
-
-  const toggleWishlist = useCallback((product, variant=null) => {
-    const selectedProduct = materializeProductSelection(product, variant);
-    const wishKey = getWishlistKey(product, variant);
-    const has = wishlist.some(i => i.wishKey === wishKey);
-    if (has) {
-      setWishlist(p => p.filter(i => i.wishKey !== wishKey));
-      toast("Removed from wishlist");
-    } else {
-      setWishlist(p => [...p, {...selectedProduct, wishKey}]);
-      toast("Added to wishlist <3");
-    }
-  }, [wishlist, toast]);
-
-  const cartTotal = cart.reduce((s,i) => s + i.price * i.quantity, 0);
-  const cartShipping = getShippingAmount(cartTotal);
-  const cartGrandTotal = cartTotal + cartShipping;
-  const cartCount = cart.reduce((s,i) => s + i.quantity, 0);
-
-  return (
-    <Ctx.Provider value={{cart,setCart,cartOpen,setCartOpen,addToCart,removeFromCart,updateQty,cartTotal,cartShipping,cartGrandTotal,cartCount,wishlist,toggleWishlist,toasts,setToasts,toast,searchOpen,setSearchOpen,products:catalog.products,collections:catalog.collections,categories:catalog.categories,catalogLoading:catalog.loading,catalogSource:catalog.source,catalogError:catalog.error,cmsEnabled}}>
-      {children}
-    </Ctx.Provider>
-  );
-}
-
 // =================================================================
 //  SVG LOGO
 // =================================================================
@@ -3626,7 +3503,7 @@ export default function App() {
   };
 
   return (
-    <AppProvider>
+    <AppProvider emptyProducts={EMPTY_PRODUCTS} emptyCollections={EMPTY_COLLECTIONS} emptyCategories={EMPTY_CATEGORIES}>
       <RouteMetaManager page={page} params={params}/>
       <GlobalStyles/>
       <Cursor/>
