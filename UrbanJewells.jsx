@@ -2874,6 +2874,20 @@ const getCustomerLookupKey = (entry = {}) => {
   if (phone) return `phone:${phone}::${normalizedName || 'unknown'}`;
   return `id:${entry.id || ''}`;
 };
+const toCsvValue = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+const downloadCsv = (filename, headers, rows) => {
+  if (typeof window === 'undefined') return;
+  const csv = [headers.map(toCsvValue).join(','), ...rows.map(row => row.map(toCsvValue).join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
 
 function AdminPortalPage({ navigate }) {
   const { products, toast } = useApp();
@@ -2897,6 +2911,9 @@ function AdminPortalPage({ navigate }) {
   const [adminNoteDraft, setAdminNoteDraft] = useState('');
   const [inventorySearchTerm, setInventorySearchTerm] = useState('');
   const [inventoryFilter, setInventoryFilter] = useState('all');
+  const [visibleOrderCount, setVisibleOrderCount] = useState(12);
+  const [visibleCustomerCount, setVisibleCustomerCount] = useState(12);
+  const [visibleInventoryCount, setVisibleInventoryCount] = useState(80);
   const supabaseReady = isSupabaseConfigured();
 
   useEffect(() => {
@@ -2998,6 +3015,9 @@ function AdminPortalPage({ navigate }) {
     }
   }, [selectedOrderId, visibleOrders]);
   useEffect(() => {
+    setVisibleOrderCount(12);
+  }, [orderFilter, statusFilter, dateFilter, searchTerm]);
+  useEffect(() => {
     setAdminNoteDraft(selectedOrder?.admin_notes || '');
   }, [selectedOrder]);
   useEffect(() => {
@@ -3009,6 +3029,9 @@ function AdminPortalPage({ navigate }) {
       setSelectedCustomerId(visibleCustomers[0]?.id || null);
     }
   }, [selectedCustomerId, visibleCustomers]);
+  useEffect(() => {
+    setVisibleCustomerCount(12);
+  }, [customerSearchTerm]);
 
   const inventoryRows = useMemo(() => {
     const inventoryMap = new Map(snapshot.inventory.map(item => [`${item.product_id}::${item.variant_id || 'base'}`, item]));
@@ -3071,6 +3094,9 @@ function AdminPortalPage({ navigate }) {
     low: inventoryRows.filter(row => row.stockStatus === 'low').length,
     out: inventoryRows.filter(row => row.stockStatus === 'out').length,
   }), [inventoryRows]);
+  useEffect(() => {
+    setVisibleInventoryCount(80);
+  }, [inventorySearchTerm, inventoryFilter]);
 
   const handleLogin = async () => {
     setAuthSubmitting(true);
@@ -3108,8 +3134,14 @@ function AdminPortalPage({ navigate }) {
   };
 
   const handleDeleteCancelledOrder = async (orderId) => {
-    const shouldDelete = typeof window === 'undefined' ? true : window.confirm('Delete this cancelled order permanently?');
-    if (!shouldDelete) return;
+    const order = snapshot.orders.find(item => item.id === orderId);
+    const shouldDelete = typeof window === 'undefined'
+      ? true
+      : window.prompt(`Type DELETE to permanently remove ${order?.order_ref || 'this cancelled order'}.`) === 'DELETE';
+    if (!shouldDelete) {
+      toast('Delete cancelled.');
+      return;
+    }
     setSavingOrderId(orderId);
     try {
       await deleteCancelledOrder(orderId);
@@ -3123,6 +3155,24 @@ function AdminPortalPage({ navigate }) {
     } finally {
       setSavingOrderId(null);
     }
+  };
+  const handleExportOrders = () => {
+    downloadCsv('urban-jewells-orders.csv',
+      ['Order Ref', 'Created At', 'Customer', 'Phone', 'Email', 'City', 'State', 'Status', 'Subtotal', 'Shipping', 'Total'],
+      visibleOrders.map(order => [order.order_ref, order.created_at, order.customer_name, order.phone, order.email, order.city, order.state, order.status, order.subtotal, order.shipping, order.total]));
+    toast('Orders CSV downloaded.');
+  };
+  const handleExportCustomers = () => {
+    downloadCsv('urban-jewells-customers.csv',
+      ['Name', 'Phone', 'Email', 'Order Count', 'Total Spend', 'Last Order'],
+      visibleCustomers.map(customer => [customer.name, customer.phone, customer.email, customer.order_count, customer.total_spend, customer.last_order_at]));
+    toast('Customers CSV downloaded.');
+  };
+  const handleExportInventory = () => {
+    downloadCsv('urban-jewells-inventory.csv',
+      ['Product', 'Variant', 'Variant Id', 'Stock Quantity', 'Low Stock Threshold', 'Status'],
+      visibleInventoryRows.map(row => [row.productName, row.variantLabel, row.variant_id, row.stock_quantity, row.low_stock_threshold, row.stockStatus]));
+    toast('Inventory CSV downloaded.');
   };
 
   const handleAdminNotesSave = async () => {
@@ -3284,6 +3334,7 @@ function AdminPortalPage({ navigate }) {
               <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)'}}>Recent Orders</h2>
               <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.32)',letterSpacing:'.12em'}}>AUTO-CAPTURED FROM CHECKOUT</p>
+                <button className="btn-ghost-luxury" onClick={handleExportOrders} style={{padding:'8px 12px',fontSize:'10px'}}>EXPORT CSV</button>
                 <input
                   className="dark-field"
                   value={searchTerm}
@@ -3321,7 +3372,7 @@ function AdminPortalPage({ navigate }) {
               </div>
             </div>
             <div style={{display:'grid',gap:'12px'}}>
-              {visibleOrders.slice(0, 12).map(order => (
+              {visibleOrders.slice(0, visibleOrderCount).map(order => (
                 <div key={order.id} onClick={()=>setSelectedOrderId(order.id)} style={{padding:'14px',border:`1px solid ${selectedOrderId===order.id?'rgba(201,168,76,.28)':'rgba(168,230,207,.08)'}`,borderRadius:'10px',background:selectedOrderId===order.id?'rgba(201,168,76,.05)':'rgba(255,255,255,.02)',cursor:'none'}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'12px',flexWrap:'wrap',marginBottom:'10px'}}>
                     <div>
@@ -3361,6 +3412,11 @@ function AdminPortalPage({ navigate }) {
                   </div>
                 </div>
               ))}
+              {visibleOrders.length > visibleOrderCount && (
+                <button className="btn-ghost-luxury" onClick={()=>setVisibleOrderCount(count => count + 12)} style={{justifyContent:'center'}}>
+                  LOAD MORE ORDERS
+                </button>
+              )}
               {!visibleOrders.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>No orders in this view yet.</p>}
             </div>
           </div>
@@ -3472,11 +3528,12 @@ function AdminPortalPage({ navigate }) {
                   placeholder="Search name, phone, email"
                   style={{minWidth:isMobile?'100%':'220px'}}
                 />
+                <button className="btn-ghost-luxury" onClick={handleExportCustomers} style={{padding:'8px 12px',fontSize:'10px'}}>EXPORT CSV</button>
               </div>
               {customerRows.length ? (
                 <div style={{display:'grid',gap:'14px'}}>
                   <div style={{display:'grid',gap:'10px',maxHeight:isMobile?'none':'420px',overflowY:isMobile?'visible':'auto',paddingRight:isMobile?0:'4px'}}>
-                    {visibleCustomers.map(customer => (
+                    {visibleCustomers.slice(0, visibleCustomerCount).map(customer => (
                       <button
                         key={customer.id}
                         onClick={()=>setSelectedCustomerId(customer.id)}
@@ -3497,6 +3554,11 @@ function AdminPortalPage({ navigate }) {
                       </button>
                     ))}
                   </div>
+                  {visibleCustomers.length > visibleCustomerCount && (
+                    <button className="btn-ghost-luxury" onClick={()=>setVisibleCustomerCount(count => count + 12)} style={{justifyContent:'center'}}>
+                      LOAD MORE CUSTOMERS
+                    </button>
+                  )}
                   {selectedCustomer && (
                     <div style={{paddingTop:'6px',borderTop:'1px solid rgba(168,230,207,.06)',display:'grid',gap:'10px'}}>
                       <div>
@@ -3590,14 +3652,17 @@ function AdminPortalPage({ navigate }) {
               <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:'30px',color:'var(--cream)'}}>Inventory</h2>
               <p style={{fontFamily:"'DM Mono',monospace",fontSize:'10px',color:'rgba(250,250,245,.3)',letterSpacing:'.1em',marginTop:'6px'}}>MANUAL STOCK CONTROL</p>
             </div>
-            <button
-              className="btn-ghost-luxury"
-              onClick={handleInventorySaveAll}
-              disabled={savingOrderId === 'inventory-bulk' || !Object.keys(inventoryDrafts).length}
-              style={{justifyContent:'center',padding:'12px 18px',opacity:(savingOrderId === 'inventory-bulk' || !Object.keys(inventoryDrafts).length) ? 0.5 : 1}}
-            >
-              {savingOrderId === 'inventory-bulk' ? 'SAVING ALL...' : `SAVE ALL${Object.keys(inventoryDrafts).length ? ` (${Object.keys(inventoryDrafts).length})` : ''}`}
-            </button>
+            <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
+              <button className="btn-ghost-luxury" onClick={handleExportInventory} style={{justifyContent:'center',padding:'12px 18px',fontSize:'10px'}}>EXPORT CSV</button>
+              <button
+                className="btn-ghost-luxury"
+                onClick={handleInventorySaveAll}
+                disabled={savingOrderId === 'inventory-bulk' || !Object.keys(inventoryDrafts).length}
+                style={{justifyContent:'center',padding:'12px 18px',opacity:(savingOrderId === 'inventory-bulk' || !Object.keys(inventoryDrafts).length) ? 0.5 : 1}}
+              >
+                {savingOrderId === 'inventory-bulk' ? 'SAVING ALL...' : `SAVE ALL${Object.keys(inventoryDrafts).length ? ` (${Object.keys(inventoryDrafts).length})` : ''}`}
+              </button>
+            </div>
           </div>
           <div style={{display:'grid',gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(4,minmax(0,1fr))',gap:'10px',marginBottom:'16px'}}>
             {[
@@ -3637,7 +3702,7 @@ function AdminPortalPage({ navigate }) {
             </p>
           </div>
           <div style={{display:'grid',gap:'12px'}}>
-            {visibleInventoryRows.slice(0, 80).map(row => {
+            {visibleInventoryRows.slice(0, visibleInventoryCount).map(row => {
               const draft = inventoryDrafts[row.key] || {};
               const badge = row.stockStatus === 'out'
                 ? { label:'OUT', color:'#FCA5A5', border:'rgba(248,113,113,.24)' }
@@ -3673,6 +3738,11 @@ function AdminPortalPage({ navigate }) {
                 </div>
               );
             })}
+            {visibleInventoryRows.length > visibleInventoryCount && (
+              <button className="btn-ghost-luxury" onClick={()=>setVisibleInventoryCount(count => count + 40)} style={{justifyContent:'center'}}>
+                LOAD MORE INVENTORY ROWS
+              </button>
+            )}
             {!visibleInventoryRows.length && <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:'14px',color:'rgba(250,250,245,.4)'}}>No inventory rows match this filter yet.</p>}
           </div>
         </div>
