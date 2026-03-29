@@ -69,14 +69,38 @@ create table if not exists public.inventory (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.admin_users (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  email text,
+  role text not null default 'admin',
+  created_at timestamptz not null default now()
+);
+
 create unique index if not exists inventory_product_variant_unique
 on public.inventory (product_id, variant_id);
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.admin_users
+    where user_id = auth.uid()
+  );
+$$;
+
+grant execute on function public.is_admin() to anon, authenticated;
 
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
 alter table public.customers enable row level security;
 alter table public.inventory enable row level security;
 alter table public.order_status_history enable row level security;
+alter table public.admin_users enable row level security;
 
 drop policy if exists "public can insert orders" on public.orders;
 create policy "public can insert orders"
@@ -112,69 +136,76 @@ create policy "admins can read orders"
 on public.orders
 for select
 to authenticated
-using (true);
+using (public.is_admin());
 
 drop policy if exists "admins can update orders" on public.orders;
 create policy "admins can update orders"
 on public.orders
 for update
 to authenticated
-using (true)
-with check (true);
+using (public.is_admin())
+with check (public.is_admin());
 
 drop policy if exists "admins can delete cancelled orders" on public.orders;
 create policy "admins can delete cancelled orders"
 on public.orders
 for delete
 to authenticated
-using (status = 'cancelled');
+using (public.is_admin() and status = 'cancelled');
 
 drop policy if exists "admins can read order items" on public.order_items;
 create policy "admins can read order items"
 on public.order_items
 for select
 to authenticated
-using (true);
+using (public.is_admin());
 
 drop policy if exists "admins can read order history" on public.order_status_history;
 create policy "admins can read order history"
 on public.order_status_history
 for select
 to authenticated
-using (true);
+using (public.is_admin());
 
 drop policy if exists "admins can insert order history" on public.order_status_history;
 create policy "admins can insert order history"
 on public.order_status_history
 for insert
 to authenticated
-with check (true);
+with check (public.is_admin());
 
 drop policy if exists "admins can read customers" on public.customers;
 create policy "admins can read customers"
 on public.customers
 for select
 to authenticated
-using (true);
+using (public.is_admin());
 
 drop policy if exists "admins can read inventory" on public.inventory;
 create policy "admins can read inventory"
 on public.inventory
 for select
 to authenticated
-using (true);
+using (public.is_admin());
 
 drop policy if exists "admins can upsert inventory" on public.inventory;
 create policy "admins can upsert inventory"
 on public.inventory
 for insert
 to authenticated
-with check (true);
+with check (public.is_admin());
 
 drop policy if exists "admins can update inventory" on public.inventory;
 create policy "admins can update inventory"
 on public.inventory
 for update
 to authenticated
-using (true)
-with check (true);
+using (public.is_admin())
+with check (public.is_admin());
+
+drop policy if exists "admins can read own profile" on public.admin_users;
+create policy "admins can read own profile"
+on public.admin_users
+for select
+to authenticated
+using (user_id = auth.uid());

@@ -32,6 +32,17 @@ export async function getSupabaseSession() {
   return data.session || null;
 }
 
+export async function getAdminProfile() {
+  const client = getSupabaseClient();
+  if (!client) return null;
+  const { data, error } = await client
+    .from('admin_users')
+    .select('user_id, email, role, created_at')
+    .maybeSingle();
+  if (error) throw error;
+  return data || null;
+}
+
 export async function signInAdminWithPassword(email, password) {
   const client = getSupabaseClient();
   if (!client) throw new Error('Supabase is not configured.');

@@ -49,7 +49,19 @@ Create at least one admin user in Supabase Auth:
 
 1. Go to `Authentication`
 2. Create a user with email/password
-3. Use those credentials in `#/admin`
+3. Add that user to the admin allowlist in SQL:
+
+```sql
+insert into public.admin_users (user_id, email, role)
+select id, email, 'owner'
+from auth.users
+where email = 'your-admin-email@example.com'
+on conflict (user_id) do update set
+  email = excluded.email,
+  role = excluded.role;
+```
+
+4. Use those credentials in `#/admin`
 
 ## 4. Order Flow
 
@@ -85,3 +97,4 @@ The admin portal lets you save stock quantities manually.
 - Operational data now comes from Supabase.
 - The storefront does not yet auto-sync stock counts back into public product availability; this first version focuses on order capture and admin operations.
 - Cancelled orders are hidden by default in the admin portal and can be permanently deleted there if you no longer want to keep them.
+- Admin access now depends on `public.admin_users`; being authenticated in Supabase is no longer enough by itself.

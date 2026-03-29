@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
 import * as THREE from "three";
 import { isSanityConfigured, loadCatalogFromSanity } from "./src/lib/sanityCatalog";
-import { getSupabaseSession, isSupabaseConfigured, onSupabaseAuthChange, signInAdminWithPassword, signOutAdminSession } from "./src/lib/supabaseClient";
+import { getAdminProfile, getSupabaseSession, isSupabaseConfigured, onSupabaseAuthChange, signInAdminWithPassword, signOutAdminSession } from "./src/lib/supabaseClient";
 import { ORDER_STATUSES, buildDashboardMetrics, buildWhatsAppOrderMessage, createOrderRequest, deleteCancelledOrder, fetchAdminSnapshot, updateOrderAdminNotes, upsertInventoryRecord, updateOrderStatus } from "./src/lib/commerceAdmin";
 
 // =================================================================
@@ -2893,6 +2893,7 @@ function AdminPortalPage({ navigate }) {
   const { products, toast } = useApp();
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 900 : false;
   const [session, setSession] = useState(null);
+  const [adminProfile, setAdminProfile] = useState(null);
   const [authReady, setAuthReady] = useState(false);
   const [authForm, setAuthForm] = useState({ email:'', password:'' });
   const [authSubmitting, setAuthSubmitting] = useState(false);
@@ -2926,7 +2927,25 @@ function AdminPortalPage({ navigate }) {
       .then(currentSession => {
         if (alive) {
           setSession(currentSession);
-          setAuthReady(true);
+          if (!currentSession) {
+            setAdminProfile(null);
+            setAuthReady(true);
+            return;
+          }
+          getAdminProfile()
+            .then(profile => {
+              if (!alive) return;
+              setAdminProfile(profile);
+              if (!profile) setAuthError('This user is not on the admin allowlist.');
+              setAuthReady(true);
+            })
+            .catch(error => {
+              console.error('Failed to read admin profile:', error);
+              if (!alive) return;
+              setAdminProfile(null);
+              setAuthError(error?.message || 'Could not verify admin access.');
+              setAuthReady(true);
+            });
         }
       })
       .catch(error => {
@@ -2935,7 +2954,24 @@ function AdminPortalPage({ navigate }) {
       });
     const unsubscribe = onSupabaseAuthChange(nextSession => {
       setSession(nextSession);
-      setAuthReady(true);
+      setAuthError('');
+      if (!nextSession) {
+        setAdminProfile(null);
+        setAuthReady(true);
+        return;
+      }
+      getAdminProfile()
+        .then(profile => {
+          setAdminProfile(profile);
+          if (!profile) setAuthError('This user is not on the admin allowlist.');
+          setAuthReady(true);
+        })
+        .catch(error => {
+          console.error('Failed to read admin profile:', error);
+          setAdminProfile(null);
+          setAuthError(error?.message || 'Could not verify admin access.');
+          setAuthReady(true);
+        });
     });
     return () => {
       alive = false;
@@ -2944,7 +2980,7 @@ function AdminPortalPage({ navigate }) {
   }, [supabaseReady]);
 
   const loadSnapshot = useCallback(async () => {
-    if (!session || !supabaseReady) return;
+    if (!session || !adminProfile || !supabaseReady) return;
     setLoadingData(true);
     try {
       const nextSnapshot = await fetchAdminSnapshot();
@@ -2955,7 +2991,7 @@ function AdminPortalPage({ navigate }) {
     } finally {
       setLoadingData(false);
     }
-  }, [session, supabaseReady, toast]);
+  }, [adminProfile, session, supabaseReady, toast]);
 
   useEffect(() => {
     loadSnapshot();
@@ -3103,6 +3139,12 @@ function AdminPortalPage({ navigate }) {
     setAuthError('');
     try {
       await signInAdminWithPassword(authForm.email.trim(), authForm.password);
+      const profile = await getAdminProfile();
+      if (!profile) {
+        await signOutAdminSession();
+        throw new Error('This user is not on the admin allowlist.');
+      }
+      setAdminProfile(profile);
       toast('Admin session started.');
     } catch (error) {
       setAuthError(error?.message || 'Could not sign in.');
@@ -3114,6 +3156,7 @@ function AdminPortalPage({ navigate }) {
   const handleLogout = async () => {
     try {
       await signOutAdminSession();
+      setAdminProfile(null);
       toast('Signed out of admin.');
     } catch (error) {
       toast(error?.message || 'Could not sign out.', 'error');
@@ -3279,7 +3322,7 @@ function AdminPortalPage({ navigate }) {
 
   if (!authReady) return <CatalogLoadingScreen label="Loading admin portal"/>;
 
-  if (!session) {
+  if (!session || !adminProfile) {
     return (
       <div style={{background:'var(--ink)',minHeight:'100vh',paddingTop:'70px'}}>
         <div style={{maxWidth:'540px',margin:'0 auto',padding:isMobile?'28px 20px 44px':'56px 24px'}}>
