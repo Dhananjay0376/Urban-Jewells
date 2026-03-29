@@ -2,10 +2,10 @@
 import { lazy as reactLazy, Suspense as ReactSuspense } from "react";
 import * as THREE from "three";
 import { AppProvider, useApp } from "./src/context/AppContext";
+import { RouteMetaManager } from "./src/components/RouteMetaManager";
 import { getDefaultVariant, getDisplayImages, getDisplayOriginalPrice, getDisplayPrice, getDisplayStock, getWishlistKey } from "./src/lib/storefrontState";
 import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, formatDiscount, formatPrice, genRef, getOptimizedImageUrl, getShippingAmount, getShippingMessage, withCollectionCounts } from "./src/lib/storefrontUtils";
 import { routeFromHash, routeToHash } from "./src/lib/appRouter";
-import { applyDocumentMeta, buildMetaForRoute } from "./src/lib/seoMeta";
 import { isSanityConfigured, loadCatalogFromSanity } from "./src/lib/sanityCatalog";
 import { getAdminProfile, getSupabaseSession, isSupabaseConfigured, onSupabaseAuthChange, signInAdminWithPassword, signOutAdminSession } from "./src/lib/supabaseClient";
 import { ORDER_STATUSES, buildDashboardMetrics, buildWhatsAppOrderMessage, createOrderRequest, deleteCancelledOrder, fetchAdminSnapshot, updateOrderAdminNotes, upsertInventoryRecord, updateOrderStatus } from "./src/lib/commerceAdmin";
@@ -3386,20 +3386,6 @@ function TermsPage({ navigate }) {
 // =================================================================
 //  APP
 // =================================================================
-function RouteMetaManager({ page, params }) {
-  const { products, collections, categories } = useApp();
-  const meta = useMemo(
-    () => buildMetaForRoute({ page, params, products, collections, categories }),
-    [page, params, products, collections, categories]
-  );
-
-  useEffect(() => {
-    applyDocumentMeta(meta, getOptimizedImageUrl);
-  }, [meta]);
-
-  return null;
-}
-
 export default function App() {
   const initialRoute = useMemo(() => (
     typeof window !== 'undefined' ? routeFromHash(window.location.hash) : { page:'home', params:{} }
@@ -3504,7 +3490,7 @@ export default function App() {
 
   return (
     <AppProvider emptyProducts={EMPTY_PRODUCTS} emptyCollections={EMPTY_COLLECTIONS} emptyCategories={EMPTY_CATEGORIES}>
-      <RouteMetaManager page={page} params={params}/>
+      <RouteMetaManager page={page} params={params} getOptimizedImageUrl={getOptimizedImageUrl}/>
       <GlobalStyles/>
       <Cursor/>
       <ParticleCanvas/>
