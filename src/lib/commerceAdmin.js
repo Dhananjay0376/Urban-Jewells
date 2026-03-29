@@ -6,6 +6,12 @@ const ensureClient = () => {
   return client;
 };
 
+const normalizeVariantId = (value) => String(value || '').trim() || 'base';
+const isMissingCreateOrderRpc = (error) => {
+  const message = String(error?.message || '').toLowerCase();
+  return error?.code === 'PGRST202' || message.includes('create_order_request');
+};
+
 const startOfDay = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 const startOfWeek = (date) => {
   const copy = new Date(date);
@@ -30,10 +36,11 @@ export const ORDER_STATUSES = ['new', 'pending', 'confirmed', 'paid', 'dispatche
 export async function createOrderRequest({ orderRef, customer, cart, subtotal, shipping, total }) {
   const client = ensureClient();
   const phone = customer.whatsapp.trim();
+  const createdAt = new Date().toISOString();
 
   const orderPayload = {
     order_ref: orderRef,
-    created_at: new Date().toISOString(),
+    created_at: createdAt,
     customer_name: customer.fullName.trim(),
     phone,
     email: customer.email.trim() || null,
@@ -52,15 +59,7 @@ export async function createOrderRequest({ orderRef, customer, cart, subtotal, s
     whatsapp_sent: true,
   };
 
-  const { data: orderData, error: orderError } = await client
-    .from('orders')
-    .insert(orderPayload)
-    .select('id, order_ref')
-    .single();
-  if (orderError) throw orderError;
-
   const orderItemsPayload = cart.map(item => ({
-    order_id: orderData.id,
     product_id: item.id,
     product_name: item.name,
     product_slug: item.slug,
@@ -72,18 +71,46 @@ export async function createOrderRequest({ orderRef, customer, cart, subtotal, s
     line_total: item.price * item.quantity,
   }));
 
-  const { error: itemsError } = await client.from('order_items').insert(orderItemsPayload);
-  if (itemsError) throw itemsError;
-
   const customerPayload = {
     phone,
     email: customer.email.trim() || null,
     name: customer.fullName.trim(),
-    created_at: new Date().toISOString(),
-    last_order_at: new Date().toISOString(),
+    created_at: createdAt,
+    last_order_at: createdAt,
     order_count: 1,
     total_spend: total,
   };
+
+  const { data: rpcData, error: rpcError } = await client.rpc('create_order_request', {
+    order_payload: orderPayload,
+    order_items_payload: orderItemsPayload,
+    customer_payload: customerPayload,
+  });
+
+  if (!rpcError) {
+    const orderData = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+    if (orderData?.id && orderData?.order_ref) {
+      return orderData;
+    }
+    throw new Error('Order was created but the response was incomplete.');
+  }
+
+  if (!isMissingCreateOrderRpc(rpcError)) {
+    throw rpcError;
+  }
+
+  const { data: orderData, error: orderError } = await client
+    .from('orders')
+    .insert(orderPayload)
+    .select('id, order_ref')
+    .single();
+  if (orderError) throw orderError;
+
+  const { error: itemsError } = await client
+    .from('order_items')
+    .insert(orderItemsPayload.map(item => ({ ...item, order_id: orderData.id })));
+  if (itemsError) throw itemsError;
+
   const { data: existingCustomer, error: existingCustomerError } = await client
     .from('customers')
     .select('id, order_count, total_spend, created_at')
@@ -430,7 +457,7 @@ export async function upsertInventoryRecord(record) {
   const client = ensureClient();
   const payload = {
     product_id: record.product_id,
-    variant_id: record.variant_id || null,
+    variant_id: normalizeVariantId(record.variant_id),
     stock_quantity: Number(record.stock_quantity || 0),
     low_stock_threshold: Number(record.low_stock_threshold || 0),
     updated_at: new Date().toISOString(),

@@ -42,6 +42,7 @@ If you already ran an older version of the schema, run the updated file again so
 - `orders.inventory_adjusted`
 - `orders.admin_notes`
 - `order_status_history`
+- `create_order_request(...)` for transactional checkout writes
 
 ## 3. Admin Auth
 
@@ -74,6 +75,7 @@ Once Supabase is configured:
 5. admin reviews and updates status in `#/admin`
 
 If Supabase is not configured, checkout still falls back to the previous WhatsApp-only flow.
+If the latest SQL has been rerun, the Supabase writes happen through `public.create_order_request(...)` so the order, order items, and customer update succeed or fail together.
 
 ## 5. Automatic Stock Reduction
 

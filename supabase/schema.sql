@@ -76,6 +76,120 @@ create table if not exists public.admin_users (
   created_at timestamptz not null default now()
 );
 
+create or replace function public.create_order_request(
+  order_payload jsonb,
+  order_items_payload jsonb,
+  customer_payload jsonb
+)
+returns table (
+  id uuid,
+  order_ref text
+)
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  next_order_id uuid;
+  next_order_ref text;
+begin
+  insert into public.orders (
+    order_ref,
+    created_at,
+    customer_name,
+    phone,
+    email,
+    address_line_1,
+    address_line_2,
+    city,
+    state,
+    pincode,
+    notes,
+    subtotal,
+    shipping,
+    total,
+    status,
+    payment_method,
+    source,
+    whatsapp_sent
+  )
+  values (
+    order_payload->>'order_ref',
+    coalesce((order_payload->>'created_at')::timestamptz, now()),
+    order_payload->>'customer_name',
+    order_payload->>'phone',
+    nullif(order_payload->>'email', ''),
+    order_payload->>'address_line_1',
+    nullif(order_payload->>'address_line_2', ''),
+    order_payload->>'city',
+    order_payload->>'state',
+    order_payload->>'pincode',
+    nullif(order_payload->>'notes', ''),
+    coalesce((order_payload->>'subtotal')::numeric, 0),
+    coalesce((order_payload->>'shipping')::numeric, 0),
+    coalesce((order_payload->>'total')::numeric, 0),
+    coalesce(order_payload->>'status', 'new'),
+    coalesce(order_payload->>'payment_method', 'whatsapp'),
+    coalesce(order_payload->>'source', 'website'),
+    coalesce((order_payload->>'whatsapp_sent')::boolean, false)
+  )
+  returning orders.id, orders.order_ref into next_order_id, next_order_ref;
+
+  insert into public.order_items (
+    order_id,
+    product_id,
+    product_name,
+    product_slug,
+    variant_id,
+    variant_color_name,
+    size,
+    quantity,
+    unit_price,
+    line_total
+  )
+  select
+    next_order_id,
+    item->>'product_id',
+    item->>'product_name',
+    nullif(item->>'product_slug', ''),
+    nullif(item->>'variant_id', ''),
+    nullif(item->>'variant_color_name', ''),
+    nullif(item->>'size', ''),
+    coalesce((item->>'quantity')::integer, 1),
+    coalesce((item->>'unit_price')::numeric, 0),
+    coalesce((item->>'line_total')::numeric, 0)
+  from jsonb_array_elements(coalesce(order_items_payload, '[]'::jsonb)) as item;
+
+  insert into public.customers (
+    phone,
+    email,
+    name,
+    created_at,
+    last_order_at,
+    order_count,
+    total_spend
+  )
+  values (
+    customer_payload->>'phone',
+    nullif(customer_payload->>'email', ''),
+    customer_payload->>'name',
+    coalesce((customer_payload->>'created_at')::timestamptz, now()),
+    coalesce((customer_payload->>'last_order_at')::timestamptz, now()),
+    coalesce((customer_payload->>'order_count')::integer, 1),
+    coalesce((customer_payload->>'total_spend')::numeric, 0)
+  )
+  on conflict (phone) do update set
+    email = excluded.email,
+    name = excluded.name,
+    last_order_at = excluded.last_order_at,
+    order_count = public.customers.order_count + excluded.order_count,
+    total_spend = public.customers.total_spend + excluded.total_spend;
+
+  return query
+  select next_order_id, next_order_ref;
+end;
+$$;
+
 create unique index if not exists inventory_product_variant_unique
 on public.inventory (product_id, variant_id);
 
@@ -94,6 +208,7 @@ as $$
 $$;
 
 grant execute on function public.is_admin() to anon, authenticated;
+grant execute on function public.create_order_request(jsonb, jsonb, jsonb) to anon, authenticated;
 
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
