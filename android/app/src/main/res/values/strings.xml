@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Urban Jewells</string>
+    <string name="title_activity_main">Urban Jewells</string>
+    <string name="package_name">com.urbanjewells.app</string>
+    <string name="custom_url_scheme">com.urbanjewells.app</string>
+</resources>
