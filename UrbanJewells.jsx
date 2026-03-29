@@ -2,6 +2,7 @@
 import { lazy as reactLazy, Suspense as ReactSuspense } from "react";
 import * as THREE from "three";
 import { CART_STORAGE_KEY, WISHLIST_STORAGE_KEY, getDefaultVariant, getDisplayImages, getDisplayOriginalPrice, getDisplayPrice, getDisplayStock, getWishlistKey, materializeProductSelection, readStoredArray, writeStoredArray } from "./src/lib/storefrontState";
+import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, formatDiscount, formatPrice, genRef, getOptimizedImageUrl, getShippingAmount, getShippingMessage, withCollectionCounts } from "./src/lib/storefrontUtils";
 import { routeFromHash, routeToHash } from "./src/lib/appRouter";
 import { applyDocumentMeta, buildMetaForRoute } from "./src/lib/seoMeta";
 import { isSanityConfigured, loadCatalogFromSanity } from "./src/lib/sanityCatalog";
@@ -590,43 +591,6 @@ const FAQS = [
   {q:"Can I request a custom piece?",a:"Yes. Send us a photo, description, or just a feeling via WhatsApp. Our designers will respond with a quote and timeline within 48 hours."},
   {q:"Do you offer gift wrapping?",a:"Every Urban Jewells order ships in signature packaging that's already gift-ready. If you'd like a personalised note or special ribbon, just mention it in your order notes."},
 ];
-
-// currency code and formatting (Indian rupee)
-const CURRENCY_CODE = 'INR';
-const FREE_SHIPPING_THRESHOLD = 2000;
-const STANDARD_SHIPPING_FEE = 99;
-const formatPrice = n => `${CURRENCY_CODE} ${Number(n).toLocaleString('en-IN')}`;
-const formatDiscount = (o,c) => Math.round(((o-c)/o)*100);
-const genRef = () => `UJ-${Date.now().toString(36).toUpperCase()}`;
-const getShippingAmount = subtotal => subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
-const getShippingMessage = subtotal => subtotal >= FREE_SHIPPING_THRESHOLD
-  ? `Free shipping applied on orders above ${formatPrice(FREE_SHIPPING_THRESHOLD)}`
-  : `Add ${formatPrice(FREE_SHIPPING_THRESHOLD - subtotal)} more to unlock free shipping`;
-const getOptimizedImageUrl = (url, { width, height, quality = 80, mode = 'cover' } = {}) => {
-  if (!url) return '';
-  if (url.includes('cdn.sanity.io/images/')) {
-    const next = new URL(url);
-    next.searchParams.set('auto', 'format');
-    if (width) next.searchParams.set('w', String(width));
-    if (height && mode === 'cover') next.searchParams.set('h', String(height));
-    next.searchParams.set('q', String(quality));
-    next.searchParams.set('fit', mode === 'cover' ? 'crop' : 'max');
-    return next.toString();
-  }
-  if (url.includes('/image/upload/')) {
-    const transforms = ['f_auto', `q_${quality === 80 ? 'auto:good' : quality}`];
-    if (width) transforms.push(`w_${width}`);
-    if (height && mode === 'cover') transforms.push(`h_${height}`);
-    transforms.push(mode === 'cover' ? 'c_fill' : 'c_limit');
-    if (mode === 'cover') transforms.push('g_auto');
-    return url.replace('/image/upload/', `/image/upload/${transforms.join(',')}/`);
-  }
-  return url;
-};
-const withCollectionCounts = (collections, products) => collections.map(collection => ({
-  ...collection,
-  productCount: collection.productCount || products.filter(product => product.collection === collection.slug).length,
-}));
 
 // =================================================================
 //  APP CONTEXT
